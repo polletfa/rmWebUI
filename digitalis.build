@@ -1,0 +1,421 @@
+#!/usr/bin/env bash
+
+function _confirm() {
+    read -p "$1 [y|N] " reply
+
+    if [ "${reply}" != "y" ]; then
+        return 1
+    fi
+
+    return 0
+}
+
+function _echoError() {
+    echo -e "\033[31m"$*"\033[0m" >&2
+}
+
+function _echoAction() {
+    echo -e "\033[33m"$*"\033[0m"
+}
+
+function _usage() {
+    (
+        echo -e "\033[33m$0 create NAME\033[0m"
+        echo "  Initialize the project."
+        echo
+        echo -e "\033[33m$0 updatebuild\033[0m"
+        echo "  Update the build system."
+        echo "  Only digitalis.build, _digitalis.build/ and cmake/ are changed."
+        echo "  Other files must be adapted manually if necessary."
+        echo
+        echo -e "\033[33m$0 add TARGET_TYPE NAME\033[0m"
+        echo "  Add a target."
+        echo
+        echo -e "\033[33m$0 version\033[0m"
+        echo "  Print project version."
+        echo 
+        echo -e "\033[33m$0 debug\033[0m"
+        echo "  Build in debug mode."
+        echo
+        echo -e "\033[33m$0 release\033[0m"
+        echo "  Build in release mode."
+        echo
+        echo -e "\033[33m$0 doxygen\033[0m"
+        echo "  Build doxygen documentation."
+        echo
+        echo -e "\033[33m$0 clean\033[0m"
+        echo "  Delete intermediate and target files."
+        echo
+        echo -e "\033[33m$0 install\033[0m"
+        echo "  Install files to /usr/local (requires root priviledges)."
+        echo
+        echo -e "\033[33m$0 upload TARGET_NAME\033[0m"
+        echo "  Upload a target to the microcontroller (for targets of type 'arduino_firmware' only)."
+        echo
+        echo -e "\033[33m$0 run TARGET_NAME\033[0m"
+        echo "  Run a target from the _install directory (for targets of type 'exe' only)."
+        echo
+        echo -e "\033[33m$0 changeversion\033[0m"
+        echo "  Set a new version (interactive)."
+        echo
+        echo -e "\033[33m$0 tag\033[0m"
+        echo "  Publish a tag (interactive)."
+    ) >&2
+    exit 1
+}
+
+function _build() {
+    buildtype=$1
+    shift
+    shift
+    if [ ! -d _build ]; then
+        mkdir _build
+    fi
+    cd _build
+    cmake .. -DCMAKE_BUILD_TYPE=$buildtype $* && make install ; ret=$?
+    cd ..
+    exit $ret
+}
+
+function _check_build_system() {
+    if [ ! -d _digitalis.build ]; then
+        _echoError "digitalis.build is missing. Please call updatebuild."
+        exit 1
+    fi
+}
+
+function _check_init() {
+    if [ ! -f CMakeLists.txt ]; then
+        _echoError "The project has not yet been initialized. Use create first."
+        exit 1
+    fi
+}
+function _check_no_init() {
+    if [ -f CMakeLists.txt ]; then
+        _echoError "The project has already been initialized."
+        exit 1
+    fi
+}
+
+function _replace() {
+    dir="$1"
+    projectname="$2"
+    targetname="$3"
+    includeguard="$(echo "$3" | cut -d. --output-delimiter=_ -f1- | tr '[:lower:]' '[:upper:]')"
+    path="$(echo "$3" | cut -d. --output-delimiter=/ -f1-)"
+    for n in $(echo "$3" | cut -d. --output-delimiter=\  -f1-); do
+        path_escaped="${path_escaped}$n\\/"
+        namespace="${namespace}$n::"
+        namespace_on="${namespace_on}namespace $n \\{\\"$'\n'
+        namespace_off="\\} \\/\\/ $n\\"$'\n'"${namespace_off}"
+    done
+    path_escaped="${path_escaped:0:$((${#path_escaped}-2))}"
+    namespace="${namespace:0:$((${#namespace}-2))}"
+    namespace_on="${namespace_on:0:$((${#namespace_on}-2))}"
+    namespace_off="${namespace_off:0:$((${#namespace_off}-2))}"
+    
+    find "$dir" -type f -exec sed -i 's/${DIGITALIS.BUILD:PROJECT_NAME}/'"$projectname"'/' {} \;
+    find "$dir" -type f -exec sed -i 's/${DIGITALIS.BUILD:TARGET_NAME}/'"$targetname"'/' {} \;
+    find "$dir" -type f -exec sed -i 's/${DIGITALIS.BUILD:INCLUDE_GUARD}/'"$includeguard"'/' {} \;
+    find "$dir" -type f -exec sed -i 's/${DIGITALIS.BUILD:NAMESPACE_ON}/'"$namespace_on"'/' {} \;
+    find "$dir" -type f -exec sed -i 's/${DIGITALIS.BUILD:NAMESPACE_OFF}/'"$namespace_off"'/' {} \;
+    find "$dir" -type f -exec sed -i 's/${DIGITALIS.BUILD:NAMESPACE}/'"$namespace"'/' {} \;
+    find "$dir" -type f -exec sed -i 's/${DIGITALIS.BUILD:PATH}/'"$path_escaped"'/' {} \;
+
+    if [ -d "$dir/_private" ]; then
+        mkdir -p "$(dirname "$dir/$path")"
+        mv "$dir/_private" "$dir/$path"
+    fi
+    if [ -d "$dir/_public" ]; then
+        mkdir -p "$(dirname "$dir/public/$path")"
+        mv "$dir/_public" "$dir/public/$path"
+    fi
+}
+
+# Check if we are in a digitalis.build project
+if [ ! -d _digitalis.build -a ! -f .digitalis.build ]; then
+    _echoError "Not a digitalis.build project."
+    exit 1
+fi
+
+# Print help if called without arguments
+if [ $# -eq 0 ]; then
+    _usage
+fi
+
+DIGITALIS_BUILD_GIT="git@localhost:build.git"
+if [ -f ".digitalis.build" ]; then
+    source .digitalis.build
+fi
+
+# Read name and version
+if [ -f CMakeLists.txt ]; then
+    projectname=$(echo \
+                      $(grep -e "^\s*project(.*)" CMakeLists.txt  \
+                            | cut -d\( -f2- \
+                            | cut -d\) -f1))
+    major=$(echo \
+                $(grep -e "^\s*set(PROJECT_VERSION_MAJOR\s*[0-9]*)" CMakeLists.txt  \
+                      | cut -d\  -f2- \
+                      | cut -d\) -f1))
+    minor=$(echo \
+                $(grep -e "^\s*set(PROJECT_VERSION_MINOR\s*[0-9]*)" CMakeLists.txt  \
+                      | cut -d\  -f2- \
+                      | cut -d\) -f1))
+    patch=$(echo \
+                $(grep -e "^\s*set(PROJECT_VERSION_PATCH\s*[0-9]*)" CMakeLists.txt  \
+                      | cut -d\  -f2- \
+                      | cut -d\) -f1))
+    status=$(echo \
+                 $(grep -e "^\s*set(PROJECT_VERSION_STATUS\s*\(develop\|tag\)*)" CMakeLists.txt  \
+                       | cut -d\  -f2- \
+                       | cut -d\) -f1))
+fi
+
+case "$1" in
+    "create")
+        if [ "$2" = "" ]; then
+            _usage
+        fi
+        _check_no_init
+        _check_build_system
+        
+        name="$(echo "$2" | cut -d/ --output-delimiter=. -f1-)"
+        for n in $(echo "$name" | cut -d. --output-delimiter=\  -f1-); do
+            path_escaped="${path_escaped}$n\\/"
+        done
+        path_escaped="${path_escaped:0:$((${#path_escaped}-2))}"
+        _echoAction "(create) $name v0.1.0-develop"
+
+        sed 's/${DIGITALIS.BUILD:PROJECT_NAME}/'"$name"'/' _digitalis.build/CMakeLists.txt > CMakeLists.txt
+        sed 's/${DIGITALIS.BUILD:PROJECT_NAME}/'"$name"'/' _digitalis.build/doxygen.conf \
+            | sed 's/${DIGITALIS.BUILD:PROJECT_PATH}/'"$path_escaped"'/' > doxygen.conf
+        cp _digitalis.build/digitalis.build.conf .digitalis.build
+        cp _digitalis.build/gitignore .gitignore
+        rsync -rtv _digitalis.build/cmake .
+        cp _digitalis.build/README.txt README.digitalis.build.txt
+        cp _digitalis.build/digitalis.build .
+        ;;
+
+    "updatebuild")
+        if [ $# -ne 1 ]; then
+            _usage
+        fi
+        _check_init
+
+        _echoAction "(updatebuild) $projectname v$major.$minor.$patch-$status"
+
+        if [ ! -d _digitalis.build ]; then
+            git clone "$DIGITALIS_BUILD_GIT" _digitalis.build
+        fi
+        
+        cd _digitalis.build
+        git fetch
+        tv="$(git tag --sort=v:refname | tail -n1)"
+        if [ "$tv" = "" ]; then
+            _echoError "No tag for digitalis.build."
+            exit 1
+        fi
+        _echoAction "(updatebuild) update to digitalis.build $tv"
+        git checkout tags/"$tv"
+        rsync -rtv cmake ../
+        if [ ! -f "../.digitalis.build" ]; then
+            cp digitalis.build.conf ../.digitalis.build
+        fi
+        if [ ! -f "../doxygen.conf" ]; then
+            sed 's/${DIGITALIS.BUILD:PROJECT_NAME}/'"$name"'/' doxygen.conf \
+                | sed 's/${DIGITALIS.BUILD:PROJECT_PATH}/'"$path_escaped"'/' > ../doxygen.conf
+        fi
+        if [ ! -f "../.gitignore" ]; then
+            cp gitignore ../.gitignore
+        fi
+        cp README.txt ../README.digitalis.build.txt
+        cp digitalis.build ../ && exit 0 # exit after modifying the script
+        ;;
+
+    "add")
+        if [ "$2" = "" -o "$3" = "" ]; then
+            _usage
+        fi
+        _check_init
+        _check_build_system
+        
+        name="$(echo "$3" | cut -d/ --output-delimiter=. -f1-)"
+        _echoAction "(add) $projectname v$major.$minor.$patch-$status"
+        _echoAction "(add) $2: $projectname.$name"
+
+        if [ ! -d _digitalis.build/target."$2" ]; then
+            _echoError "The target type $2 doesn't exist."
+            exit 1
+        fi
+        if [ -d "$name" ]; then
+            _echoError "The target already exists."
+            exit 1
+        fi
+
+        cp -R _digitalis.build/target."$2" "$name"
+        _replace "$name" "$projectname" "$projectname.$name"
+        ;;
+
+    "version")
+        if [ $# -ne 1 ]; then
+            _usage
+        fi
+        _check_init
+
+        _echoAction "(version) $projectname v$major.$minor.$patch-$status"
+        ;;
+
+    "debug")
+        _check_init
+
+        _echoAction "(debug) $projectname v$major.$minor.$patch-$status"
+
+        _build Debug $*
+        ;;
+    
+    "release")
+        _check_init
+
+        _echoAction "(release) $projectname v$major.$minor.$patch-$status"
+
+        _build Release $*
+        ;;
+
+    "doxygen")
+        if [ $# -ne 1 ]; then
+            _usage
+        fi
+        _check_init
+
+        _echoAction "(doxygen) $projectname v$major.$minor.$patch-$status"
+        path="$(echo "$projectname" | cut -d. --output-delimiter=/ -f1-)"
+
+        if [ ! -d "$(dirname "_install/share/doc/$path")" ]; then
+            mkdir -p "$(dirname "_install/share/doc/$path")"
+        fi
+        doxygen doxygen.conf
+        ;;
+    
+    "clean")
+        if [ $# -ne 1 ]; then
+            _usage
+        fi
+        _check_init
+        
+        _echoAction "(clean) $projectname v$major.$minor.$patch-$status"
+
+        rm -fr _build _install
+        ;;
+
+    "install")
+        if [ $# -ne 1 ]; then
+            _usage
+        fi
+        _check_init
+        
+        _echoAction "(install) $projectname v$major.$minor.$patch-$status"
+
+        cp -R _install/* /usr/local
+        ldconfig
+        ;;
+
+    "run")
+        if [ "$2" = "" ]; then
+            _usage
+        fi
+        _check_init
+        
+        name="$(echo "$2" | cut -d/ --output-delimiter=. -f1-)"
+        _echoAction "(run) $projectname v$major.$minor.$patch-$status"
+        _echoAction "(run) $name"
+
+        shift
+        shift
+        LD_LIBRARY_PATH="./_install/lib:$LD_LIBRARY_PATH" ./_install/bin/$projectname.$name $*
+        ;;
+
+    "upload")
+        if [ "$2" = "" ]; then
+            _usage
+        fi
+        _check_init
+        
+        name="$(echo "$2" | cut -d/ --output-delimiter=. -f1-)"
+        _echoAction "(upload) $projectname v$major.$minor.$patch-$status"
+        _echoAction "(upload) $name"
+
+        cd _build
+        make "$projectname.$name-upload"
+        ;;
+
+    "changeversion")
+        if [ $# -ne 1 ]; then
+            _usage
+        fi
+        _check_init
+
+        _echoAction "(changeversion) $projectname v$major.$minor.$patch-$status"
+
+        git status
+
+        _confirm "Are you sure you want to change the version?" || exit 1
+        
+        read -p "Next version, major number: " nextmajor
+        read -p "Next version, minor number: " nextminor
+        read -p "Next version, patch number: " nextpatch
+        
+        _confirm "Version v${nextmajor}.${nextminor}.${nextpatch}-develop. Are you sure?" || exit 1
+        
+        sed -i s/"^\s*set(PROJECT_VERSION_MAJOR\(\s*\)[0-9]*)/set(PROJECT_VERSION_MAJOR\1${nextmajor})/" CMakeLists.txt
+        sed -i s/"^\s*set(PROJECT_VERSION_MINOR\(\s*\)[0-9]*)/set(PROJECT_VERSION_MINOR\1${nextminor})/" CMakeLists.txt
+        sed -i s/"^\s*set(PROJECT_VERSION_PATCH\(\s*\)[0-9]*)/set(PROJECT_VERSION_PATCH\1${nextpatch})/" CMakeLists.txt
+        sed -i s/"^\s*set(PROJECT_VERSION_STATUS\(\s*\)tag)/set(PROJECT_VERSION_STATUS\1develop)/" CMakeLists.txt
+        
+        find . -path "./_*" -prune -o -name "*.hpp" -print0 | xargs -0 -i sed -i "s/[0-9]*;\(\s*\)\/\/##PROJECT_VERSION_MAJOR##/${nextmajor};\1\/\/##PROJECT_VERSION_MAJOR##/" {}
+        find . -path "./_*" -prune -o -name "*.hpp" -print0 | xargs -0 -i sed -i "s/[0-9]*;\(\s*\)\/\/##PROJECT_VERSION_MINOR##/${nextminor};\1\/\/##PROJECT_VERSION_MINOR##/" {}
+        find . -path "./_*" -prune -o -name "*.hpp" -print0 | xargs -0 -i sed -i "s/[0-9]*;\(\s*\)\/\/##PROJECT_VERSION_PATCH##/${nextpatch};\1\/\/##PROJECT_VERSION_PATCH##/" {}
+        find . -path "./_*" -prune -o -name "*.hpp" -print0 | xargs -0 -i sed -i "s/\(true\|false\);\(\s*\)\/\/##PROJECT_VERSION_STATUS##/false;\2\/\/##PROJECT_VERSION_STATUS##/" {}
+
+        ;;
+
+    "tag")
+        if [ $# -ne 1 ]; then
+            _usage
+        fi
+        _check_init
+
+        _echoAction "(tag) $projectname v$major.$minor.$patch-$status"
+
+        if [ ${status} != develop ]; then
+            echo "This is not a development version. Use changeversion instead." >&2
+            exit 1
+        fi
+        
+        git status
+        
+        _confirm "Are you sure you want to release v${major}.${minor}.${patch}-tag?" || exit 1
+        
+        # Set status to "tag"
+        sed -i s/"^\s*set(PROJECT_VERSION_STATUS\(\s*\)develop)/set(PROJECT_VERSION_STATUS\1tag)/" CMakeLists.txt
+        find . -path "./_*" -prune -o -name "*.hpp" -print0 | xargs -0 -i sed -i "s/[0-9]*;\(\s*\)\/\/##PROJECT_VERSION_MAJOR##/${major};\1\/\/##PROJECT_VERSION_MAJOR##/" {}
+        find . -path "./_*" -prune -o -name "*.hpp" -print0 | xargs -0 -i sed -i "s/[0-9]*;\(\s*\)\/\/##PROJECT_VERSION_MINOR##/${minor};\1\/\/##PROJECT_VERSION_MINOR##/" {}
+        find . -path "./_*" -prune -o -name "*.hpp" -print0 | xargs -0 -i sed -i "s/[0-9]*;\(\s*\)\/\/##PROJECT_VERSION_PATCH##/${patch};\1\/\/##PROJECT_VERSION_PATCH##/" {}
+        find . -path "./_*" -prune -o -name "*.hpp" -print0 | xargs -0 -i sed -i "s/\(true\|false\);\(\s*\)\/\/##PROJECT_VERSION_STATUS##/true;\2\/\/##PROJECT_VERSION_STATUS##/" {}
+        
+        # tag
+        git commit -a -m "v${major}.${minor}.${patch}-tag"
+        git tag -a v${major}.${minor}.${patch} -m "Version ${major}.${minor}.${patch}"
+        
+        # push
+        _confirm "Are you sure you want to push the changes?" || exit 1
+        
+        git push --tags
+        git push
+        ;;
+    
+    *)
+        _usage
+        ;;
+esac
+
