@@ -1,4 +1,0 @@
-#
-# Git URL of the digitalis.build repository
-#
-DIGITALIS_BUILD_GIT="git@localhost:build.git"
