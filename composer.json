@@ -1,0 +1,16 @@
+{
+    "name": "digitalis/rm-web-ui",
+    "description": "reMarkable Cloud WebUI",
+    "type": "project",
+    "license": "MIT",
+    "minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "Fabien Pollet",
+            "email": "polletfa@posteo.de"
+        }
+    ],
+    "require": {
+        "splitbrain/remarkable-api": "dev-master"
+    }
+}
