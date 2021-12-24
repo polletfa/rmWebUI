@@ -1,4 +1,11 @@
-<?php
+<!-- -------------------------------------------------
+
+rmWebUI - Web interface for the reMarkable(R) cloud.
+
+(c) 2021-2022 Fabien Pollet <polletfa@posteo.de>
+MIT License (see LICENSE file)
+
+-------------------------------------------------- --><?php
 
 namespace digitalis\rmWebUI;
 
@@ -6,12 +13,15 @@ namespace digitalis\rmWebUI;
  * Class to manage data from:
  * - URL parameters
  * - Session data
- * - Configuration
+ * - Authentication token
  *
  * Available parameters:
  * - collection, read-only, from URL
+ * - download, read-only, from URL
  * - tree, read-write, from session data
- * - token, read-write, from configuration file config/auth.token
+ * - token, read-write, from file config/auth.token
+ *
+ * If the URL contains the parameter "refresh", the session is cleared.
  */
 class Data {
     /**
@@ -54,6 +64,7 @@ class Data {
     function __get($name) {
         // URL parameters
         if($name == "collection") return $this->getFrom($_GET, "collection", "");
+        else if($name == "download") return $this->getFrom($_GET, "download", "");
 
         // Session data
         else if($name == "tree") return $this->getFrom($_SESSION, "tree", null);
@@ -75,6 +86,7 @@ class Data {
     function __set($name, $value) {
         // URL parameters
         if($name == "collection") throw new \Exception("collection is readonly");
+        else if($name == "download") throw new \Exception("download is readonly");
 
         // Session data
         else if($name == "tree") $_SESSION["tree"] = $value;

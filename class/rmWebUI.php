@@ -1,4 +1,11 @@
-<?php
+<!-- -------------------------------------------------
+
+rmWebUI - Web interface for the reMarkable(R) cloud.
+
+(c) 2021-2022 Fabien Pollet <polletfa@posteo.de>
+MIT License (see LICENSE file)
+
+-------------------------------------------------- --><?php
 namespace digitalis\rmWebUI;
 
 use splitbrain\RemarkableAPI\RemarkableAPI;
@@ -21,14 +28,20 @@ class rmWebUI {
      * Mode (debug or prod)
      */
     protected $mode;
-
+    /**
+     * rmrl command
+     */
+    protected $rmrl;
+    
     /**
      * Constructor
      *
      * @param mode Mode (debug or prod)
+     * @param rmrl Rmrl command
      */
-    function __construct($mode) {
+    function __construct($mode, $rmrl) {
         $this->mode = $mode;
+        $this->rmrl = $rmrl;
         $this->data = new Data();
     }
 
@@ -56,7 +69,31 @@ class rmWebUI {
      * @return String with definitions for onclick, onmouseover and onmouseout events
      */
     protected function falseLink($url) {
-        return "onclick=\"window.location.href = '".$url."'\" onmouseover=\"document.body.style.cursor = 'pointer'\" onmouseout=\"document.body.style.cursor = 'auto'\"";
+        return " onclick=\"window.location.href = '".$url."'\" onmouseover=\"document.body.style.cursor = 'pointer'\" onmouseout=\"document.body.style.cursor = 'auto'\" ";
+    }
+
+    /**
+     * Add a line to the debug-div (debug mode only)
+     *
+     * @param text Text to add
+     */
+    protected function writeToDebugDiv($text) {
+        if($this->mode != "prod") {
+            ?><script>document.getElementById('debug-div').innerHTML += "<?php echo $text ?><br/>";</script><?php
+        }
+    }
+
+    /**
+     * Initialize API
+     * The token must already be loaded.
+     *
+     * @return API object
+     */
+    protected function initAPI() {
+        $this->writeToDebugDiv("Initialize the reMarkable Cloud API...");
+        $api = new RemarkableAPI(null); // todo implement logger
+        $api->init($this->data->token);
+        return $api;
     }
 
     /**
@@ -75,7 +112,7 @@ class rmWebUI {
                         $link = "?collection=".$item['ID'];
                         $icon = "folder";
                     } else {
-                        $link = ""; // todo download and convert file
+                        $link = "?download=".$item['ID'];
                         $icon = "file";
                     }
                     echo "<tr><td ".$this->falseLink($link).">";
@@ -88,25 +125,12 @@ class rmWebUI {
     }
 
     /**
-     * Add a line to the debug-div (debug mode only)
-     *
-     * @param text Text to add
-     */
-    protected function writeToDebugDiv($text) {
-        if($this->mode != "prod") {
-            ?><script>document.getElementById('debug-div').innerHTML += "<?php echo $text ?><br/>";</script><?php
-        }
-    }
-
-    /**
      * Generate the "list" page
      */
     protected function list() {
         if($this->data->tree == null) {
-            $this->writeToDebugDiv("Initialize the reMarkable Cloud API...");
-            $api = new RemarkableAPI(null); // todo implement logger
-            $api->init($this->data->token);
-
+            $api = $this->initAPI();
+            
             $this->writeToDebugDiv("Retrieve file list from the reMarkable Cloud...");
             $fs = new RemarkableFS($api);
             $this->data->tree = $fs->getTree();
@@ -130,31 +154,68 @@ class rmWebUI {
     }
 
     /**
+     * Download file
+     */
+    protected function download() {
+        $this->mode = "prod"; // no debug messages while downloading
+
+        // get filename
+        [$path,$item] = $this->findItem($this->data->download);
+        $filename = preg_replace('/[^A-Za-z0-9\-_]/', '', str_replace(' ', '_', $item["VissibleName"]));
+
+        // HTTP header
+        $filetype = $this->rmrl == null || $this->rmrl == "" ? "zip" : "pdf";
+        header('Content-Type:application/' . $filetype);
+        header('Content-Disposition:attachment;filename='.$filename.'.'.$filetype);
+
+        // Get file
+        $api = $this->initAPI();
+        $filecontent = $api->downloadDocument($this->data->download)->getBody();
+
+        if($filetype == 'pdf') {
+            // Convert with rmrl
+            $tmpfile = "/tmp/".$this->data->download.".zip";
+            file_put_contents($tmpfile, $filecontent);
+            passthru($this->rmrl." ".$tmpfile . " 2>&1");
+        } else {
+            // write original ZIP file (no conversion to PDF)
+            echo $filecontent;
+        }
+    }
+
+    /**
      * Run the WebUI
      */
     public function run() {
-        ?><html>
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-
-            <link href="css/bootstrap.min.css" rel="stylesheet">
-          </head>
-          <body>
-            <div class="container-fluid">
-            <?php
-            
-        if($this->mode != "prod") {
-            ?><div class="row bg-warning"><div class="col text-center" id="debug-div">Debug mode enabled.<br/></div></div><?php
-        }
-        ?><?php
-        if($this->data->token == "") {
-            // no token -> register
-            // todo register page
+        if($this->data->token != "" && $this->data->download != "") {
+            $this->download();
         } else {
-            $this->list();
-        }
-        ?></div></body></html><?php
+            ?><html>
+                <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+
+                <link href="css/bootstrap.min.css" rel="stylesheet">
+
+                </head>
+                <body>
+                <div class="container-fluid">
+                <?php
+            
+                if($this->mode != "prod") {
+                    ?><div class="row bg-warning"><div class="col text-center" id="debug-div">Debug mode enabled.<br/></div></div><?php
+                }
+            ?><?php
+                if($this->data->token == "") {
+                    // no token -> register
+                    // todo register page
+                } else {
+                    $this->list();
+                }
+            ?></div>
+            <div class="row bg-dark fixed-bottom text-white"><div class="col">&copy; 2021-2022 Fabien Pollet &lt;polletfa@posteo.de&gt;</div><div class="col text-end">rmWebUI 0.1.0</div></div>
+            </body></html><?php
+        }                                                       
     }
 }
 

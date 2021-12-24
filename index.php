@@ -17,6 +17,6 @@ require_once __DIR__ . '/class/rmWebUI.php';
 use digitalis\rmWebUI\rmWebUI;
 
 // Run WebUI
-$webui = new rmWebUI($mode);
+$webui = new rmWebUI($mode, $rmrl);
 $webui->run();
 ?>

@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+# ---------------------------------------------------
+#
+# rmWebUI - Web interface for the reMarkable(R) cloud.
+#
+# (c) 2021-2022 Fabien Pollet <polletfa@posteo.de>
+# MIT License (see LICENSE file)
+#
+# ---------------------------------------------------
+
 [ -d dist ] && rm -fr dist
 mkdir dist
 cp -r composer.json index.php class css svg config dist
