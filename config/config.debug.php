@@ -22,5 +22,6 @@ $mode = "debug";
  * If you leave this parameter empty, files will be downloaded as a ZIP file containing
  * metadata and the lines file.
  */
-$rmrl = "python3 -m rmrl ";
+$rmrl = "";
+//$rmrl = "python3 -m rmrl ";
 ?>
