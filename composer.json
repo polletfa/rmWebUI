@@ -10,6 +10,9 @@
             "email": "polletfa@posteo.de"
         }
     ],
+    "scripts": {
+        "deploy": "./scripts/deploy.sh"
+    },
     "require": {
         "splitbrain/remarkable-api": "dev-master"
     }
