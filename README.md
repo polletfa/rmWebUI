@@ -24,7 +24,7 @@ On the first run, you will be asked to register the application. This is require
 
 # Important security warning
 
-rmWebUI doesn't implement any kind of authentication. Configure your webserver as needed to prevent unauthorized access, for example by using a .htaccess file. Make sure that the file `config/auth.token` is protected as well, since its content is all is needed to connect to your reMarkable&reg; cloud account.
+rmWebUI doesn't implement any kind of authentication. Configure your webserver as needed to prevent unauthorized access, for example by using a `.htaccess` file. Make sure that the file `config/auth.token` is protected as well, since its content is all is needed to connect to your reMarkable&reg; cloud account.
 
 # Todo
 
