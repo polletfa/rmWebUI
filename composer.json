@@ -11,7 +11,8 @@
         }
     ],
     "scripts": {
-        "deploy": "./scripts/deploy.sh"
+        "deploy": "./scripts/deploy.sh prod",
+        "deploy-debug": "./scripts/deploy.sh debug"
     },
     "require": {
         "splitbrain/remarkable-api": "dev-master"

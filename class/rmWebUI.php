@@ -115,7 +115,7 @@ class rmWebUI {
         [$currentPath,$currentItem] = $this->findItem($this->data->collection);
 
         ?>
-        <div class="col h1"><?php echo $currentPath; ?> <a href="?collection=<?php echo $this->data->collection ;?>&refresh"><img src="svg/refresh.svg"/></a>
+        <div class="row"><div class="col h1"><?php echo $currentPath; ?></div><div class="col d-flex align-items-center justify-content-end"><a href="?collection=<?php echo $this->data->collection ;?>&refresh"><img src="svg/refresh.svg"/></a></div></div>
         <div class="row">                                                       
         <table class="table table-hover"><tbody><?php
                                                              
@@ -126,7 +126,7 @@ class rmWebUI {
         $this->listItemsOfType("DocumentType");
 
         ?></tbody></table></div>
-        <div class="row bg-dark"><div class="col"></div></div><?php
+        <?php
     }
 
     /**
@@ -147,14 +147,14 @@ class rmWebUI {
         if($this->mode != "prod") {
             ?><div class="row bg-warning"><div class="col text-center" id="debug-div">Debug mode enabled.<br/></div></div><?php
         }
-        ?><div class="row"><?php
+        ?><?php
         if($this->data->token == "") {
             // no token -> register
             // todo register page
         } else {
             $this->list();
         }
-        ?></div></div></body></html><?php
+        ?></div></body></html><?php
     }
 }
 
