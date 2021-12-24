@@ -1,6 +1,6 @@
 - README
 - register app
+- add to github
 - cache for converted PDFs
 - use logger for remarkableAPI
-- add to github
 - better error handling

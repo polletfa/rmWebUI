@@ -215,7 +215,7 @@ class rmWebUI {
                     $this->list();
                 }
             ?></div>
-            <div class="row bg-dark fixed-bottom text-white"><div class="col">&copy; 2021-2022 Fabien Pollet &lt;polletfa@posteo.de&gt;</div><div class="col text-end">rmWebUI 0.1.0</div></div>
+            <div class="row bg-dark fixed-bottom text-white"><div class="col text-end">rmWebUI 0.1.0</div></div>
             </body></html><?php
         }                                                       
     }

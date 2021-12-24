@@ -10,7 +10,7 @@
 
 [ -d dist ] && rm -fr dist
 mkdir dist
-cp -r composer.json index.php class css svg config dist
+cp -r composer.json LICENSE index.php class css svg config dist
 cd dist
 if [ "$1" != "prod" ]; then
     mv config/config.debug.php config/config.php
