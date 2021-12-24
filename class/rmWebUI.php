@@ -1,11 +1,13 @@
-<!-- -------------------------------------------------
+<?php
+/*****************************************************
+ *
+ * rmWebUI - Web interface for the reMarkable(R) cloud.
+ *
+ * (c) 2021-2022 Fabien Pollet <polletfa@posteo.de>
+ * MIT License (see LICENSE file)
+ *
+ *****************************************************/
 
-rmWebUI - Web interface for the reMarkable(R) cloud.
-
-(c) 2021-2022 Fabien Pollet <polletfa@posteo.de>
-MIT License (see LICENSE file)
-
--------------------------------------------------- --><?php
 namespace digitalis\rmWebUI;
 
 use splitbrain\RemarkableAPI\RemarkableAPI;
