@@ -36,8 +36,9 @@ rmWebUI doesn't implement any kind of authentication. Configure your webserver a
 # License
 
 &copy; 2021-2022 Fabien Pollet <polletfa@posteo.de>
+
 rmWebUI is licensed under the MIT license. See the LICENSE file for details.
 
 # Trademarks
 
-reMarkable(R) is a registered trademark of reMarkable AS. rmWebUI is not affiliated with, or endorsed by, reMarkable AS. The use of “reMarkable” in this work refers to the company’s e-paper tablet product(s).
+reMarkable&reg; is a registered trademark of reMarkable AS. rmWebUI is not affiliated with, or endorsed by, reMarkable AS. The use of “reMarkable” in this work refers to the company’s e-paper tablet product(s).
