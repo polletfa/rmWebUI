@@ -8,6 +8,14 @@
  *
  *****************************************************/
 
+/*
+ * TODO:
+ * - Cache generated PDFs for quicker access
+ * - Use a logger for the RemarkableAPI class
+ * - Better error handling?
+ * - Implement upload?
+ */
+
 namespace digitalis\rmWebUI;
 
 use splitbrain\RemarkableAPI\RemarkableAPI;
@@ -22,6 +30,16 @@ use digitalis\rmWebUI\Data;
  * Main class
  */
 class rmWebUI {
+    /**
+     * Program name
+     */
+    const NAME = "rmWebUI";
+
+    /**
+     * Version
+     */
+    const VERSION = "0.1.0";
+    
     /**
      * Data from URL, session and configuration
      */
@@ -47,6 +65,23 @@ class rmWebUI {
         $this->data = new Data();
     }
 
+    /*****************************************/
+    /* Cloud API */
+    /*****************************************/
+    
+    /**
+     * Initialize API
+     * The token must already be loaded.
+     *
+     * @return API object
+     */
+    protected function initAPI() {
+        $this->writeToDebugDiv("Initialize the reMarkable Cloud API...");
+        $api = new RemarkableAPI(null); // todo implement logger
+        $api->init($this->data->token);
+        return $api;
+    }
+
     /**
      * Find an item in the reMarkable cloud by UUID (the file list must already be loaded)
      *
@@ -63,6 +98,10 @@ class rmWebUI {
         }
         return ["/", null];
     }
+
+    /*****************************************/
+    /* GUI helpers */
+    /*****************************************/
 
     /**
      * Return a string with onclick, onmouseover and onmouseout - Used to convert any HTML element into a link
@@ -85,18 +124,9 @@ class rmWebUI {
         }
     }
 
-    /**
-     * Initialize API
-     * The token must already be loaded.
-     *
-     * @return API object
-     */
-    protected function initAPI() {
-        $this->writeToDebugDiv("Initialize the reMarkable Cloud API...");
-        $api = new RemarkableAPI(null); // todo implement logger
-        $api->init($this->data->token);
-        return $api;
-    }
+    /*****************************************/
+    /* List files */
+    /*****************************************/
 
     /**
      * List items of a specific type (either collection or document) for the current collection
@@ -155,6 +185,38 @@ class rmWebUI {
         <?php
     }
 
+    /*****************************************/
+    /* Register application */
+    /*****************************************/
+
+    /**
+     * Register application
+     *
+     * @param error Exception if the last attempt failed
+     */
+    protected function register($error) {
+        ?><div class="row"><div class="col h1"><?php echo self::NAME." ".self::VERSION ?></div></div><?php
+        if($error) {
+            ?><div class="alert alert-danger" role="alert">The application could not be registered: <?php echo $error->getMessage(); ?></div><?php
+        } 
+        ?><div class="row"><div class="col"><p>The application is not yet registered. Login to <a href="https://my.remarkable.com" target="_blank">the reMarkable&reg; cloud</a>, retrieve a one-time code from <a href="https://my.remarkable.com/device/desktop/connect" target="_blank">this address</a> (the code is valid for 5 minutes) and enter the code below:</p></div><div>
+        <div class="row g-3 align-items-center">
+          <div class="col-auto">
+            <label for="code" class="col-form-label">One-time code</label>
+          </div>
+          <div class="col-auto">
+            <input type="text" id="code" class="form-control">
+          </div>
+          <div class="col-auto">
+            <button type="submit" class="btn btn-primary" onclick="window.location.href='?code='+document.getElementById('code').value;">Register</button>
+          </div>
+        </div><?php
+    }
+    
+    /*****************************************/
+    /* Download file */
+    /*****************************************/
+
     /**
      * Download file
      */
@@ -185,6 +247,10 @@ class rmWebUI {
         }
     }
 
+    /*****************************************/
+    /* Main */
+    /*****************************************/
+
     /**
      * Run the WebUI
      */
@@ -208,14 +274,26 @@ class rmWebUI {
                     ?><div class="row bg-warning"><div class="col text-center" id="debug-div">Debug mode enabled.<br/></div></div><?php
                 }
             ?><?php
-                if($this->data->token == "") {
-                    // no token -> register
-                    // todo register page
+                if($this->data->token == "" && $this->data->code == "") {
+                    $this->register(null);
                 } else {
-                    $this->list();
+                    if($this->data->token == "") {
+                        try {
+                            $api = new RemarkableAPI(null); // todo implement logger
+                            $this->writeToDebugDiv("Register application...");
+                            $this->data->token = $api->register($this->data->code);
+                            $this->writeToDebugDiv("Application registered.");
+                        } catch(\Exception $e) {
+                            $this->writeToDebugDiv("Registration failed!");
+                            $this->register($e);
+                        }
+                    }
+                    if($this->data->token != "") {
+                        $this->list();
+                    }
                 }
             ?></div>
-            <div class="row bg-dark fixed-bottom text-white"><div class="col text-end">rmWebUI 0.1.0</div></div>
+            <div class="row bg-dark fixed-bottom text-white"><div class="col text-end"><?php echo self::NAME." ".self::VERSION; ?></div></div>
             </body></html><?php
         }                                                       
     }
