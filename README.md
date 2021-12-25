@@ -33,6 +33,10 @@ rmWebUI doesn't implement any kind of authentication. Configure your webserver a
 - Better error handling?
 - Implement upload?
 
+# Screenshot
+
+![screenshot](./screenshot.png)
+
 # License
 
 &copy; 2021-2022 Fabien Pollet <polletfa@posteo.de>
