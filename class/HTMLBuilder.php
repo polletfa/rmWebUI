@@ -32,15 +32,18 @@ class HTMLBuilder {
         }
         echo(">");
 
-        // content
-        if(is_callable($content)) {
-            $content();
-        } else if($content != null) {
-            self::text($content);
-        }
+        // note: meta and link cannot have content or end tag
+        if($tagname != "meta" && $tagname != "link") {
+            // content
+            if(is_callable($content)) {
+                $content();
+            } else if($content != null) {
+                self::text($content);
+            }
 
-        // close
-        echo("</" . $tagname . ">");
+            // close
+            echo("</" . $tagname . ">");
+        }
     }
 
     public static function DIV   ($attributes, $content) { return self::write("div",    $attributes, $content); } /**< See write */
