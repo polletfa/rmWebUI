@@ -2,7 +2,8 @@
 
 rmWebUI is a simple web interface for the reMarkable&reg; cloud.
 
-![screenshot](./screenshot.png)
+![register](./screenshot-register.png)
+![list](./screenshot-list.png)
 
 # Install
 
