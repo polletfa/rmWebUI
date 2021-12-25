@@ -2,6 +2,8 @@
 
 rmWebUI is a simple web interface for the reMarkable&reg; cloud.
 
+![screenshot](./screenshot.png)
+
 # Install
 
 First run:
@@ -32,10 +34,6 @@ rmWebUI doesn't implement any kind of authentication. Configure your webserver a
 - Use a logger for the RemarkableAPI class
 - Better error handling?
 - Implement upload?
-
-# Screenshot
-
-![screenshot](./screenshot.png)
 
 # License
 
