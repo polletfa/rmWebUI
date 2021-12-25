@@ -24,6 +24,7 @@ namespace digitalis\rmWebUI;
  * - token, read-write, from file config/auth.token
  *
  * If the URL contains the parameter "refresh", the session is cleared.
+ * If the URL contains the parameter "unregister", the authentication token is cleared.
  */
 class Data {
     /**
@@ -42,6 +43,7 @@ class Data {
         // Init session
         session_start();
         if(isset($_GET["refresh"])) session_unset();
+        if(isset($_GET["unregister"])) $this->token = "";
     }
 
     /**

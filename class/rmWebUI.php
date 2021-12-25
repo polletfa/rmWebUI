@@ -14,6 +14,7 @@
  * - Use a logger for the RemarkableAPI class
  * - Better error handling?
  * - Implement upload?
+ * - Internationalization
  */
 
 namespace digitalis\rmWebUI;
@@ -25,6 +26,9 @@ use Psr\Log\NullLogger;
 
 require_once("Data.php");
 use digitalis\rmWebUI\Data;
+
+require_once("HTMLBuilder.php");
+use digitalis\rmWebUI\HTMLBuilder as html;
 
 /**
  * Main class
@@ -38,7 +42,7 @@ class rmWebUI {
     /**
      * Version
      */
-    const VERSION = "0.1.0";
+    const VERSION = "0.2.0";
     
     /**
      * Data from URL, session and configuration
@@ -66,7 +70,7 @@ class rmWebUI {
     }
 
     /*****************************************/
-    /* Cloud API */
+    /* Helpers */
     /*****************************************/
     
     /**
@@ -99,20 +103,6 @@ class rmWebUI {
         return ["/", null];
     }
 
-    /*****************************************/
-    /* GUI helpers */
-    /*****************************************/
-
-    /**
-     * Return a string with onclick, onmouseover and onmouseout - Used to convert any HTML element into a link
-     *
-     * @param url Target URL (href)
-     * @return String with definitions for onclick, onmouseover and onmouseout events
-     */
-    protected function falseLink($url) {
-        return " onclick=\"window.location.href = '".$url."'\" onmouseover=\"document.body.style.cursor = 'pointer'\" onmouseout=\"document.body.style.cursor = 'auto'\" ";
-    }
-
     /**
      * Add a line to the debug-div (debug mode only)
      *
@@ -120,7 +110,9 @@ class rmWebUI {
      */
     protected function writeToDebugDiv($text) {
         if($this->mode != "prod") {
-            ?><script>document.getElementById('debug-div').innerHTML += "<?php echo $text ?><br/>";</script><?php
+            html::SCRIPT([], function() use ($text) {
+                echo("document.getElementById('debug-div').innerHTML += '".str_replace("'", "\\'", $text)."<br/>';");
+            });
         }
     }
 
@@ -138,19 +130,15 @@ class rmWebUI {
         foreach($this->data->tree as $path => $items) {
             foreach($items as $item) {
                 if($item['Parent'] == $this->data->collection && $item['Type'] == $type) {
-                    $link = "";
-                    $icon = "";
-                    if($type == "CollectionType") {
-                        $link = "?collection=".$item['ID'];
-                        $icon = "folder";
-                    } else {
-                        $link = "?download=".$item['ID'];
-                        $icon = "file";
-                    }
-                    echo "<tr><td ".$this->falseLink($link).">";
-                    echo "<img src=\"svg/".$icon.".svg\" />&nbsp;&nbsp;";
-                    echo $item["VissibleName"];
-                    echo "</td></tr>";
+                    // write line with icon + item name
+                    html::TR([], function() use ($type,$item) {
+                        html::TD(html::asLink("?" . ($type == "CollectionType" ? "collection" : "download") . "=" . $item["ID"]),
+                        function() use ($type,$item) {
+                            html::icon($type == "CollectionType" ? "folder" : "file");
+                            html::nbsp(2);
+                            html::text($item["VissibleName"]);
+                        });
+                    });
                 }
             }
         }
@@ -161,8 +149,24 @@ class rmWebUI {
      */
     protected function list() {
         if($this->data->tree == null) {
-            $api = $this->initAPI();
-            
+            try {
+                $api = $this->initAPI();
+            } catch(\Exception $e) {
+                // cloud API error
+                html::DIV(array("class" => "row"), function() {
+                    html::DIV(array("class" => "col h1"), self::NAME . " " . self::VERSION);
+                });
+                $this->writeToDebugDiv("Unable to connect to the cloud!");
+                html::DIV(array("class" => "alert alert-danger", "role" => "alert"), function() use ($e) {
+                    html::P([], function() {
+                        html::text("Unable to connect to the cloud! You may try to ");
+                            html::A(array("href" => "?unregister"), "clear the access token");
+                            html::text(" and register the application again.");
+                        });
+                    html::P([], $e->getMessage());
+                });
+                return;
+            }
             $this->writeToDebugDiv("Retrieve file list from the reMarkable Cloud...");
             $fs = new RemarkableFS($api);
             $this->data->tree = $fs->getTree();
@@ -170,19 +174,37 @@ class rmWebUI {
 
         [$currentPath,$currentItem] = $this->findItem($this->data->collection);
 
-        ?>
-        <div class="row"><div class="col h1"><?php echo $currentPath; ?></div><div class="col col-sm-1 d-flex align-items-center justify-content-end"><a href="?collection=<?php echo $this->data->collection ;?>&refresh"><img src="svg/refresh.svg"/></a></div></div>
-        <div class="row">                                                       
-        <table class="table table-hover"><tbody><?php
-                                                             
-        if($this->data->collection != "") {
-            ?><tr><td <?php echo $this->falseLink("?collection=".$currentItem['Parent']) ?>><img src="svg/folder.svg"/>&nbsp;&nbsp;..</td></tr><?php
-        }
-        $this->listItemsOfType("CollectionType");
-        $this->listItemsOfType("DocumentType");
+        // write title line (collection + refresh button)
+        html::DIV(array("class" => "row"), function() use ($currentPath) {
+            html::DIV(array("class" => "col h1"), $currentPath);
+            html::DIV(array("class" => "col col-sm-1 d-flex align-items-center justify-content-end"), function() {
+                html::A(array("href" => "?collection=" . $this->data->collection . "&refresh"), function() {
+                    html::icon("refresh");
+                });
+            });
+        });
 
-        ?></tbody></table></div>
-        <?php
+        // write table
+        html::DIV(array("class" => "row"), function() use ($currentItem) {
+            html::TABLE(array("class" => "table table-hover"), function() use ($currentItem) {
+                html::TBODY([], function() use ($currentItem) {
+                    // Parent collection when applicable
+                    if($this->data->collection != "") {
+                        html::TR([], function() use ($currentItem) {
+                            html::TD(html::asLink("?collection=".$currentItem['Parent']), function() {
+                                html::icon("folder");
+                                html::nbsp(2);
+                                html::text("..");
+                            });
+                        });
+                    }
+                    // Collections
+                    $this->listItemsOfType("CollectionType");
+                    // Documents
+                    $this->listItemsOfType("DocumentType");
+                });
+            });
+        });
     }
 
     /*****************************************/
@@ -195,22 +217,44 @@ class rmWebUI {
      * @param error Exception if the last attempt failed
      */
     protected function register($error) {
-        ?><div class="row"><div class="col h1"><?php echo self::NAME." ".self::VERSION ?></div></div><?php
+        // title
+        html::DIV(array("class" => "row"), function() {
+            html::DIV(array("class" => "col h1"), self::NAME . " " . self::VERSION);
+        });
+        // error banner
         if($error) {
-            ?><div class="alert alert-danger" role="alert">The application could not be registered: <?php echo $error->getMessage(); ?></div><?php
-        } 
-        ?><div class="row"><div class="col"><p>The application is not yet registered. Login to <a href="https://my.remarkable.com" target="_blank">the reMarkable&reg; cloud</a>, retrieve a one-time code from <a href="https://my.remarkable.com/device/desktop/connect" target="_blank">this address</a> (the code is valid for 5 minutes) and enter the code below:</p></div><div>
-        <div class="row g-3 align-items-center">
-          <div class="col-auto">
-            <label for="code" class="col-form-label">One-time code</label>
-          </div>
-          <div class="col-auto">
-            <input type="text" id="code" class="form-control">
-          </div>
-          <div class="col-auto">
-            <button type="submit" class="btn btn-primary" onclick="window.location.href='?code='+document.getElementById('code').value;">Register</button>
-          </div>
-        </div><?php
+            html::DIV(array("class" => "alert alert-danger", "role" => "alert"), "The application could not be registered: " . $error->getMessage());
+        }
+        // explanation text
+        html::DIV(array("class" => "row"), function() {
+            html::DIV(array("class" => "col"), function() {
+                html::P([], function() {
+                    html::text("The application is not yet registered. Login to ");
+                    html::A(array("href" => "https://my.remarkable.com", "target" => "_blank"), function() {
+                        html::text("the reMarkable");
+                        echo("&reg;");
+                        html::text("cloud");
+                    });
+                    html::text(", retrieve a one-time code from ");
+                    html::A(array("href" => "https://my.remarkable.com/device/desktop/connect", "target"=>"_blank"), "this address");
+                    html::text(" (the code is valid for 5 minutes) and enter the code below:");
+                });
+            });
+        });
+        // form
+        html::DIV(array("class" => "row g-3 align-items-center"), function() {
+            html::DIV(array("class" => "col-auto"), function() {
+                html::LABEL(array("for" => "code", "class" => "col-form-label"), "One-time code");
+            });
+            html::DIV(array("class" => "col-auto"), function() {
+                html::INPUT(array("type" => "text", "id" => "code", "class" => "form-control"), null);
+            });
+            html::DIV(array("class" => "col-auto"), function() {
+                html::BUTTON(array("type" => "submit", "class" => "btn btn-primary",
+                                   "onclick" => "window.location.href='?code='+document.getElementById('code').value;"),
+                             "Register");
+            });
+        });
     }
     
     /*****************************************/
@@ -258,43 +302,52 @@ class rmWebUI {
         if($this->data->token != "" && $this->data->download != "") {
             $this->download();
         } else {
-            ?><html>
-                <head>
-                <meta charset="utf-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1">
-
-                <link href="css/bootstrap.min.css" rel="stylesheet">
-
-                </head>
-                <body>
-                <div class="container-fluid">
-                <?php
-            
-                if($this->mode != "prod") {
-                    ?><div class="row bg-warning"><div class="col text-center" id="debug-div">Debug mode enabled.<br/></div></div><?php
-                }
-            ?><?php
-                if($this->data->token == "" && $this->data->code == "") {
-                    $this->register(null);
-                } else {
-                    if($this->data->token == "") {
-                        try {
-                            $api = new RemarkableAPI(null); // todo implement logger
-                            $this->writeToDebugDiv("Register application...");
-                            $this->data->token = $api->register($this->data->code);
-                            $this->writeToDebugDiv("Application registered.");
-                        } catch(\Exception $e) {
-                            $this->writeToDebugDiv("Registration failed!");
-                            $this->register($e);
+            html::openDocument();
+            html::HTML(array("xmlns" => "http://www.w3.org/1999/xhtml", "lang" => "en"), function() {
+                html::HEAD([], function() {
+                    html::META(array("charset" => "utf-8"), null);
+                    html::META(array("name" => "viewport", "content" => "width=device-width, initial-scale=1"), null);
+                    html::LINK(array("href" => "css/bootstrap.min.css", "rel" => "stylesheet"), null);
+                });
+                html::BODY([], function() {
+                    html::DIV(array("class" => "container-fluid"), function() {
+                        // debug banner
+                        if($this->mode != "prod") {
+                            html::DIV(array("class" => "row bg-warning"), function () {
+                                html::DIV(array("class" => "col text-center", "id" => "debug-div"), function() {
+                                    html::text("Debug mode enabled.");
+                                    html::br();
+                                });
+                            });
                         }
-                    }
-                    if($this->data->token != "") {
-                        $this->list();
-                    }
-                }
-            ?></div>
-            <div class="row bg-dark fixed-bottom text-white"><div class="col text-end"><?php echo self::NAME." ".self::VERSION; ?></div></div>
-            </body></html><?php
+                        // page content
+                        if($this->data->token == "" && $this->data->code == "") {
+                            // Register form
+                            $this->register(null);
+                        } else {
+                            // try to register app and reshow form on failure
+                            if($this->data->token == "") {
+                                try {
+                                    $api = new RemarkableAPI(null); // todo implement logger
+                                    $this->writeToDebugDiv("Register application...");
+                                    $this->data->token = $api->register($this->data->code);
+                                    $this->writeToDebugDiv("Application registered.");
+                                } catch(\Exception $e) {
+                                    $this->writeToDebugDiv("Registration failed!");
+                                    $this->register($e);
+                                }
+                            }
+                            // list files
+                            if($this->data->token != "") {
+                                $this->list();
+                            }
+                        }
+                    });
+                    html::DIV(array("class" => "row bg-dark fixed-bottom text-white"), function () {
+                        html::DIV(array("class" => "col text-end"), self::NAME.' '.self::VERSION);
+                    });
+                });
+            });
         }                                                       
     }
 }

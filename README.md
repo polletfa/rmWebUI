@@ -23,7 +23,7 @@ Make sure the file `config/auth.token` is writable by the webserver.
 
 # Register application
 
-On the first run, you will be asked to register the application. This is required to access your files on the reMarkable&reg; cloud. Once the application is registered, you will never be asked again. If you want to register anew, clear the content of the file `config/auth.token`.
+On the first run, you will be asked to register the application. This is required to access your files on the reMarkable&reg; cloud. Once the application is registered, you will never be asked again (unless the token becomes invalid and/or the application cannot connect to the cloud. In this case, the application will let you clear the token). If you want to register anew, clear the content of the file `config/auth.token`.
 
 # Important security warning
 
