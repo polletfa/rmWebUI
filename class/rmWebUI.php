@@ -14,7 +14,7 @@
  * - Use a logger for the RemarkableAPI class
  * - Better error handling?
  * - Implement upload?
- * - Internationalization
+ * - Internationalization/Translation?
  */
 
 namespace digitalis\rmWebUI;
@@ -42,7 +42,7 @@ class rmWebUI {
     /**
      * Version
      */
-    const VERSION = "0.2.0";
+    const VERSION = "0.2.0-dev";
     
     /**
      * Data from URL, session and configuration
@@ -160,9 +160,9 @@ class rmWebUI {
                 html::DIV(array("class" => "alert alert-danger", "role" => "alert"), function() use ($e) {
                     html::P([], function() {
                         html::text("Unable to connect to the cloud! You may try to ");
-                            html::A(array("href" => "?unregister"), "clear the access token");
-                            html::text(" and register the application again.");
-                        });
+                        html::A(array("href" => "?unregister"), "clear the access token");
+                        html::text(" and register the application again.");
+                    });
                     html::P([], $e->getMessage());
                 });
                 return;

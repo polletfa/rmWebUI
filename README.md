@@ -21,20 +21,13 @@ You can then copy the content of the `dist/` folder to your webserver. You will 
 
 Make sure the file `config/auth.token` is writable by the webserver.
 
-# Register application
-
-On the first run, you will be asked to register the application. This is required to access your files on the reMarkable&reg; cloud. Once the application is registered, you will never be asked again (unless the token becomes invalid and/or the application cannot connect to the cloud. In this case, the application will let you clear the token). If you want to register anew, clear the content of the file `config/auth.token`.
-
 # Important security warning
 
 rmWebUI doesn't implement any kind of authentication. Configure your webserver as needed to prevent unauthorized access, for example by using a `.htaccess` file. Make sure that the file `config/auth.token` is protected as well, since its content is all is needed to connect to your reMarkable&reg; cloud account.
 
-# Todo
+# Register application
 
-- Cache generated PDFs for quicker access
-- Use a logger for the RemarkableAPI class
-- Better error handling?
-- Implement upload?
+On the first run, you will be asked to register the application. This is required to access your files on the reMarkable&reg; cloud. Once the application is registered, you will never be asked again (unless the token becomes invalid and/or the application cannot connect to the cloud. In this case, the application will let you clear the token). If you want to register anew, clear the content of the file `config/auth.token`.
 
 # License
 
