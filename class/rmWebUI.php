@@ -171,7 +171,7 @@ class rmWebUI {
         [$currentPath,$currentItem] = $this->findItem($this->data->collection);
 
         ?>
-        <div class="row"><div class="col h1"><?php echo $currentPath; ?></div><div class="col d-flex align-items-center justify-content-end"><a href="?collection=<?php echo $this->data->collection ;?>&refresh"><img src="svg/refresh.svg"/></a></div></div>
+        <div class="row"><div class="col h1"><?php echo $currentPath; ?></div><div class="col col-sm-1 d-flex align-items-center justify-content-end"><a href="?collection=<?php echo $this->data->collection ;?>&refresh"><img src="svg/refresh.svg"/></a></div></div>
         <div class="row">                                                       
         <table class="table table-hover"><tbody><?php
                                                              
