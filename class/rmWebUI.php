@@ -11,9 +11,11 @@
 /*
  * TODO:
  * - Cache generated PDFs for quicker access
+ * - favicon
  * - Use a logger for the RemarkableAPI class
- * - Implement upload?
- * - Nice to have: Internationalization/Translation
+ * - Nice to have:
+ *   - Implement upload
+ *   - Internationalization/Translation
  */
 
 namespace digitalis\rmWebUI;
@@ -79,8 +81,8 @@ class rmWebUI {
      * @return API object
      */
     protected function initAPI() {
-        $this->writeToDebugDiv("Initialize the reMarkable Cloud API...");
-        $api = new RemarkableAPI(null); // todo implement logger
+        $this->writeToDebugDiv("Initialize the Cloud API...");
+        $api = new RemarkableAPI(null);
         $api->init($this->data->token);
         return $api;
     }
@@ -110,9 +112,60 @@ class rmWebUI {
     protected function writeToDebugDiv($text) {
         if($this->mode != "prod") {
             html::SCRIPT([], function() use ($text) {
-                echo("document.getElementById('debug-div').innerHTML += '".str_replace("'", "\\'", $text)."<br/>';");
+                echo("document.getElementById('debug-div').innerHTML += '".str_replace("\n", "<br/>", str_replace("'", "\\'", $text))."<br/>';");
             });
         }
+    }
+
+    /**
+     * Set title
+     *
+     * @param text Title text
+     * @param refresh Show refresh button if true
+     */
+    protected function setTitle($text, $refresh) {
+        html::SCRIPT([], function() use($text, $refresh) {
+            echo("document.getElementById('title-bar').innerHTML = '".str_replace("'", "\\'", $text)."';");
+            if($refresh == true) {
+                echo("if(document.getElementById('refresh-button').classList.contains('d-none')) document.getElementById('refresh-button').classList.remove('d-none');");
+            } else {
+                echo("if(!document.getElementById('refresh-button').classList.contains('d-none')) document.getElementById('refresh-button').classList.add('d-none');");
+            }
+        });            
+    }
+
+    /**
+     * Save error in session and reload
+     *
+     * @param error Error string
+     * @param exception Exception or message for debugging
+     */
+    protected function setErrorAndReload($error, $exception) {
+        $this->data->lastException = $exception instanceof \Exception ? $exception->getMessage() : $exception;
+        $this->data->lastError = $error;
+        header('Location: ?collection='.$this->data->collection);
+    }
+
+    /**
+     * Set error
+     *
+     * @param error Error string
+     * @param exception Exception or message for debugging
+     */
+    protected function setError($error, $exception) {
+        html::SCRIPT([], function() use ($error, $exception) {
+            echo("document.getElementById('error-banner').innerHTML = '".str_replace("'", "\\'", $error)."';");
+            echo("document.getElementById('error-banner').classList.remove('d-none');");
+        });
+        $this->writeToDebugDiv($exception instanceof \Exception ? $exception->getMessage() : $exception);
+    }
+
+    /**
+     * Clear error from session
+     */
+    protected function clearError() {
+        $this->data->lastError = null;
+        $this->data->lastException = null;
     }
 
     /*****************************************/
@@ -131,8 +184,8 @@ class rmWebUI {
                 if($item['Parent'] == $this->data->collection && $item['Type'] == $type) {
                     // write line with icon + item name
                     html::TR([], function() use ($type,$item) {
-                        html::TD(html::asLink("?" . ($type == "CollectionType" ? "collection" : "download") . "=" . $item["ID"]),
-                        function() use ($type,$item) {
+                        $url = $type == "CollectionType" ? "?collection=".$item["ID"] : "?collection=".$this->data->collection."&download=".$item["ID"];
+                        html::TD(html::asLink($url), function() use ($type,$item) {
                             html::icon($type == "CollectionType" ? "folder" : "file");
                             html::nbsp(2);
                             html::text($item["VissibleName"]);
@@ -147,53 +200,10 @@ class rmWebUI {
      * Generate the "list" page
      */
     protected function list() {
-        if($this->data->tree == null) {
-            try {
-                $api = $this->initAPI();
-            } catch(\Exception $e) {
-                // cloud API error
-                html::DIV(array("class" => "row"), function() {
-                    html::DIV(array("class" => "col h1"), self::NAME . " " . self::VERSION);
-                });
-                $this->writeToDebugDiv("Unable to connect to the cloud!");
-                html::DIV(array("class" => "alert alert-danger", "role" => "alert"), function() use ($e) {
-                    html::P([], function() {
-                        html::text("Unable to connect to the cloud! You may try to ");
-                        html::A(array("href" => "?unregister"), "clear the access token");
-                        html::text(" and register the application again.");
-                    });
-                    html::P([], $e->getMessage());
-                });
-                return;
-            }
-            $this->writeToDebugDiv("Retrieve file list from the reMarkable Cloud...");
-            $fs = new RemarkableFS($api);
-            $this->data->tree = $fs->getTree();
-        }
-
         [$currentPath,$currentItem] = $this->findItem($this->data->collection);
 
         // write title line (collection + refresh button)
-        html::DIV(array("class" => "row"), function() use ($currentPath) {
-            html::DIV(array("class" => "col h1"), $currentPath);
-            html::DIV(array("class" => "col col-sm-1 d-flex align-items-center justify-content-end"), function() {
-                html::A(array("href" => "?collection=" . $this->data->collection . "&refresh"), function() {
-                    html::icon("refresh");
-                });
-            });
-        });
-
-        // error banner
-        if($this->data->downloaderror == "cloud") {
-            html::DIV(array("class" => "alert alert-danger", "role" => "alert"), function() {
-                html::text("Unable to retrieve the file from the cloud. You may try to ");
-                html::A(array("href" => "?refresh"), "refresh");
-                html::text(".");
-            });
-        }
-        else if($this->data->downloaderror == "pdf") {
-            html::DIV(array("class" => "alert alert-danger", "role" => "alert"), "Unable to convert the file to PDF.");
-        }
+        $this->setTitle($currentPath, true);
 
         // write table
         html::DIV(array("class" => "row"), function() use ($currentItem) {
@@ -224,18 +234,8 @@ class rmWebUI {
 
     /**
      * Register application
-     *
-     * @param error Exception if the last attempt failed
      */
-    protected function register($error) {
-        // title
-        html::DIV(array("class" => "row"), function() {
-            html::DIV(array("class" => "col h1"), self::NAME . " " . self::VERSION);
-        });
-        // error banner
-        if($error) {
-            html::DIV(array("class" => "alert alert-danger", "role" => "alert"), "The application could not be registered: " . $error->getMessage());
-        }
+    protected function register() {
         // explanation text
         html::DIV(array("class" => "row"), function() {
             html::DIV(array("class" => "col"), function() {
@@ -285,9 +285,14 @@ class rmWebUI {
         // Get file
         try {
             $api = $this->initAPI();
+        } catch(\Exception $e) {
+            $this->setErrorAndReload("Unable to connect to the cloud! You may try to <a href=\"?unregister\">clear the access token</a> and register the application again", $e);
+            return;
+        }
+        try {
             $filecontent = $api->downloadDocument($this->data->download)->getBody();
         } catch(\Exception $e) {
-            header('Location: ?downloaderror=cloud');
+            $this->setErrorAndReload("Unable to download the file from the cloud! You may try to <a href=\"?refresh&collection=".$this->data->collection."\">refresh</a>.", $e);
             return;
         }
         
@@ -299,7 +304,7 @@ class rmWebUI {
             $output = null;
             exec($this->rmrl." ".$tmpfile . " 2>&1", $output, $resultcode);
             if($resultcode != 0) {
-                header('Location: ?downloaderror=pdf');
+                $this->setErrorAndReload("Unable to convert the file to PDF.", implode("\n", $output));
             } else {
                 header('Content-Type:application/pdf');
                 header('Content-Disposition:attachment;filename='.$filename.'.pdf');
@@ -342,35 +347,76 @@ class rmWebUI {
                                 });
                             });
                         }
+                        
+                        // title
+                        html::DIV(array("class" => "row"), function() {
+                            html::DIV(array("id" => "title-bar", "class" => "col h1"), self::NAME." ".self::VERSION);
+                            html::DIV(array("id" => "refresh-button", "class" => "col col-sm-1 d-flex align-items-center justify-content-end d-none"), function() {
+                                html::A(array("href" => "?collection=" . $this->data->collection . "&refresh"), function() {
+                                    html::icon("refresh");
+                                });
+                            });
+                        });
+
+                        // error banner
+                        html::DIV(array("id" => "error-banner", "class" => "alert alert-danger d-none", "role" => "alert"), "");
+                        if($this->data->lastError) {
+                            $this->setError($this->data->lastError, $this->data->lastException);
+                            $this->clearError();
+                        }
+                        
                         // page content
                         if($this->data->token == "" && $this->data->code == "") {
                             // Register form
-                            $this->register(null);
+                            $this->register();
                         } else {
                             // try to register app and reshow form on failure
                             if($this->data->token == "") {
                                 try {
-                                    $api = new RemarkableAPI(null); // todo implement logger
+                                    $api = new RemarkableAPI(null);
                                     $this->writeToDebugDiv("Register application...");
                                     $this->data->token = $api->register($this->data->code);
                                     $this->writeToDebugDiv("Application registered.");
                                 } catch(\Exception $e) {
-                                    $this->writeToDebugDiv("Registration failed!");
-                                    $this->register($e);
+                                    $this->register();
+                                    $this->setError("The application could not be registered.", $e);
                                 }
                             }
-                            // list files
                             if($this->data->token != "") {
-                                $this->list();
+                                // retrieve file list
+                                if($this->data->tree == null) {
+                                    $api = null;
+                                    try {
+                                        $api = $this->initAPI();
+                                    } catch(\Exception $e) {
+                                        // cloud API error
+                                        $this->setError("Unable to connect to the cloud! You may try to <a href=\"?unregister\">clear the access token</a> and register the application again", $e);
+                                    }
+                                    if($api) {
+                                        try {
+                                            $this->writeToDebugDiv("Retrieve file list from the cloud...");
+                                            $fs = new RemarkableFS($api);
+                                            $this->data->tree = $fs->getTree();
+                                        } catch(\Exception $e) {
+                                            $this->setError("Unable to retrieve the file list from the cloud!", $e);
+                                        }
+                                    }
+                                }
+                                
+                                // list files
+                                if($this->data->tree != null) {
+                                    $this->list();
+                                }
                             }
                         }
                     });
+                    // footer
                     html::DIV(array("class" => "row bg-dark fixed-bottom text-white"), function () {
                         html::DIV(array("class" => "col text-end"), self::NAME.' '.self::VERSION);
                     });
                 });
             });
-        }                                                       
+        }
     }
 }
 
