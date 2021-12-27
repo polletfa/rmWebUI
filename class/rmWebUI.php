@@ -8,15 +8,6 @@
  *
  *****************************************************/
 
-/*
- * TODO:
- * - favicon
- * - Use a logger for the RemarkableAPI class
- * - Nice to have:
- *   - Implement upload
- *   - Internationalization/Translation
- */
-
 namespace digitalis\rmWebUI;
 
 use splitbrain\RemarkableAPI\RemarkableAPI;
@@ -45,7 +36,7 @@ class rmWebUI {
     /**
      * Version
      */
-    const VERSION = "0.3.0";
+    const VERSION = "0.4.0";
     
     /**
      * Data from URL, session and configuration

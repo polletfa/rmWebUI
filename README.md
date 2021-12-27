@@ -25,7 +25,7 @@ The file `config/config.php` contains a few configuration options:
 
 - `MODE`: Either `debug` or `prod`. In debug mode, PHP error messages will be activated and a few other messages will be displayed.
 - `CACHE`: If true, files will be cached and only downloaded/converted as needed. This will allow faster access but will use more space on your webserver.
-- `RMRL`: By default, notebooks are downloaded as a ZIP file containing the metadata and lines files in the proprietary format of reMarkable&reg;. rmWebUI is also capable of converting the files to PDF by using [rmrl](https://github.com/rschroll/rmrl). To activate this feature, use this option to specify the command for running rmrl (typically it should be `python -m rmrl` or `python3 -m rmrl` but it may differ depending on your system configuration).
+- `RMRL`: By default, notebooks are downloaded as a ZIP file containing the metadata and lines files in the proprietary format of reMarkable&reg;. rmWebUI is also capable of converting the files to PDF by using [rmrl](https://github.com/rschroll/rmrl). To activate this feature, use this option to specify the command for running rmrl (typically it should be `python -m rmrl` or `python3 -m rmrl` but it may differ depending on your system configuration). Be aware that RMRL has limitations and may not work properly with some documents.
 
 ## Prepare the webserver
 
