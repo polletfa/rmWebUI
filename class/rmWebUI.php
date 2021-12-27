@@ -342,6 +342,7 @@ class rmWebUI {
         $resultcode = null;
         $output = null;
         exec(Config::RMRL." ".$tmpfile . " 2>&1", $output, $resultcode);
+        unlink($tmpfile);
         
         if($resultcode !== 0) {
             $this->setErrorAndReload("Unable to convert the file to PDF.", implode("\n", $output));
