@@ -18,10 +18,19 @@ namespace digitalis\rmWebUI;
  *
  * Available parameters:
  * - collection, read-only, from URL
+ *   ID of the current collection - Used when showing file list
  * - download, read-only, from URL
+ *   ID of the document to download - Used when downloading a document
  * - code, read-only, from URL
+ *   One-time registration code - Used when registering the application
  * - tree, read-write, from session data
+ *   File list - Used when showing file list
+ * - lastError, read-write, from session data
+ *   Error message - Used for errors during download
+ * - lastException, read-write, from session data
+ *   Exception message - Used for errors during download (for debugging)
  * - token, read-write, from file config/auth.token
+ *   Access token - Used when showing file list or downloading a document
  *
  * If the URL contains the parameter "refresh", the session is cleared.
  * If the URL contains the parameter "unregister", the authentication token is cleared.
@@ -70,10 +79,12 @@ class Data {
         if($name == "collection") return $this->getFrom($_GET, "collection", "");
         else if($name == "download") return $this->getFrom($_GET, "download", "");
         else if($name == "code") return $this->getFrom($_GET, "code", "");
-
+        
         // Session data
         else if($name == "tree") return $this->getFrom($_SESSION, "tree", null);
-
+        else if($name == "lastError") return $this->getFrom($_SESSION, "lastError", null);
+        else if($name == "lastException") return $this->getFrom($_SESSION, "lastException", null);
+        
         // Configuration
         else if($name == "token") return file_exists(self::TOKEN_FILE) ? file_get_contents(self::TOKEN_FILE) : "";
 
@@ -93,10 +104,12 @@ class Data {
         if($name == "collection") throw new \Exception("collection is readonly");
         else if($name == "download") throw new \Exception("download is readonly");
         else if($name == "code") throw new \Exception("code is readonly");
-
+        
         // Session data
         else if($name == "tree") $_SESSION["tree"] = $value;
-
+        else if($name == "lastError") $_SESSION["lastError"] = $value;
+        else if($name == "lastException") $_SESSION["lastException"] = $value;
+        
         // Configuration
         else if($name == "token") file_put_contents(self::TOKEN_FILE, $value);
 

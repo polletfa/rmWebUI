@@ -10,11 +10,11 @@
 
 /*
  * TODO:
- * - Cache generated PDFs for quicker access
+ * - favicon
  * - Use a logger for the RemarkableAPI class
- * - Better error handling?
- * - Implement upload?
- * - Internationalization
+ * - Nice to have:
+ *   - Implement upload
+ *   - Internationalization/Translation
  */
 
 namespace digitalis\rmWebUI;
@@ -23,6 +23,9 @@ use splitbrain\RemarkableAPI\RemarkableAPI;
 use splitbrain\RemarkableAPI\RemarkableFS;
 
 use Psr\Log\NullLogger;
+
+require_once("config/config.php");
+use digitalis\rmWebUI\Config;
 
 require_once("Data.php");
 use digitalis\rmWebUI\Data;
@@ -42,30 +45,17 @@ class rmWebUI {
     /**
      * Version
      */
-    const VERSION = "0.2.0";
+    const VERSION = "0.3.0";
     
     /**
      * Data from URL, session and configuration
      */
     protected $data;
-    /**
-     * Mode (debug or prod)
-     */
-    protected $mode;
-    /**
-     * rmrl command
-     */
-    protected $rmrl;
     
     /**
      * Constructor
-     *
-     * @param mode Mode (debug or prod)
-     * @param rmrl Rmrl command
      */
-    function __construct($mode, $rmrl) {
-        $this->mode = $mode;
-        $this->rmrl = $rmrl;
+    function __construct() {
         $this->data = new Data();
     }
 
@@ -77,11 +67,14 @@ class rmWebUI {
      * Initialize API
      * The token must already be loaded.
      *
+     * @param debug True to activate debug messages
      * @return API object
      */
-    protected function initAPI() {
-        $this->writeToDebugDiv("Initialize the reMarkable Cloud API...");
-        $api = new RemarkableAPI(null); // todo implement logger
+    protected function initAPI($debug) {
+        if($debug) {
+            $this->writeToDebugDiv("Initialize the Cloud API...");
+        }
+        $api = new RemarkableAPI(null);
         $api->init($this->data->token);
         return $api;
     }
@@ -95,7 +88,7 @@ class rmWebUI {
     protected function findItem($id) {
         foreach($this->data->tree as $path => $items) {
             foreach($items as $item) {
-                if($item['ID'] == $id) {
+                if($item['ID'] === $id) {
                     return [$path, $item];
                 }
             }
@@ -109,11 +102,62 @@ class rmWebUI {
      * @param text Text to add
      */
     protected function writeToDebugDiv($text) {
-        if($this->mode != "prod") {
+        if(Config::MODE !== "prod") {
             html::SCRIPT([], function() use ($text) {
-                echo("document.getElementById('debug-div').innerHTML += '".str_replace("'", "\\'", $text)."<br/>';");
+                echo("document.getElementById('debug-div').innerHTML += '".str_replace("\n", "<br/>", str_replace("'", "\\'", $text))."<br/>';");
             });
         }
+    }
+
+    /**
+     * Set title
+     *
+     * @param text Title text
+     * @param refresh Show refresh button if true
+     */
+    protected function setTitle($text, $refresh) {
+        html::SCRIPT([], function() use($text, $refresh) {
+            echo("document.getElementById('title-bar').innerHTML = '".str_replace("'", "\\'", $text)."';");
+            if($refresh === true) {
+                echo("if(document.getElementById('refresh-button').classList.contains('d-none')) document.getElementById('refresh-button').classList.remove('d-none');");
+            } else {
+                echo("if(!document.getElementById('refresh-button').classList.contains('d-none')) document.getElementById('refresh-button').classList.add('d-none');");
+            }
+        });            
+    }
+
+    /**
+     * Save error in session and reload
+     *
+     * @param error Error string
+     * @param exception Exception or message for debugging
+     */
+    protected function setErrorAndReload($error, $exception) {
+        $this->data->lastException = $exception instanceof \Exception ? $exception->getMessage() : $exception;
+        $this->data->lastError = $error;
+        header('Location: ?collection='.$this->data->collection);
+    }
+
+    /**
+     * Set error
+     *
+     * @param error Error string
+     * @param exception Exception or message for debugging
+     */
+    protected function setError($error, $exception) {
+        html::SCRIPT([], function() use ($error, $exception) {
+            echo("document.getElementById('error-banner').innerHTML = '".str_replace("'", "\\'", $error)."';");
+            echo("document.getElementById('error-banner').classList.remove('d-none');");
+        });
+        $this->writeToDebugDiv($exception instanceof \Exception ? $exception->getMessage() : $exception);
+    }
+
+    /**
+     * Clear error from session
+     */
+    protected function clearError() {
+        $this->data->lastError = null;
+        $this->data->lastException = null;
     }
 
     /*****************************************/
@@ -129,12 +173,12 @@ class rmWebUI {
     protected function listItemsOfType($type) {
         foreach($this->data->tree as $path => $items) {
             foreach($items as $item) {
-                if($item['Parent'] == $this->data->collection && $item['Type'] == $type) {
+                if($item['Parent'] === $this->data->collection && $item['Type'] === $type) {
                     // write line with icon + item name
                     html::TR([], function() use ($type,$item) {
-                        html::TD(html::asLink("?" . ($type == "CollectionType" ? "collection" : "download") . "=" . $item["ID"]),
-                        function() use ($type,$item) {
-                            html::icon($type == "CollectionType" ? "folder" : "file");
+                        $url = $type === "CollectionType" ? "?collection=".$item["ID"] : "?collection=".$this->data->collection."&download=".$item["ID"];
+                        html::TD(html::asLink($url), function() use ($type,$item) {
+                            html::icon($type === "CollectionType" ? "folder" : "file");
                             html::nbsp(2);
                             html::text($item["VissibleName"]);
                         });
@@ -148,48 +192,17 @@ class rmWebUI {
      * Generate the "list" page
      */
     protected function list() {
-        if($this->data->tree == null) {
-            try {
-                $api = $this->initAPI();
-            } catch(\Exception $e) {
-                // cloud API error
-                html::DIV(array("class" => "row"), function() {
-                    html::DIV(array("class" => "col h1"), self::NAME . " " . self::VERSION);
-                });
-                $this->writeToDebugDiv("Unable to connect to the cloud!");
-                html::DIV(array("class" => "alert alert-danger", "role" => "alert"), function() use ($e) {
-                    html::P([], function() {
-                        html::text("Unable to connect to the cloud! You may try to ");
-                            html::A(array("href" => "?unregister"), "clear the access token");
-                            html::text(" and register the application again.");
-                        });
-                    html::P([], $e->getMessage());
-                });
-                return;
-            }
-            $this->writeToDebugDiv("Retrieve file list from the reMarkable Cloud...");
-            $fs = new RemarkableFS($api);
-            $this->data->tree = $fs->getTree();
-        }
-
         [$currentPath,$currentItem] = $this->findItem($this->data->collection);
 
         // write title line (collection + refresh button)
-        html::DIV(array("class" => "row"), function() use ($currentPath) {
-            html::DIV(array("class" => "col h1"), $currentPath);
-            html::DIV(array("class" => "col col-sm-1 d-flex align-items-center justify-content-end"), function() {
-                html::A(array("href" => "?collection=" . $this->data->collection . "&refresh"), function() {
-                    html::icon("refresh");
-                });
-            });
-        });
+        $this->setTitle($currentPath, true);
 
         // write table
         html::DIV(array("class" => "row"), function() use ($currentItem) {
             html::TABLE(array("class" => "table table-hover"), function() use ($currentItem) {
                 html::TBODY([], function() use ($currentItem) {
                     // Parent collection when applicable
-                    if($this->data->collection != "") {
+                    if($this->data->collection !== "") {
                         html::TR([], function() use ($currentItem) {
                             html::TD(html::asLink("?collection=".$currentItem['Parent']), function() {
                                 html::icon("folder");
@@ -213,18 +226,8 @@ class rmWebUI {
 
     /**
      * Register application
-     *
-     * @param error Exception if the last attempt failed
      */
-    protected function register($error) {
-        // title
-        html::DIV(array("class" => "row"), function() {
-            html::DIV(array("class" => "col h1"), self::NAME . " " . self::VERSION);
-        });
-        // error banner
-        if($error) {
-            html::DIV(array("class" => "alert alert-danger", "role" => "alert"), "The application could not be registered: " . $error->getMessage());
-        }
+    protected function register() {
         // explanation text
         html::DIV(array("class" => "row"), function() {
             html::DIV(array("class" => "col"), function() {
@@ -258,36 +261,156 @@ class rmWebUI {
     }
     
     /*****************************************/
+    /* Cache */
+    /*****************************************/
+
+    /**
+     * Cleanup cache
+     */
+    protected function cleanupCache() {
+        if(Config::CACHE === true) {
+            // get list of files in cache
+            $cache = scandir("cache");
+
+            // get list of cached file names for all documents
+            $documents = array();
+            foreach($this->data->tree as $path => $items) {
+                foreach($items as $item) {
+                    if($item["Type"] === "DocumentType") {
+                        array_push($documents, $this->getCachedFileName($item, true));
+                    }
+                }
+            }
+
+            // get list of cached files for which no document has been found
+            $remove = array_diff($cache, $documents);
+
+            // remove files
+            foreach($remove as $file) {
+                if(is_file("cache/".$file)) {
+                    $this->writeToDebugDiv("Remove cached file ".$file);
+                    unlink("cache/".$file);
+                }
+            }
+        }
+    }
+
+    /**
+     * Get cached file name
+     *
+     * @param item Item from the file list
+     * @param filenameOnly Filename only if true, path if false
+     * @return file name
+     */
+    protected function getCachedFileName($item, $filenameOnly = false) {
+        return ($filenameOnly === true ? "" : "cache/") . $item["ID"] . "." . $item["Version"] . "." . (Config::RMRL === null || Config::RMRL === "" ? "zip" : "pdf");
+    }
+    
+    /**
+     * Get cached file
+     *
+     * @param item Item from the file list
+     * @return file content or null
+     */
+    protected function getCachedFile($item) {
+        $cachefilecontent = null;
+        if(Config::CACHE === true) {
+            $cachefile = $this->getCachedFileName($item);
+            if(Config::CACHE === true && file_exists($cachefile)) {
+                $cachefilecontent = file_get_contents($cachefile);
+            }
+        }
+        return $cachefilecontent;
+    }
+
+    /**
+     * Save file to cache
+     *
+     * @param item Item from the file list
+     * @param filecontent File content
+     */
+    protected function cacheFile($item, $filecontent) {
+        if(Config::CACHE === true) {
+            file_put_contents($this->getCachedFileName($item), $filecontent);
+        }
+    }
+    
+    /*****************************************/
     /* Download file */
     /*****************************************/
 
     /**
+     * Convert file to PDF
+     *
+     * @param filecontent ZIP file (content)
+     * @return PDF file (content) or null
+     */
+    protected function convertToPDF($filecontent) {
+        $tmpfile = "/tmp/".$this->data->download.".zip";
+        file_put_contents($tmpfile, $filecontent);
+        $resultcode = null;
+        $output = null;
+        exec(Config::RMRL." ".$tmpfile . " 2>&1", $output, $resultcode);
+        
+        if($resultcode !== 0) {
+            $this->setErrorAndReload("Unable to convert the file to PDF.", implode("\n", $output));
+            return null;
+        } else {
+            return implode("\n", $output);
+        }
+    }
+    
+    /**
      * Download file
      */
     protected function download() {
-        $this->mode = "prod"; // no debug messages while downloading
-
         // get filename
         [$path,$item] = $this->findItem($this->data->download);
         $filename = preg_replace('/[^A-Za-z0-9\-_]/', '', str_replace(' ', '_', $item["VissibleName"]));
 
-        // HTTP header
-        $filetype = $this->rmrl == null || $this->rmrl == "" ? "zip" : "pdf";
-        header('Content-Type:application/' . $filetype);
-        header('Content-Disposition:attachment;filename='.$filename.'.'.$filetype);
-
+        // Check cache
+        $cachefilecontent = $this->getCachedFile($item);
+                       
         // Get file
-        $api = $this->initAPI();
-        $filecontent = $api->downloadDocument($this->data->download)->getBody();
-
-        if($filetype == 'pdf') {
+        if($cachefilecontent === null) {
+            try {
+                $api = $this->initAPI(false); // no debug messages while downloading, regardless of mode
+            } catch(\Exception $e) {
+                $this->setErrorAndReload("Unable to connect to the cloud! You may try to <a href=\"?unregister\">clear the access token</a> and register the application again", $e);
+                return;
+            }
+            try {
+                $filecontent = $api->downloadDocument($this->data->download)->getBody();
+            } catch(\Exception $e) {
+                $this->setErrorAndReload("Unable to download the file from the cloud! You may try to <a href=\"?refresh&collection=".$this->data->collection."\">refresh</a>.", $e);
+                return;
+            }
+        }
+        
+        if(Config::RMRL !== null && Config::RMRL !== "") {
             // Convert with rmrl
-            $tmpfile = "/tmp/".$this->data->download.".zip";
-            file_put_contents($tmpfile, $filecontent);
-            passthru($this->rmrl." ".$tmpfile . " 2>&1");
-        } else {
-            // write original ZIP file (no conversion to PDF)
-            echo $filecontent;
+            if($cachefilecontent === null) {
+                $cachefilecontent = $this->convertToPDF($filecontent);
+                if($cachefilecontent !== null) {
+                    // write to cache
+                    $this->cacheFile($item, $cachefilecontent);
+                }
+            }
+            if($cachefilecontent !== null) {
+                header('Content-Type:application/pdf');
+                header('Content-Disposition:attachment;filename='.$filename.'.pdf');
+                echo($cachefilecontent);
+            }
+       } else {
+            if($cachefilecontent === null) {
+                // write to cache
+                $cachefilecontent = $filecontent;
+                $this->cacheFile($item, $cachefilecontent);
+            }                
+            // send original ZIP file (no conversion to PDF)
+            header('Content-Type:application/zip');
+            header('Content-Disposition:attachment;filename='.$filename.'.zip');
+            echo $cachefilecontent;
         }
     }
 
@@ -299,7 +422,7 @@ class rmWebUI {
      * Run the WebUI
      */
     public function run() {
-        if($this->data->token != "" && $this->data->download != "") {
+        if($this->data->token !== "" && $this->data->download !== "") {
             $this->download();
         } else {
             html::openDocument();
@@ -312,7 +435,7 @@ class rmWebUI {
                 html::BODY([], function() {
                     html::DIV(array("class" => "container-fluid"), function() {
                         // debug banner
-                        if($this->mode != "prod") {
+                        if(Config::MODE !== "prod") {
                             html::DIV(array("class" => "row bg-warning"), function () {
                                 html::DIV(array("class" => "col text-center", "id" => "debug-div"), function() {
                                     html::text("Debug mode enabled.");
@@ -320,35 +443,77 @@ class rmWebUI {
                                 });
                             });
                         }
+                        
+                        // title
+                        html::DIV(array("class" => "row"), function() {
+                            html::DIV(array("id" => "title-bar", "class" => "col h1"), self::NAME." ".self::VERSION);
+                            html::DIV(array("id" => "refresh-button", "class" => "col col-sm-1 d-flex align-items-center justify-content-end d-none"), function() {
+                                html::A(array("href" => "?collection=" . $this->data->collection . "&refresh"), function() {
+                                    html::icon("refresh");
+                                });
+                            });
+                        });
+
+                        // error banner
+                        html::DIV(array("id" => "error-banner", "class" => "alert alert-danger d-none", "role" => "alert"), "");
+                        if($this->data->lastError) {
+                            $this->setError($this->data->lastError, $this->data->lastException);
+                            $this->clearError();
+                        }
+                        
                         // page content
-                        if($this->data->token == "" && $this->data->code == "") {
+                        if($this->data->token === "" && $this->data->code === "") {
                             // Register form
-                            $this->register(null);
+                            $this->register();
                         } else {
                             // try to register app and reshow form on failure
-                            if($this->data->token == "") {
+                            if($this->data->token === "") {
                                 try {
-                                    $api = new RemarkableAPI(null); // todo implement logger
+                                    $api = new RemarkableAPI(null);
                                     $this->writeToDebugDiv("Register application...");
                                     $this->data->token = $api->register($this->data->code);
                                     $this->writeToDebugDiv("Application registered.");
                                 } catch(\Exception $e) {
-                                    $this->writeToDebugDiv("Registration failed!");
-                                    $this->register($e);
+                                    $this->register();
+                                    $this->setError("The application could not be registered.", $e);
                                 }
                             }
-                            // list files
-                            if($this->data->token != "") {
-                                $this->list();
+                            if($this->data->token !== "") {
+                                // retrieve file list
+                                if($this->data->tree === null) {
+                                    $api = null;
+                                    try {
+                                        $api = $this->initAPI(Config::MODE === "debug");
+                                    } catch(\Exception $e) {
+                                        // cloud API error
+                                        $this->setError("Unable to connect to the cloud! You may try to <a href=\"?unregister\">clear the access token</a> and register the application again", $e);
+                                    }
+                                    if($api) {
+                                        try {
+                                            $this->writeToDebugDiv("Retrieve file list from the cloud...");
+                                            $fs = new RemarkableFS($api);
+                                            $this->data->tree = $fs->getTree();
+                                            $this->cleanupCache();
+                                        } catch(\Exception $e) {
+                                            $this->setError("Unable to retrieve the file list from the cloud!", $e);
+                                        }
+                                    }
+                                }
+                                
+                                // list files
+                                if($this->data->tree !== null) {
+                                    $this->list();
+                                }
                             }
                         }
                     });
+                    // footer
                     html::DIV(array("class" => "row bg-dark fixed-bottom text-white"), function () {
                         html::DIV(array("class" => "col text-end"), self::NAME.' '.self::VERSION);
                     });
                 });
             });
-        }                                                       
+        }
     }
 }
 
