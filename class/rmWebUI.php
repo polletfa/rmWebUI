@@ -12,9 +12,8 @@
  * TODO:
  * - Cache generated PDFs for quicker access
  * - Use a logger for the RemarkableAPI class
- * - Better error handling?
  * - Implement upload?
- * - Internationalization/Translation?
+ * - Nice to have: Internationalization/Translation
  */
 
 namespace digitalis\rmWebUI;
@@ -184,6 +183,18 @@ class rmWebUI {
             });
         });
 
+        // error banner
+        if($this->data->downloaderror == "cloud") {
+            html::DIV(array("class" => "alert alert-danger", "role" => "alert"), function() {
+                html::text("Unable to retrieve the file from the cloud. You may try to ");
+                html::A(array("href" => "?refresh"), "refresh");
+                html::text(".");
+            });
+        }
+        else if($this->data->downloaderror == "pdf") {
+            html::DIV(array("class" => "alert alert-danger", "role" => "alert"), "Unable to convert the file to PDF.");
+        }
+
         // write table
         html::DIV(array("class" => "row"), function() use ($currentItem) {
             html::TABLE(array("class" => "table table-hover"), function() use ($currentItem) {
@@ -271,22 +282,33 @@ class rmWebUI {
         [$path,$item] = $this->findItem($this->data->download);
         $filename = preg_replace('/[^A-Za-z0-9\-_]/', '', str_replace(' ', '_', $item["VissibleName"]));
 
-        // HTTP header
-        $filetype = $this->rmrl == null || $this->rmrl == "" ? "zip" : "pdf";
-        header('Content-Type:application/' . $filetype);
-        header('Content-Disposition:attachment;filename='.$filename.'.'.$filetype);
-
         // Get file
-        $api = $this->initAPI();
-        $filecontent = $api->downloadDocument($this->data->download)->getBody();
-
-        if($filetype == 'pdf') {
+        try {
+            $api = $this->initAPI();
+            $filecontent = $api->downloadDocument($this->data->download)->getBody();
+        } catch(\Exception $e) {
+            header('Location: ?downloaderror=cloud');
+            return;
+        }
+        
+        if($this->rmrl != null && $this->rmrl != "") {
             // Convert with rmrl
             $tmpfile = "/tmp/".$this->data->download.".zip";
             file_put_contents($tmpfile, $filecontent);
-            passthru($this->rmrl." ".$tmpfile . " 2>&1");
-        } else {
+            $resultcode = null;
+            $output = null;
+            exec($this->rmrl." ".$tmpfile . " 2>&1", $output, $resultcode);
+            if($resultcode != 0) {
+                header('Location: ?downloaderror=pdf');
+            } else {
+                header('Content-Type:application/pdf');
+                header('Content-Disposition:attachment;filename='.$filename.'.pdf');
+                echo(implode("\n",$output));
+            }
+       } else {
             // write original ZIP file (no conversion to PDF)
+            header('Content-Type:application/zip');
+            header('Content-Disposition:attachment;filename='.$filename.'.zip');
             echo $filecontent;
         }
     }

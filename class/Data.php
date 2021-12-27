@@ -20,6 +20,7 @@ namespace digitalis\rmWebUI;
  * - collection, read-only, from URL
  * - download, read-only, from URL
  * - code, read-only, from URL
+ * - downloaderror, readonly, from URL
  * - tree, read-write, from session data
  * - token, read-write, from file config/auth.token
  *
@@ -70,10 +71,11 @@ class Data {
         if($name == "collection") return $this->getFrom($_GET, "collection", "");
         else if($name == "download") return $this->getFrom($_GET, "download", "");
         else if($name == "code") return $this->getFrom($_GET, "code", "");
-
+        else if($name == "downloaderror") return $this->getFrom($_GET, "downloaderror", "");
+        
         // Session data
         else if($name == "tree") return $this->getFrom($_SESSION, "tree", null);
-
+        
         // Configuration
         else if($name == "token") return file_exists(self::TOKEN_FILE) ? file_get_contents(self::TOKEN_FILE) : "";
 
@@ -93,10 +95,11 @@ class Data {
         if($name == "collection") throw new \Exception("collection is readonly");
         else if($name == "download") throw new \Exception("download is readonly");
         else if($name == "code") throw new \Exception("code is readonly");
-
+        else if($name == "downloaderror") throw new \Exception("downloaderror is readonly");
+        
         // Session data
         else if($name == "tree") $_SESSION["tree"] = $value;
-
+        
         // Configuration
         else if($name == "token") file_put_contents(self::TOKEN_FILE, $value);
 
