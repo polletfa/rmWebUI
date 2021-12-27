@@ -12,6 +12,7 @@
 mkdir dist
 cp -r composer.json LICENSE index.php class css svg config dist
 cd dist
+mkdir cache
 if [ "$1" != "prod" ]; then
     mv config/config.debug.php config/config.php
     rm config/config.prod.php
