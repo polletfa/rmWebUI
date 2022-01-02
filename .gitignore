@@ -1,1 +1,6 @@
 dist
+*.bak
+live
+*.pdf
+auth.token
+cache

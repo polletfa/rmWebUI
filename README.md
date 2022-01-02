@@ -2,8 +2,8 @@
 
 rmWebUI is a simple web interface for the reMarkable&reg; cloud.
 
-![register](./screenshot-register.png)
-![list](./screenshot-list.png)
+![register](./screenshots/register.png)
+![list](./screenshots/list.png)
 
 # Install
 
@@ -17,15 +17,13 @@ composer run deploy
 
 This will create a `dist/` folder with all required files.
 
-You can also use `composer run deploy-debug` to deploy in debug mode.
-
 ## Configure
 
 The file `config/config.php` contains a few configuration options:
 
-- `MODE`: Either `debug` or `prod`. In debug mode, PHP error messages will be activated and a few other messages will be displayed.
-- `CACHE`: If true, files will be cached and only downloaded/converted as needed. This will allow faster access but will use more space on your webserver.
-- `RMRL`: By default, notebooks are downloaded as a ZIP file containing the metadata and lines files in the proprietary format of reMarkable&reg;. rmWebUI is also capable of converting the files to PDF by using [rmrl](https://github.com/rschroll/rmrl). To activate this feature, use this option to specify the command for running rmrl (typically it should be `python -m rmrl` or `python3 -m rmrl` but it may differ depending on your system configuration).
+- `MODE`: Either `debug` or `prod`. In debug mode, PHP error messages will be activated.
+- `CACHE`: If true, files will be cached and only downloaded/converted as needed. This will allow faster access but will use space on your webserver.
+- `RMRL`: By default, notebooks are downloaded as a ZIP file containing the metadata and lines files in the proprietary format of reMarkable&reg;. rmWebUI is also capable of converting the files to PDF by using [rmrl](https://github.com/rschroll/rmrl). To activate this feature, use this option to specify the command for running rmrl (typically it should be `python -m rmrl` or `python3 -m rmrl` but it may differ depending on your system configuration). Be aware that RMRL has limitations and may not work properly with some documents. When this feature is configured, both ZIP and PDF downloads are available.
 
 ## Prepare the webserver
 
@@ -35,11 +33,11 @@ If you use RMRL, you also need to install Python 3.7 or further and [rmrl](https
 
 ## Deploy
 
-Copy the content of the `dist/` folder to your webserver and make sure the webserver has write permission to `config/auth.token` and `cache/` (if the cache is enabled).
+Copy the content of the `dist/` folder to your webserver and make sure the webserver has write permission to `config/auth.token` and `backend/cache/` (if the cache is enabled).
 
 ## Important security warning
 
-rmWebUI doesn't implement any kind of authentication. Configure your webserver as needed to prevent unauthorized access, for example by using a `.htaccess` file (for Apache). Make sure that the file `config/auth.token` is protected as well, since its content is all is needed to connect to your reMarkable&reg; cloud account.
+rmWebUI doesn't implement any kind of authentication. Configure your webserver as needed to prevent unauthorized access, for example by using a `.htaccess` file (for Apache). Make sure that subdirectories and files are protected as well (especially `backend/cache` and `config/auth.token`).
 
 For example, you can put the following `.htaccess` file into the base directory of rmWebUI:
 ```
@@ -60,7 +58,7 @@ See the Apache documentation for more information:
 
 # Register application
 
-On the first run, you will be asked to register the application. This is required to access your files on the reMarkable&reg; cloud. Once the application is registered, you will never be asked again (unless the token becomes invalid and/or the application cannot connect to the cloud. In this case, the application will let you clear the token). If you want to register anew, clear the content of the file `config/auth.token`.
+On the first run, you will be asked to register the application. This is required to access your files on the reMarkable&reg; cloud. Once the application is registered, you don't need to do it again. You will be asked again if the application fails to connect to the cloud or if you clear the content of the file `config/auth.token`.
 
 # License
 
