@@ -1,0 +1,28 @@
+{
+    "help": [
+        "-----------------------------------------------------------------",
+        " mode:  Either 'debug' or 'prod'                                 ",
+        "        Enable/Disable PHP errors                                ",
+        "                                                                 ",
+        " cache: Set to true to activate the cache.                       ",
+        "        Make sure the folder backend/cache/ is writeable         ",
+        "        by the web server.                                       ",
+        "                                                                 ",
+        " rmrl:  Command to run rmrl (used to convert the files to PDF).  ",
+        "        To use this feature, you need to install rmrl            ",
+        "        (https://github.com/rschroll/rmrl)                       ",
+        "                                                                 ",
+        "        If you leave this parameter empty, files can only be     ",
+        "        downloaded as a ZIP file containing metadata and the     ",
+        "        lines file (and the original PDF file if any).           ",
+        "                                                                 ",
+        "        Examples:                                                ",
+        "            python -m rmrl                                       ",
+        "            python3 -m rmrl                                      ",
+        "            python3.7 -m rmrl                                    ",
+        "-----------------------------------------------------------------"
+    ],
+    "mode": "prod",
+    "cache": true,
+    "rmrl": ""
+}

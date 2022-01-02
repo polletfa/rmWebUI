@@ -23,7 +23,7 @@ class rmWebUIRegister {
         if (code.match(/^[0-9a-z]{8}$/)) {
             document.getElementById("register-btn").disabled = true;
             const ui = this.ui;
-            ui.apiRequest("backend/api/register.php?code="+code, function(response) {
+            ui.apiRequest("../backend/api/register.php?code="+code, function(response) {
                 if("status" in response) {
                     if(response["status"] !== "success") {
                         ui.showError("Unable to register the application.", response["error"]);
