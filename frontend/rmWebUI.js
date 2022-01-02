@@ -35,18 +35,22 @@ class rmWebUI {
             switch(this.filesApiResponse["errorType"]) {
             case "load-token":
                 this.showPage("register");
+                this.setTitle();
                 break;
             case "init-api":
                 this.showError("Unable to connect to the cloud! You may try to register again.", this.filesApiResponse["error"]);
                 this.showPage("register");
+                this.setTitle();
                 break;
             case "retrieve-files":
                 this.showError("Unable to retrieve file list from the cloud!", this.filesApiResponse["error"]);
                 this.showPage(""); // hide all pages
+                this.setTitle();
                 break;
             default:
                 this.showError("Unknown error (" + this.filesApiResponse["errorType"] + ")", this.filesApiResponse["error"]);
                 this.showPage(""); // hide all pages
+                this.setTitle();
             }
         } else {
             this.pages.list.buildFileTable();
@@ -55,15 +59,31 @@ class rmWebUI {
     }
 
     /**
+     * Set title
+     *
+     * @param path Path to display or false for standard title
+     */
+    setTitle(path = false) {
+        if(path == false) {
+            document.getElementById('title-text').innerHTML = this.config.name + "&nbsp;" + this.config.version;
+        } else {
+            document.getElementById('title-text').innerHTML = path;
+        }
+    }
+
+    /**
      * Show/Hide an element
      *
      * @param id ID
      * @param visible Visibility
+     * @return previous visibility
      */
     show(id, visible) {
         const cl = document.getElementById(id).classList;
+        const prev = !cl.contains('d-none');
         if(cl.contains('d-none') && visible == true) cl.remove('d-none');
         else if(!cl.contains('d-none') && visible == false) cl.add('d-none');
+        return prev;
     }
 
     /**
@@ -102,10 +122,12 @@ class rmWebUI {
         httpRequest.responseType = "arraybuffer";
         httpRequest.send();
         this.show('loading-spinner', true);
+        const refreshBtnPrev = this.show('refresh-button', false);
         const ui = this;
         httpRequest.addEventListener("error", function() {
             ui.showError("Cannot contact backend", "XMLHttpRequest error.");
             ui.show('loading-spinner', false);
+            ui.show('refresh-button', refreshBtnPrev);
             finallyHandler();
         });
         httpRequest.addEventListener("readystatechange", function() {
@@ -118,6 +140,7 @@ class rmWebUI {
                     handler(this.response);
                 }
                 ui.show('loading-spinner', false);
+                ui.show('refresh-button', refreshBtnPrev);
                 finallyHandler();
             }
         });

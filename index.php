@@ -19,7 +19,7 @@ if(Config::MODE === "debug") {
 ?><!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
-    <title><?php echo Config::NAME." ".Config::VERSION ?></title>
+    <title><?php echo Config::NAME."&nbsp;".Config::VERSION ?></title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link id="favicon" rel="icon" type="image/svg+xml" href="frontend/resources/cloud.svg">
@@ -33,18 +33,16 @@ if(Config::MODE === "debug") {
 
       <!-- title -->
       <div class="row">
-        <div class="col">
-          <span class="h1" id="title-text"><?php echo Config::NAME." ".Config::VERSION ?></span>&nbsp;&nbsp;
-          <span id="loading-spinner" class="spinner-border" role="status"></span>
-        </div>
-        <div id="refresh-button" class="col col-sm-1 d-flex align-items-center justify-content-end d-none">
-          <a href="#" onclick="app.getFiles();"><?php require __DIR__ . "/frontend/resources/refresh.svg" ?></a>
+        <div class="col h1" id="title-text"><?php echo Config::NAME."&nbsp;".Config::VERSION ?></div>
+        <div class="col col-sm-1 d-flex align-items-center justify-content-end">
+          <span id="loading-spinner" class="spinner-border" style="width: 24px; height: 24px;" role="status"></span>
+          <a id="refresh-button" class="d-none" href="#" onclick="app.getFiles();"><?php require __DIR__ . "/frontend/resources/refresh.svg" ?></a>
         </div>
       </div>
 
       <!-- error banner -->
-      <div id="error-banner" class="alert alert-danger d-none" role="alert">
-        <span id="error-text"></span>&nbsp;<a href="#" data-bs-toggle="collapse" data-bs-target="#extended-error">(Details)</a>
+      <div id="error-banner" class="alert alert-dark d-none" role="alert">
+        <span id="error-text"></span>&nbsp;<a class="alert-link" href="#" data-bs-toggle="collapse" data-bs-target="#extended-error">(Details)</a>
         <div class="collapse" id="extended-error"><br/><span id="extended-error-text"></span></div>
       </div>
 
@@ -54,7 +52,7 @@ if(Config::MODE === "debug") {
 
       <!-- footer -->
       <div class="row bg-dark fixed-bottom text-white">
-        <div class="col text-end"><?php echo Config::NAME." ".Config::VERSION ?></div>
+        <div class="col text-end"><?php echo Config::NAME."&nbsp;".Config::VERSION ?></div>
       </div>
     </div>
     <!-- Icons -->

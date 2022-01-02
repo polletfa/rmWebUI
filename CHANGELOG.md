@@ -6,7 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [develop]
 ### Added
 
-## [0.4.0] - 2022-01-03
+## [0.4.1] - 2022-01-02
+### Added
+- Minor changes in interface:
+  - More consistent colors (bootstrap5 dark theme)
+  - refresh-button and loading-spinner at the same position
+- Minor fix: uncaught exception when PDF is disabled - fixed
+
+## [0.4.0] - 2022-01-02
 ### Added
 - Refactoring:
   - Backend in PHP: cloud API, cache and PDF conversion
@@ -30,7 +37,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 - First version
 
-[develop]: https://github.com/polletfa/rmWebUI/compare/0.4.0...develop
+[develop]: https://github.com/polletfa/rmWebUI/compare/0.4.1...develop
+[0.4.1]: https://github.com/polletfa/rmWebUI/compare/0.4.0...0.4.1
 [0.4.0]: https://github.com/polletfa/rmWebUI/compare/0.3.0...0.4.0
 [0.3.0]: https://github.com/polletfa/rmWebUI/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/polletfa/rmWebUI/compare/0.1.0...0.2.0

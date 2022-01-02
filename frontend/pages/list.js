@@ -45,7 +45,7 @@ class rmWebUIList {
         }
 
         // update page
-        document.getElementById('title-text').innerHTML = thisEntry ? thisEntry.Path : "/";
+        this.ui.setTitle(thisEntry ? thisEntry.Path : "/");
         this.ui.show('refresh-button', true);
         this.ui.show('error-banner', false);
         document.getElementById('files-table').innerHTML = html;

@@ -19,7 +19,7 @@ class Config {
     /**
      * Version
      */
-    const VERSION = "0.4.0";
+    const VERSION = "0.4.1";
 
     /**
      * Mode: "debug" or "prod"
