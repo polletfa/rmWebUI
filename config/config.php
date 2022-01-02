@@ -12,12 +12,21 @@ namespace digitalis\rmWebUI;
 
 class Config {
     /**
-     * Specify the mode: debug or prod.
-     *
-     * In debug mode, additional messages are displayed
+     * Program name
      */
-    const MODE = "debug";
+    const NAME = "rmWebUI";
 
+    /**
+     * Version
+     */
+    const VERSION = "0.4.0";
+
+    /**
+     * Mode: "debug" or "prod"
+     * Enable/Disable PHP errors
+     */
+    const MODE = "prod";
+    
     /**
      * Set to true to activate cache
      * Make sure the folder cache/ is writeable by the web server
@@ -35,5 +44,16 @@ class Config {
     //const RMRL = "python -m rmrl ";
     //const RMRL = "python3 -m rmrl ";
     //const RMRL = "python3.7 -m rmrl ";
+
+    /**
+     * Output the config in JSON format
+     */
+    static function toJSON() {
+        echo json_encode(array("name" => Config::NAME,
+                               "version" => Config::VERSION,
+                               "mode" => Config::MODE,
+                               "cache" => Config::CACHE,
+                               "rmrl" => Config::RMRL));
+    }
 }
 ?>

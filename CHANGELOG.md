@@ -5,7 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [develop]
 ### Added
-- Remove temporary file after PDF conversion
+
+## [0.4.0] - 2022-01-03
+### Added
+- Refactoring:
+  - Backend in PHP: cloud API, cache and PDF conversion
+  - Frontend in JavaScript: AJAX Web application
+- New features:
+  - Choice between ZIP and PDF
 
 ## [0.3.0] - 2021-12-27
 ### Added
@@ -23,7 +30,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 - First version
 
-[develop]: https://github.com/polletfa/rmWebUI/compare/0.3.0...develop
+[develop]: https://github.com/polletfa/rmWebUI/compare/0.4.0...develop
+[0.4.0]: https://github.com/polletfa/rmWebUI/compare/0.3.0...0.4.0
 [0.3.0]: https://github.com/polletfa/rmWebUI/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/polletfa/rmWebUI/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/polletfa/rmWebUI/releases/tag/0.1.0
