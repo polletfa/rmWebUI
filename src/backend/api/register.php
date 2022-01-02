@@ -1,8 +1,7 @@
 <?php
-require_once __DIR__ . "/../../config/config.php";
-use digitalis\rmWebUI\Config;
+$config = json_decode(file_get_contents(__DIR__ . "/../../config/config.json"));
 
-if(Config::MODE == "debug") {
+if($config->mode == "debug") {
   ini_set('display_errors', '1');
   ini_set('display_startup_errors', '1');
   error_reporting(E_ALL);

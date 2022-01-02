@@ -27,17 +27,18 @@ class Download {
      * @param id Item ID
      * @param version Item version (the version may be updated)
      * @param format pdf or zip
+     * @param config Configuration object
      * @return binary data or array of {
      *           status: "error", 
      *           errorType?: "invalid-parameters"|"download-file"|"convert-file",
      *           error?: string
      *         }
      */
-    static function getFile($api, $id, &$version, $format) {
-        if($format == "pdf" && is_string(Config::RMRL) && trim(Config::RMRL) != "") {
-            $res = self::getPDF($api, $id, $version);
+    static function getFile($api, $id, &$version, $format, $config) {
+        if($format == "pdf" && is_string($config->rmrl) && trim($config->rmrl) != "") {
+            $res = self::getPDF($api, $id, $version, $config);
         } else if($format == "zip") {
-            $res = self::getZIP($api, $id, $version);
+            $res = self::getZIP($api, $id, $version, $config);
         } else {
             $res = array("status" => "error",
                          "errorType" => "invalid-parameters",
@@ -52,11 +53,12 @@ class Download {
      * @param api remarkableAPI
      * @param id Item ID
      * @param version Item version (the version may be updated)
+     * @param config Configuration object
      * @return Same format as getFile
      * @see getFile
      */
-    static function getPDF($api, $id, &$version) {
-        if(Config::CACHE == true) {
+    static function getPDF($api, $id, &$version, $config) {
+        if($config->cache == true) {
             // Search for file in cache
             try {
                 $cachedfile = Cache::getCachedFile($id, $version, "pdf");
@@ -67,13 +69,13 @@ class Download {
         }
 
         // PDF not in cache - Get ZIP
-        $zip = self::getZIP($api, $id, $version);
+        $zip = self::getZIP($api, $id, $version, $config);
         if(!is_string($zip)) return $zip;
 
         // Convert ZIP to PDF
-        $pdf = self::convertToPDF($id, $version, $zip);
+        $pdf = self::convertToPDF($id, $version, $zip, $config);
 
-        if(is_string($pdf) && Config::CACHE == true) {
+        if(is_string($pdf) && $config->cache == true) {
             // Save in cache
             try {
                 Cache::cacheFile($id, $version, "pdf", $pdf);
@@ -89,11 +91,12 @@ class Download {
      * @param api remarkableAPI
      * @param id Item ID
      * @param version Item version (the version may be updated)
+     * @param config Configuration object
      * @return Same format as getFile
      * @see getFile
      */
-    static function getZIP($api, $id, &$version) {
-        if(Config::CACHE == true) {
+    static function getZIP($api, $id, &$version, $config) {
+        if($config->cache == true) {
             // Search for file in cache
             $cachedfile = Cache::getCachedFile($id, $version, "zip");
             if($cachedfile != null) {
@@ -111,7 +114,7 @@ class Download {
                          "error" => $e->getMessage());
         }
 
-        if(Config::CACHE == true) {
+        if($config->cache == true) {
             // Save in cache
             try {
                 // retrieve file list and check version (which may have changed)
@@ -139,16 +142,17 @@ class Download {
      * @param id Item ID
      * @param version Item version
      * @param zip Content of the zip file
+     * @param config Configuration object
      * @return Same format as getFile
      * @see getFile
      */
-    static function convertToPDF($id, $version, $zip) {
+    static function convertToPDF($id, $version, $zip, $config) {
         try {
             $tmpfile = "/tmp/".$id.".".$version.".zip";
             file_put_contents($tmpfile, $zip);
             $resultcode = null;
             $output = null;
-            exec(Config::RMRL." ".$tmpfile . " 2>/".$tmpfile.".log", $output, $resultcode);
+            exec($config->rmrl." ".$tmpfile . " 2>/".$tmpfile.".log", $output, $resultcode);
             unlink($tmpfile);
             
             if($resultcode !== 0) {

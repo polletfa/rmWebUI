@@ -11,10 +11,11 @@
  * Main class for the JavaScript logic of the website
  */
 class rmWebUI {
-    constructor(config) {
-        this.filesApiResponse = undefined;  /**< Response from backend/api/files.php */
+    constructor(version,config) {
+        this.filesApiResponse = undefined;  /**< Response from ../backend/api/files.php */
 
-        this.config = config;               /**< Configuration from config/config.php */
+        this.version = version;             /**< Name and version from config/version.json */
+        this.config = config;               /**< Configuration from config/config.json */
         this.pages = {
             register: new rmWebUIRegister(this),
             list: new rmWebUIList(this)
@@ -22,9 +23,9 @@ class rmWebUI {
     }
 
     /**
-     * Initialize the interface based on the response from backend/api/files.php provided in argument
+     * Initialize the interface based on the response from ../backend/api/files.php provided in argument
      *
-     * @param filesApiResponse Response from backend/api/files.php
+     * @param filesApiResponse Response from ../backend/api/files.php
      */
     init(filesApiResponse) {
         this.filesApiResponse = filesApiResponse;
@@ -65,7 +66,7 @@ class rmWebUI {
      */
     setTitle(path = false) {
         if(path == false) {
-            document.getElementById('title-text').innerHTML = this.config.name + "&nbsp;" + this.config.version;
+            document.getElementById('title-text').innerHTML = this.version.name + "&nbsp;" + this.version.version;
         } else {
             document.getElementById('title-text').innerHTML = path;
         }
@@ -151,7 +152,7 @@ class rmWebUI {
      */
     getFiles() {
         const ui = this;
-        ui.apiRequest("backend/api/files.php", function(response) {
+        ui.apiRequest("../backend/api/files.php", function(response) {
             try {
                 ui.init(response);
             } catch(e) {

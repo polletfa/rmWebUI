@@ -31,10 +31,11 @@ class CloudAPI {
     /**
      * List of supported formats
      *
+     * @param config Configuration object
      * @returns List of supported formats
      */
-    static function getFormats() {
-        if(is_string(Config::RMRL) && trim(Config::RMRL) != "") {
+    static function getFormats($config) {
+        if(is_string($config->rmrl) && trim($config->rmrl) != "") {
             return ["pdf", "zip"];
         } else {
             return ["zip"];
@@ -158,13 +159,14 @@ class CloudAPI {
      * @param id Document ID
      * @param version Document version
      * @param format zip or pdf
+     * @param config Configuration object
      * @return Success (true/false)
      */
-    static function download($id, $version, $format) {
+    static function download($id, $version, $format, $config) {
         if(!self::checkParameters(array("id" => $id, "version" => $version, "format" => $format)))  {
             return false;
         }
-        if(!in_array($format, self::getFormats())) {
+        if(!in_array($format, self::getFormats($config))) {
             self::writeResponse(array("status" => "error",
                                       "errorType" => "invalid-parameters",
                                       "error" => "unknown/unsupported format: ".$format));
@@ -177,7 +179,7 @@ class CloudAPI {
             return false;
 
         // download file
-        $res = Download::getFile($api, $id, $version, $format);
+        $res = Download::getFile($api, $id, $version, $format, $config);
         if(is_string($res)) {
             echo $res;
             return true;
@@ -204,9 +206,10 @@ class CloudAPI {
      *   }>
      * }
      *
+     * @param config Configuration object
      * @return Success (true/false)
      */
-    static function files() {
+    static function files($config) {
         $api = self::connect();
         if($api === false)
             return false;
@@ -235,7 +238,8 @@ class CloudAPI {
                                   "files" => $files));
         // cleanup cache
         try {
-            Cache::cleanupCache($files);
+            if($config->cache == true)
+                Cache::cleanupCache($files);
         } catch(\Exception $e) {}
         return true;
     }
