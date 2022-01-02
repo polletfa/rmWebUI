@@ -1,6 +1,13 @@
 # rmWebUI
 
-rmWebUI is a simple web interface for the reMarkable&reg; cloud.
+rmWebUI is a simple web interface for the reMarkable&reg; cloud designed primarily for small screens. It includes the following features:
+
+- Register application
+- Browse collections
+- Refresh collections
+- Download a document as ZIP (original data)
+- Download a document as PDF (convert using [rmrl](https://github.com/rschroll/rmrl))
+- Cache downloaded files based on version. Download from the cloud only as needed.
 
 ![register](./screenshots/register.png)
 ![list](./screenshots/list.png)
