@@ -26,7 +26,7 @@ This will create a `dist/` folder with all required files.
 
 ## Configure
 
-The file `config/config.json` contains a few configuration options:
+The file `data/config.json` contains a few configuration options:
 
 - `mode`: Either `debug` or `prod`. In debug mode, PHP error messages will be activated.
 - `cache`: If true, files will be cached and only downloaded/converted as needed. This will allow faster access but will use space on your webserver.
@@ -40,11 +40,11 @@ If you use RMRL, you also need to install Python 3.7 or further and [rmrl](https
 
 ## Deploy
 
-Copy the content of the `dist/` folder to your webserver and make sure the webserver has write permission to `config/auth.token` and `backend/cache/` (if the cache is enabled).
+Copy the content of the `dist/` folder to your webserver and make sure the webserver has write permission to `data/`.
 
 ## Important security warning
 
-rmWebUI doesn't implement any kind of authentication. Configure your webserver as needed to prevent unauthorized access, for example by using a `.htaccess` file (for Apache). Make sure that subdirectories and files are protected as well (especially `backend/cache` and `config/auth.token`).
+rmWebUI doesn't implement any kind of authentication. Configure your webserver as needed to prevent unauthorized access, for example by using a `.htaccess` file (for Apache). Make sure that subdirectories and files are protected as well (especially `data/` and `data/cache/`).
 
 For example, you can put the following `.htaccess` file into the base directory of rmWebUI:
 ```
@@ -65,7 +65,7 @@ See the Apache documentation for more information:
 
 # Register application
 
-On the first run, you will be asked to register the application. This is required to access your files on the reMarkable&reg; cloud. Once the application is registered, you don't need to do it again. You will be asked again if the application fails to connect to the cloud or if you clear the content of the file `config/auth.token`.
+On the first run, you will be asked to register the application. This is required to access your files on the reMarkable&reg; cloud. Once the application is registered, you don't need to do it again. You will be asked again if the application fails to connect to the cloud or if you clear the content of the file `data/auth.json`.
 
 # License
 

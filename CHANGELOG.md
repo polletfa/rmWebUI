@@ -3,8 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [develop]
+## [0.4.3] - 2022-01-03
 ### Added
+- More refactoring:
+  - Remove all PHP from frontend
+  - Save token in JSON file
+  - Move config and cache to data
+- No feature changes
 
 ## [0.4.2] - 2022-01-03
 ### Added
@@ -46,7 +51,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 - First version
 
-[develop]: https://github.com/polletfa/rmWebUI/compare/0.4.2...develop
+[develop]: https://github.com/polletfa/rmWebUI/compare/0.4.3...develop
+[0.4.3]: https://github.com/polletfa/rmWebUI/compare/0.4.2...0.4.3
 [0.4.2]: https://github.com/polletfa/rmWebUI/compare/0.4.1...0.4.2
 [0.4.1]: https://github.com/polletfa/rmWebUI/compare/0.4.0...0.4.1
 [0.4.0]: https://github.com/polletfa/rmWebUI/compare/0.3.0...0.4.0

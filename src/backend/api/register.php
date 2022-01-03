@@ -1,5 +1,5 @@
 <?php
-$config = json_decode(file_get_contents(__DIR__ . "/../../config/config.json"));
+$config = json_decode(file_get_contents(__DIR__ . "/../../data/config.json"));
 
 if($config->mode == "debug") {
   ini_set('display_errors', '1');

@@ -17,7 +17,7 @@ class Token {
     /**
      * Token file (the token is required to connect to the reMarkable Cloud).
      */
-    const TOKEN_FILE = __DIR__ . "/../config/auth.token";
+    const TOKEN_FILE = __DIR__ . "/../data/auth.json";
 
     /**
      * Get token
@@ -25,7 +25,7 @@ class Token {
      * @return Token or false
      */
     static function get() {
-        return file_get_contents(self::TOKEN_FILE);
+        return json_decode(file_get_contents(self::TOKEN_FILE))->token;
     }
 
     /**
@@ -35,7 +35,7 @@ class Token {
      * @return Success (true/false)
      */
     static function set($token) {
-        if(false === file_put_contents(self::TOKEN_FILE, $token)) {
+        if(false === file_put_contents(self::TOKEN_FILE, json_encode(array("token"=>$token)))) {
             return false;
         } else {
             return true;

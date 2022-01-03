@@ -72,7 +72,7 @@ class rmWebUIList {
         return '<tr>'
             + '<td ' + this.setMouseBehaviour()
             + ' onclick="app.pages.list.openCollection(\''+id+'\')">'
-            + document.getElementById('icon-folder').innerHTML
+            + '<img src="resources/folder.svg"/>'
             + '&nbsp;&nbsp;'
             + name
             + '</td></tr>';
@@ -90,7 +90,7 @@ class rmWebUIList {
         let html = '<tr>'
             + '<td '+this.setMouseBehaviour()
             + ' onclick="app.pages.list.toggleDownloadMenu(\''+id+'\');">'
-            + document.getElementById('icon-file').innerHTML
+            + '<img src="resources/file.svg"/>'
             + '&nbsp;&nbsp;'
             + name
             + '</td></tr>';
@@ -99,9 +99,9 @@ class rmWebUIList {
             html += '<tr id="'+format+'-'+id+'" class="d-none download-menu-item">'
                 +'<td '+this.setMouseBehaviour()
                 +' onclick="app.pages.list.download(\''+id+'\',\''+version+'\',\''+format+'\');">'
-                +document.getElementById('icon-empty').innerHTML
+                +'<img src="resources/empty.svg"/>'
                 +'&nbsp;&nbsp;'
-                +document.getElementById('icon-download').innerHTML
+                +'<img src="resources/download.svg"/>'
                 +'&nbsp;&nbsp;'
                 +'Download as '+format.toUpperCase()
                 +'</td></tr>'
@@ -148,10 +148,9 @@ class rmWebUIList {
     download(id, version, format) {
         const thisEntry = this.ui.filesApiResponse.files.find(item => item.ID === id);
         const filename = thisEntry.Name.replaceAll(/[^A-Za-z0-9\-]/g, "_");
-        const ui = this.ui;
-        ui.apiRequest("../backend/api/download.php?id="+id+"&version="+version+"&format="+format, function(response) {
+        this.ui.apiRequest("../backend/api/download.php?id="+id+"&version="+version+"&format="+format, false, (response) => {
             if(("status" in response) && response["status"] !== "success") {
-                ui.showError("Unable to download the file ("+response["errorType"]+").", response["error"]);
+                this.ui.showError("Unable to download the file ("+response["errorType"]+").", response["error"]);
             } else {
                 // create blob
                 const url = URL.createObjectURL(new Blob([response], {type:"application/octet-stream"}));

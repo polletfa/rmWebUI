@@ -17,8 +17,8 @@ jq '{name:.displayName,version:.version}' "$PACKAGE_ROOT/composer.json" > /tmp/v
 # Directories
 [ -d dist ] && rm -fr dist
 install -m 0755 -d \
-        dist/config \
-        dist/backend/cache \
+        dist/data \
+        dist/backend \
         dist/backend/api \
         dist/frontend/pages \
         dist/frontend/resources
@@ -27,10 +27,10 @@ install -m 0755 -d \
 install -m 0644 README.md                                dist/
 install -m 0644 CHANGELOG.md                             dist/
 install -m 0644 LICENSE.md                               dist/
+install -m 0644 /tmp/version.json                        dist/
 
 # Configuration
-install -m 0644 src/config/config.json                   dist/config/
-install -m 0644 /tmp/version.json                        dist/config/
+install -m 0644 src/data/config.json                     dist/data/
 
 # Backend
 install -m 0644 src/backend/api/files.php                dist/backend/api/
@@ -42,12 +42,12 @@ install -m 0644 src/backend/Download.php                 dist/backend/
 install -m 0644 src/backend/Token.php                    dist/backend/
 
 # Frontend
-install -m 0644 src/index.php                            dist/
-install -m 0644 src/frontend/index.php                   dist/frontend/
+install -m 0644 src/index.html                           dist/
+install -m 0644 src/frontend/index.html                  dist/frontend/
 install -m 0644 src/frontend/rmWebUI.js                  dist/frontend/
-install -m 0644 src/frontend/pages/register.php          dist/frontend/pages/
+install -m 0644 src/frontend/pages/register.html         dist/frontend/pages/
 install -m 0644 src/frontend/pages/register.js           dist/frontend/pages/
-install -m 0644 src/frontend/pages/list.php              dist/frontend/pages/
+install -m 0644 src/frontend/pages/list.html             dist/frontend/pages/
 install -m 0644 src/frontend/pages/list.js               dist/frontend/pages/
 install -m 0644 src/frontend/resources/bootstrap.min.css dist/frontend/resources/
 install -m 0644 src/frontend/resources/bootstrap.min.js  dist/frontend/resources/
