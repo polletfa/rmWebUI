@@ -14,6 +14,17 @@ namespace digitalis\rmWebUI;
  * Manage cache
  */
 class Cache {
+    const CACHE_DIR = __DIR__ . "/../data/cache/";
+
+    /**
+     * Create the cache directory
+     */
+    static function createCache() {
+        if (!file_exists(self::CACHE_DIR)) {
+            mkdir(self::CACHE_DIR, 0755, true);
+        }
+    }
+
     /**
      * Cleanup cache
      *
@@ -21,7 +32,7 @@ class Cache {
      */
     static function cleanupCache($files) {
         // get list of files in cache
-        $cache = scandir(__DIR__."/cache");
+        $cache = scandir(self::CACHE_DIR);
         // get list of cached file names for all documents
         $documents = array();
         foreach($files as $item) {
@@ -36,8 +47,8 @@ class Cache {
 
         // remove files
         foreach($remove as $file) {
-            if(is_file(__DIR__."/cache/".$file)) {
-                unlink(__DIR__."/cache/".$file);
+            if(is_file(self::CACHE_DIR.$file)) {
+                unlink(self::CACHE_DIR.$file);
             }
         }
     }
@@ -52,7 +63,7 @@ class Cache {
      * @return file name
      */
     static function getCachedFileName($id, $version, $format, $filenameOnly = false) {
-        return ($filenameOnly === true ? "" : __DIR__."/cache/") . $id . "." . $version . "." . $format;
+        return ($filenameOnly === true ? "" : self::CACHE_DIR) . $id . "." . $version . "." . $format;
     }
     
     /**
@@ -81,6 +92,8 @@ class Cache {
      * @param filecontent File content
      */
     static function cacheFile($id, $version, $format, $filecontent) {
+        self::createCache();
+        
         file_put_contents(self::getCachedFileName($id, $version, $format), $filecontent);
     }
 }

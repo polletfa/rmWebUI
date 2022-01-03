@@ -1,7 +1,7 @@
 {
     "name": "digitalis/rm-web-ui",
     "displayName": "rmWebUI",
-    "version": "0.4.2",
+    "version": "0.4.3",
     "description": "reMarkable Cloud WebUI",
     "type": "project",
     "license": "MIT",

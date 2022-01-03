@@ -1,0 +1,53 @@
+<!-- -------------------------------------------------
+
+   rmWebUI - Web interface for the reMarkable(R) cloud.
+
+   (c) 2021-2022 Fabien Pollet <polletfa@posteo.de>
+   MIT License (see LICENSE file)
+  
+    --------------------------------------------------- 
+--><!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link id="favicon" rel="icon" type="image/svg+xml" href="resources/cloud.svg">
+    <link rel="stylesheet" href="resources/bootstrap.min.css">
+  </head><body>
+    <div class="container-fluid">
+      <!-- debug banner -->
+      <div class="row bg-warning d-none" id="debug-banner"><div class="col text-center">Debug mode</div></div>
+
+      <!-- title -->
+      <div class="row">
+        <div class="col h1" id="title-text"></div>
+        <div class="col col-sm-1 d-flex align-items-center justify-content-end">
+          <span id="loading-spinner" class="spinner-border d-none" style="width: 24px; height: 24px;" role="status"></span>
+          <a id="refresh-button" class="d-none" href="#" onclick="app.getFiles();"><img src="resources/refresh.svg" /></a>
+        </div>
+      </div>
+
+      <!-- error banner -->
+      <div id="error-banner" class="alert alert-dark d-none" role="alert">
+        <span id="error-text"></span>&nbsp;<a class="alert-link" href="#" data-bs-toggle="collapse" data-bs-target="#extended-error">(Details)</a>
+        <div class="collapse" id="extended-error"><br/><span id="extended-error-text"></span></div>
+      </div>
+
+      <!-- content -->
+      <div id="content"></div>
+
+      <!-- footer -->
+      <div class="row bg-dark fixed-bottom text-white">
+        <div class="col text-end" id="footer-text"></div>
+      </div>
+    </div>
+    <!-- Load Javascript and init interface -->
+    <script src="resources/bootstrap.min.js"></script>
+    <script src="pages/register.js"></script>
+    <script src="pages/list.js"></script>
+    <script src="rmWebUI.js"></script>
+    <script>
+      const app = new rmWebUI();
+    </script>
+  </body>
+</html>

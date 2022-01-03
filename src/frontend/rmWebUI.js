@@ -11,23 +11,42 @@
  * Main class for the JavaScript logic of the website
  */
 class rmWebUI {
-    constructor(version,config) {
+    constructor() {
         this.filesApiResponse = undefined;  /**< Response from ../backend/api/files.php */
-
-        this.version = version;             /**< Name and version from config/version.json */
-        this.config = config;               /**< Configuration from config/config.json */
-        this.pages = {
+        this.version = undefined;           /**< Name and version */
+        this.config = undefined;            /**< Configuration */
+        this.pages = {                      /**< List of pages */
             register: new rmWebUIRegister(this),
             list: new rmWebUIList(this)
         };
+    
+        // Load config, version and pages
+        const loading = [
+            this.apiRequest("../version.json", true, response => {
+                this.version = response;
+                this.setTitle();
+                this.setFooter();
+            }, () => {}),
+            this.apiRequest("../data/config.json", true, response => {
+                this.config = response;
+                this.show("debug-banner", this.config.mode === "debug");
+            }, () => {})
+        ];
+        for(const page in this.pages) {
+            loading.push(this.loadPage(page));
+        }
+        Promise.all(loading).then(() => {
+            // Load data from the cloud
+            this.getFiles();       
+        });
     }
 
     /**
-     * Initialize the interface based on the response from ../backend/api/files.php provided in argument
+     * Refresh the interface based on the response from ../backend/api/files.php provided in argument
      *
      * @param filesApiResponse Response from ../backend/api/files.php
      */
-    init(filesApiResponse) {
+    refresh(filesApiResponse) {
         this.filesApiResponse = filesApiResponse;
 
         this.show('loading-spinner', false);
@@ -67,9 +86,39 @@ class rmWebUI {
     setTitle(path = false) {
         if(path == false) {
             document.getElementById('title-text').innerHTML = this.version.name + "&nbsp;" + this.version.version;
+            document.title = this.version.name + ' ' + this.version.version;
         } else {
             document.getElementById('title-text').innerHTML = path;
+            document.title = path + ' ' + this.version.name + ' ' + this.version.version;
         }
+    }
+
+    /**
+     * Set footer
+     */
+    setFooter() {
+        document.getElementById('footer-text').innerHTML = this.version.name + "&nbsp;" + this.version.version;
+    }
+
+    /**
+     * Load a page
+     *
+     * @param name Page name
+     * @return Promise
+     */
+    loadPage(name) {
+        // add div for page
+        const page = document.createElement("div");
+        page.classList.add("d-none");
+        const pageid = document.createAttribute("id");
+        pageid.value = "content-"+name;
+        page.setAttributeNode(pageid);
+        document.getElementById("content").appendChild(page);
+        
+        // load file
+        return this.apiRequest("pages/"+name+".html", false, (response) => {
+            page.innerHTML = (new TextDecoder).decode(response);
+        }, () => {});
     }
 
     /**
@@ -114,36 +163,50 @@ class rmWebUI {
      * API request
      *
      * @param request API Request URL
+     * @param jsonOnly accept JSON only
      * @param handler Response handler
      * @param finallyHandler Callback to be called at the end, regardless of success state
+     * @return Promise
      */
-    apiRequest(request, handler, finallyHandler) {
-        const httpRequest = new XMLHttpRequest();
-        httpRequest.open("GET", request, true);
-        httpRequest.responseType = "arraybuffer";
-        httpRequest.send();
-        this.show('loading-spinner', true);
-        const refreshBtnPrev = this.show('refresh-button', false);
-        const ui = this;
-        httpRequest.addEventListener("error", function() {
-            ui.showError("Cannot contact backend", "XMLHttpRequest error.");
-            ui.show('loading-spinner', false);
-            ui.show('refresh-button', refreshBtnPrev);
-            finallyHandler();
-        });
-        httpRequest.addEventListener("readystatechange", function() {
-            if (this.readyState === this.DONE) {
-                ui.show('error-banner', false);
-                try {
-                    const json = JSON.parse(new TextDecoder().decode(this.response));
-                    handler(json);
-                } catch(e) {
-                    handler(this.response);
-                }
-                ui.show('loading-spinner', false);
-                ui.show('refresh-button', refreshBtnPrev);
+    apiRequest(request, jsonOnly, handler, finallyHandler) {
+        return new Promise((resolve, reject) => {
+            const httpRequest = new XMLHttpRequest();
+            httpRequest.open("GET", request, true);
+            httpRequest.responseType = "arraybuffer";
+            httpRequest.send();
+            this.show('loading-spinner', true);
+            const refreshBtnPrev = this.show('refresh-button', false);
+            httpRequest.addEventListener("error", () => {
+                this.showError("Unable to load "+request, "XMLHttpRequest error.");
+                this.show('loading-spinner', false);
+                this.show('refresh-button', refreshBtnPrev);
                 finallyHandler();
-            }
+                reject();
+            });
+            httpRequest.addEventListener("readystatechange", () => {
+                if (httpRequest.readyState === httpRequest.DONE) {
+                    this.show('error-banner', false);
+                    let json = undefined;
+                    let success = false;
+                    try {
+                        json = JSON.parse(new TextDecoder().decode(httpRequest.response));
+                        success = true;
+                        handler(json);
+                    } catch(e) {
+                        if(!jsonOnly) {
+                            success = true;
+                            handler(httpRequest.response);
+                        } else {
+                            this.showError("Unable to load "+request, e.message);
+                        }                            
+                    }
+                    this.show('loading-spinner', false);
+                    this.show('refresh-button', refreshBtnPrev);
+                    finallyHandler();
+                    if(success) resolve();
+                    else reject();
+                }
+            });
         });
     }
 
@@ -151,12 +214,11 @@ class rmWebUI {
      * Get file list and update UI
      */
     getFiles() {
-        const ui = this;
-        ui.apiRequest("../backend/api/files.php", function(response) {
+        this.apiRequest("../backend/api/files.php", true, (response) => {
             try {
-                ui.init(response);
+                this.refresh(response);
             } catch(e) {
-                ui.showError("Invalid response from the cloud API.", e.message);
+                this.showError("Invalid response from the cloud API.", e.message);
             }
         }, function() {});
     }
