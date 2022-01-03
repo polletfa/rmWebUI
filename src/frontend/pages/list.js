@@ -148,10 +148,9 @@ class rmWebUIList {
     download(id, version, format) {
         const thisEntry = this.ui.filesApiResponse.files.find(item => item.ID === id);
         const filename = thisEntry.Name.replaceAll(/[^A-Za-z0-9\-]/g, "_");
-        const ui = this.ui;
-        ui.apiRequest("../backend/api/download.php?id="+id+"&version="+version+"&format="+format, false, function(response) {
+        this.ui.apiRequest("../backend/api/download.php?id="+id+"&version="+version+"&format="+format, false, (response) => {
             if(("status" in response) && response["status"] !== "success") {
-                ui.showError("Unable to download the file ("+response["errorType"]+").", response["error"]);
+                this.ui.showError("Unable to download the file ("+response["errorType"]+").", response["error"]);
             } else {
                 // create blob
                 const url = URL.createObjectURL(new Blob([response], {type:"application/octet-stream"}));
