@@ -43,12 +43,8 @@ class rmWebUI {
 
     /**
      * Refresh the interface based on the response from ../backend/api/files.php provided in argument
-     *
-     * @param filesApiResponse Response from ../backend/api/files.php
      */
-    refresh(filesApiResponse) {
-        this.filesApiResponse = filesApiResponse;
-
+    refresh() {
         this.show('loading-spinner', false);
         
         if(this.filesApiResponse["status"] === "error") {
@@ -215,12 +211,10 @@ class rmWebUI {
      */
     getFiles() {
         this.apiRequest("../backend/api/files.php", true, (response) => {
-            try {
-                this.refresh(response);
-            } catch(e) {
-                this.showError("Invalid response from the cloud API.", e.message);
-            }
-        }, function() {});
+            this.filesApiResponse = response;
+        }, () => {
+            this.refresh();
+        });
     }
 
     /**
