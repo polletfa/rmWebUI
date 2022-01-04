@@ -24,5 +24,5 @@
     ],
     "mode": "prod",
     "cache": true,
-    "rmrl": ""
+    "rmrl": "python3 -m rmrl"
 }
