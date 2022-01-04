@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.5.0] - 2022-01-04
+### Added
+- Demonstration mode with dummy data
+- Minor fix in layout
+
 ## [0.4.3] - 2022-01-03
 ### Added
 - More refactoring:
@@ -51,7 +56,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 - First version
 
-[develop]: https://github.com/polletfa/rmWebUI/compare/0.4.3...develop
+[develop]: https://github.com/polletfa/rmWebUI/compare/0.5.0...develop
+[0.5.0]: https://github.com/polletfa/rmWebUI/compare/0.4.3...0.5.0
 [0.4.3]: https://github.com/polletfa/rmWebUI/compare/0.4.2...0.4.3
 [0.4.2]: https://github.com/polletfa/rmWebUI/compare/0.4.1...0.4.2
 [0.4.1]: https://github.com/polletfa/rmWebUI/compare/0.4.0...0.4.1

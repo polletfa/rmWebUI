@@ -75,17 +75,30 @@ class rmWebUI {
     }
 
     /**
+     * Get full application name (name, version, demo)
+     *
+     * @param nbsp Use &nbsp; if true
+     * @return full name
+     */
+    getAppName(nbsp) {
+        const name = this.version.name + " " + this.version.version
+            +(this.version.demo == true ? (" " + " [demo]") : "");
+        if(nbsp) return name.replaceAll(" ", "&nbsp;");
+        else return name;
+    }
+    
+    /**
      * Set title
      *
      * @param path Path to display or false for standard title
      */
     setTitle(path = false) {
         if(path == false) {
-            document.getElementById('title-text').innerHTML = this.version.name + "&nbsp;" + this.version.version;
-            document.title = this.version.name + ' ' + this.version.version;
+            document.getElementById('title-text').innerHTML = this.getAppName(true);
+            document.title = this.getAppName(false);
         } else {
             document.getElementById('title-text').innerHTML = path;
-            document.title = path + ' ' + this.version.name + ' ' + this.version.version;
+            document.title = path + ' ' + this.getAppName(false);
         }
     }
 
@@ -93,7 +106,7 @@ class rmWebUI {
      * Set footer
      */
     setFooter() {
-        document.getElementById('footer-text').innerHTML = this.version.name + "&nbsp;" + this.version.version;
+        document.getElementById('footer-text').innerHTML = this.getAppName(true);
     }
 
     /**

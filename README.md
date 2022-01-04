@@ -8,6 +8,7 @@ rmWebUI is a simple web interface for the reMarkable&reg; cloud designed primari
 - Download a document as ZIP (original data)
 - Download a document as PDF (convert using [rmrl](https://github.com/rschroll/rmrl))
 - Cache downloaded files based on version. Download from the cloud only as needed.
+- [Demonstration mode](http://frmpollet.me/rmWebUI-demo/)
 
 ![register](./screenshots/register.png)
 ![list](./screenshots/list.png)
@@ -66,6 +67,12 @@ See the Apache documentation for more information:
 # Register application
 
 On the first run, you will be asked to register the application. This is required to access your files on the reMarkable&reg; cloud. Once the application is registered, you don't need to do it again. You will be asked again if the application fails to connect to the cloud or if you clear the content of the file `data/auth.json`.
+
+# Live demo
+
+rmWebUI also has a special demonstration mode that can be used to demonstrate the application without access to a reMarkable$reg; cloud account. In this mode, dummy data are returned and rmrl is not used.
+
+To install the demo mode, run `composer run demo` instead of `composer run deploy`. The files are created in `demo/`. You don't need to install rmrl to get PDFs (but you still need to set a value in the configuration to enable the feature). You also don't need write access to `data/`.
 
 # License
 
