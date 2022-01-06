@@ -20,7 +20,7 @@ class rmWebUIList {
      * Show page: Build the table listing the files depending on the file list currently loaded
      */
     showPage() {
-        if(this.ui.filesApiResponse.files === undefined) return;
+        if(this.ui.filesApiResponse === undefined || this.ui.filesApiResponse.files === undefined) return;
 
         const thisEntry = this.ui.filesApiResponse.files.find(item => item.ID === this.collection);
         
@@ -46,7 +46,7 @@ class rmWebUIList {
 
         // update page
         this.ui.setTitle(thisEntry ? thisEntry.Path : "/");
-        this.ui.show('refresh-button', true);
+        this.ui.showRefresh(true);
         this.ui.show('error-banner', false);
         document.getElementById('files-table').innerHTML = html;
     }
@@ -157,12 +157,8 @@ class rmWebUIList {
                 // create link
                 const link = document.createElement("a");
                 link.classList.add("d-none");
-                const href = document.createAttribute("href");
-                href.value = url;
-                link.setAttributeNode(href);
-                const download = document.createAttribute("download");
-                download.value = filename+"."+format;
-                link.setAttributeNode(download);
+                link.setAttribute("href", url);
+                link.setAttribute("download", filename+"."+format);
                 link.click();
                 
                 setTimeout(() => {

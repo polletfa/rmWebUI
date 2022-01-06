@@ -12,17 +12,16 @@
  */
 class rmWebUI {
     constructor() {
-        this.nRequests = 0;                 /**< Number of running requests */
         this.filesApiResponse = undefined;  /**< Response from ../backend/api/files.php */
         this.version = undefined;           /**< Name and version */
         this.config = undefined;            /**< Configuration */
-        this.pages = {                      /**< List of pages */
-            register: new rmWebUIRegister(this),
-            list: new rmWebUIList(this)
-        };
-    
-        // Load config, version and pages
-        const loading = [
+        this.pages = {};                    /**< List of pages */
+
+        this.nRequests = 0;
+        this.refreshButtonVisible = false;
+        
+        // Load config and version
+        Promise.all([
             this.apiRequest("../version.json", true, response => {
                 this.version = response;
                 this.setTitle();
@@ -33,13 +32,42 @@ class rmWebUI {
                 this.config = response;
                 this.show("debug-banner", this.config.mode === "debug");
             }, () => {})
-        ];
-        for(const page in this.pages) {
-            loading.push(this.loadPage(page));
-        }
-        Promise.all(loading).then(() => {
-            // Load data from the cloud
-            this.getFiles();       
+        ]).then(() => {       
+            // Intialize and load pages
+            const loading = [];
+            Array.prototype.forEach.call(document.getElementsByClassName('rmWebUI-page'), (page)=>{
+                const pagename = page.getAttribute("data-rmWebUI-page");
+                const classname = page.getAttribute("data-rmWebUI-class");
+                
+                if(pagename && classname) {
+                    page.setAttribute("id", "content-" + pagename);
+                    if(!page.classList.contains("d-none")) page.classList.add("d-none");
+
+                    // load html
+                    loading.push(this.apiRequest("pages/"+pagename+".html", false, (response) => {
+                        document.getElementById("content-"+pagename).innerHTML = (new TextDecoder).decode(response);
+                    }, () => {}));
+
+                    // load script
+                    loading.push(new Promise((resolve) => {
+                        const script = document.createElement("script");
+                        script.src = "pages/"+pagename+".js";
+                        script.addEventListener("load", () => {
+                            this.pages[pagename] = (Function('ui', 'return new '+classname+'(ui)'))(this);
+                            resolve();
+                        });
+                        script.addEventListener("error", () => {
+                            resolve();
+                        });
+                        document.body.appendChild(script);
+                    }));
+                }
+            });
+            
+            Promise.all(loading).then(() => {
+                // Load data from the cloud
+                this.getFiles();       
+            });
         });
     }
 
@@ -81,6 +109,16 @@ class rmWebUI {
         if(nbsp) return name.replaceAll(" ", "&nbsp;");
         else return name;
     }
+
+    /**
+     * Show refresh button
+     */
+    showRefresh(show) {
+        this.refreshButtonVisible = show;
+        if(this.nRequests == 0) {
+            this.show("refresh-button", show);
+        }
+    }
     
     /**
      * Set title
@@ -109,27 +147,6 @@ class rmWebUI {
     setFooter() {
         document.getElementById('footer-text').innerHTML = this.getAppName(true)
             + (this.version.demo ? ' <span class="badge rounded-pill bg-light text-black">DEMO</span>' : "");
-    }
-
-    /**
-     * Load a page
-     *
-     * @param name Page name
-     * @return Promise
-     */
-    loadPage(name) {
-        // add div for page
-        const page = document.createElement("div");
-        page.classList.add("d-none");
-        const pageid = document.createAttribute("id");
-        pageid.value = "content-"+name;
-        page.setAttributeNode(pageid);
-        document.getElementById("content").appendChild(page);
-        
-        // load file
-        return this.apiRequest("pages/"+name+".html", false, (response) => {
-            page.innerHTML = (new TextDecoder).decode(response);
-        }, () => {});
     }
 
     /**
@@ -165,7 +182,7 @@ class rmWebUI {
      * @param page list or register
      */
     showPage(page) {
-        for(const item of ["register", "list"]) {
+        for(const item in this.pages) {
             this.show("content-"+item, item == page);
         };
         if(this.pages[page].showPage) this.pages[page].showPage();
@@ -183,23 +200,24 @@ class rmWebUI {
     apiRequest(request, jsonOnly, handler, finallyHandler) {
         return new Promise((resolve, reject) => {
             const httpRequest = new XMLHttpRequest();
+            this.nRequests ++;
             httpRequest.open("GET", request, true);
             httpRequest.responseType = "arraybuffer";
             httpRequest.send();
-            this.nRequests++;
             this.show('loading-spinner', true);
-            const refreshBtnPrev = this.show('refresh-button', false);
+            this.show('refresh-button', false);
             httpRequest.addEventListener("error", () => {
+                this.nRequests = this.nRequests > 0 ? this.nRequests -1 : 0;
                 this.showError("Unable to load "+request, "XMLHttpRequest error.");
 
-                this.nRequests--;
                 this.show('loading-spinner', this.nRequests > 0);
-                this.show('refresh-button', refreshBtnPrev);
+                this.show('refresh-button', this.nRequests == 0 && this.refreshButtonVisible);
                 finallyHandler();
                 reject();
             });
             httpRequest.addEventListener("readystatechange", () => {
                 if (httpRequest.readyState === httpRequest.DONE) {
+                    this.nRequests = this.nRequests > 0 ? this.nRequests-1 : 0;
                     this.show('error-banner', false);
                     let json = undefined;
                     let success = false;
@@ -215,9 +233,8 @@ class rmWebUI {
                             this.showError("Unable to load "+request, e.message);
                         }                            
                     }
-                    this.nRequests--;
                     this.show('loading-spinner', this.nRequests > 0);
-                    this.show('refresh-button', refreshBtnPrev);
+                    this.show('refresh-button', this.nRequests == 0 && this.refreshButtonVisible);
                     finallyHandler();
                     if(success) resolve();
                     else reject();

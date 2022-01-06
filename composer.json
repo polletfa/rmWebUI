@@ -14,7 +14,8 @@
     ],
     "scripts": {
         "deploy": "./scripts/deploy.sh",
-        "demo": "./scripts/deploy.sh demo"
+        "demo": "./scripts/deploy.sh demo",
+        "phpversion": "php -v"
     },
     "require": {
         "splitbrain/remarkable-api": "dev-master"

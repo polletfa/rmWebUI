@@ -20,6 +20,7 @@ class rmWebUIRegister {
      */
     showPage() {
         this.ui.setTitle();
+        this.ui.showRefresh(false);
         document.getElementById('code').focus();
     }
     

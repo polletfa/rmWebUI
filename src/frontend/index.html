@@ -35,7 +35,10 @@
         </div>
 
         <!-- content -->
-        <div id="content"></div>
+        <div id="content">
+          <div class="rmWebUI-page" data-rmWebUI-page="register" data-rmWebUI-class="rmWebUIRegister"></div>
+          <div class="rmWebUI-page" data-rmWebUI-page="list" data-rmWebUI-class="rmWebUIList"></div>
+        </div>
 
         <!-- demo banner -->
         <div id="demo-banner" class="d-none">
@@ -61,11 +64,9 @@
         <div class="row bg-dark text-white" role="alert"><div class="col text-center" id="footer-text"></div></div>
       </div>
     </footer>
-    
+
     <!-- Load Javascript and init interface -->
     <script src="resources/bootstrap.min.js"></script>
-    <script src="pages/register.js"></script>
-    <script src="pages/list.js"></script>
     <script src="rmWebUI.js"></script>
     <script>
       const app = new rmWebUI();
