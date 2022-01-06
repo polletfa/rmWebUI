@@ -98,7 +98,7 @@ class rmWebUI {
         }
 
         if(this.version.demo) {
-            titletext.innerHTML += ' <span class="badge rounded-pill bg-dark text-white">DEMO</span>';
+            titletext.innerHTML += '&nbsp;<span class="badge rounded-pill bg-dark text-white">DEMO</span>';
             document.title += ' [DEMO]';
         }
     }
