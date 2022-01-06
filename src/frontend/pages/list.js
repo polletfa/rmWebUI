@@ -17,9 +17,9 @@ class rmWebUIList {
     }
 
     /**
-     * Build the table listing the files depending on the file list currently loaded
+     * Show page: Build the table listing the files depending on the file list currently loaded
      */
-    buildFileTable() {
+    showPage() {
         if(this.ui.filesApiResponse.files === undefined) return;
 
         const thisEntry = this.ui.filesApiResponse.files.find(item => item.ID === this.collection);
@@ -117,7 +117,7 @@ class rmWebUIList {
      */
     openCollection(collection) {
         this.collection = collection;
-        this.buildFileTable();
+        this.showPage();
     }
 
     /**

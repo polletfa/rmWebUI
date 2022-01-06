@@ -36,12 +36,28 @@
 
         <!-- content -->
         <div id="content"></div>
+
+        <!-- demo banner -->
+        <div id="demo-banner" class="d-none">
+          <p>&nbsp;</p>
+          <div class="alert alert-dark alert-dismissible" id="demo-alert" role="alert">
+            <button type="button" class="btn-close" data-bs-dismiss="alert" data-bs-target="demo-alert" aria-label="Close"></button>
+            This is a live demonstration:
+            <ul>
+              <li>Sample data are used. No connection is made to the reMarkable&reg; cloud.</li>
+              <li>All data are saved in a temporary session. Restart you browser or clear cookies to reset.</li>
+              <li>The registration code is: <b>abcdefgh</b></li>
+              <li>When downloading a notebook: you will get either a handwritten notebook, an annotated PDF or an error.</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </main>
+    
     <!-- footer -->
     <footer class="footer mt-auto bg-dark text-white">
       <div class="container">
-        <div class="row bg-dark text-white"><div class="col text-center" id="footer-text"></div></div>
+        <div class="row bg-dark text-white" role="alert"><div class="col text-center" id="footer-text"></div></div>
       </div>
     </footer>
     

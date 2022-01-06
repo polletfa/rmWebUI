@@ -8,6 +8,7 @@ if($config->mode == "debug") {
 }
 
 $code = isset($_GET["code"]) ? $_GET["code"] : false;
+sleep(2);
 if($code !== "abcdefgh") {
     echo json_encode(array("status" => "error",
                            "errorType" => "invalid parameters",

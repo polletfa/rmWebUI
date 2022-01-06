@@ -12,6 +12,7 @@
  */
 class rmWebUI {
     constructor() {
+        this.nRequests = 0;                 /**< Number of running requests */
         this.filesApiResponse = undefined;  /**< Response from ../backend/api/files.php */
         this.version = undefined;           /**< Name and version */
         this.config = undefined;            /**< Configuration */
@@ -26,6 +27,7 @@ class rmWebUI {
                 this.version = response;
                 this.setTitle();
                 this.setFooter();
+                this.show('demo-banner', this.version.demo);
             }, () => {}),
             this.apiRequest("../data/config.json", true, response => {
                 this.config = response;
@@ -46,30 +48,24 @@ class rmWebUI {
      */
     refresh() {
         this.show('loading-spinner', false);
-        
         if(this.filesApiResponse["status"] === "error") {
             switch(this.filesApiResponse["errorType"]) {
             case "load-token":
                 this.showPage("register");
-                this.setTitle();
                 break;
             case "init-api":
                 this.showError("Unable to connect to the cloud! You may try to register again.", this.filesApiResponse["error"]);
                 this.showPage("register");
-                this.setTitle();
                 break;
             case "retrieve-files":
                 this.showError("Unable to retrieve file list from the cloud!", this.filesApiResponse["error"]);
                 this.showPage(""); // hide all pages
-                this.setTitle();
                 break;
             default:
                 this.showError("Unknown error (" + this.filesApiResponse["errorType"] + ")", this.filesApiResponse["error"]);
                 this.showPage(""); // hide all pages
-                this.setTitle();
             }
         } else {
-            this.pages.list.buildFileTable();
             this.showPage("list");
         }
     }
@@ -81,8 +77,7 @@ class rmWebUI {
      * @return full name
      */
     getAppName(nbsp) {
-        const name = this.version.name + " " + this.version.version
-            +(this.version.demo == true ? (" " + " [demo]") : "");
+        const name = this.version.name + " " + this.version.version;
         if(nbsp) return name.replaceAll(" ", "&nbsp;");
         else return name;
     }
@@ -93,12 +88,18 @@ class rmWebUI {
      * @param path Path to display or false for standard title
      */
     setTitle(path = false) {
+        const titletext = document.getElementById('title-text');
         if(path == false) {
-            document.getElementById('title-text').innerHTML = this.getAppName(true);
+            titletext.innerHTML = this.getAppName(true);
             document.title = this.getAppName(false);
         } else {
-            document.getElementById('title-text').innerHTML = path;
-            document.title = path + ' ' + this.getAppName(false);
+            titletext.innerHTML = path;
+            document.title = path + ' - ' + this.getAppName(false);
+        }
+
+        if(this.version.demo) {
+            titletext.innerHTML += ' <span class="badge rounded-pill bg-dark text-white">DEMO</span>';
+            document.title += ' [DEMO]';
         }
     }
 
@@ -106,7 +107,8 @@ class rmWebUI {
      * Set footer
      */
     setFooter() {
-        document.getElementById('footer-text').innerHTML = this.getAppName(true);
+        document.getElementById('footer-text').innerHTML = this.getAppName(true)
+            + (this.version.demo ? ' <span class="badge rounded-pill bg-light text-black">DEMO</span>' : "");
     }
 
     /**
@@ -166,6 +168,7 @@ class rmWebUI {
         for(const item of ["register", "list"]) {
             this.show("content-"+item, item == page);
         };
+        if(this.pages[page].showPage) this.pages[page].showPage();
     }
 
     /**
@@ -183,11 +186,14 @@ class rmWebUI {
             httpRequest.open("GET", request, true);
             httpRequest.responseType = "arraybuffer";
             httpRequest.send();
+            this.nRequests++;
             this.show('loading-spinner', true);
             const refreshBtnPrev = this.show('refresh-button', false);
             httpRequest.addEventListener("error", () => {
                 this.showError("Unable to load "+request, "XMLHttpRequest error.");
-                this.show('loading-spinner', false);
+
+                this.nRequests--;
+                this.show('loading-spinner', this.nRequests > 0);
                 this.show('refresh-button', refreshBtnPrev);
                 finallyHandler();
                 reject();
@@ -209,7 +215,8 @@ class rmWebUI {
                             this.showError("Unable to load "+request, e.message);
                         }                            
                     }
-                    this.show('loading-spinner', false);
+                    this.nRequests--;
+                    this.show('loading-spinner', this.nRequests > 0);
                     this.show('refresh-button', refreshBtnPrev);
                     finallyHandler();
                     if(success) resolve();

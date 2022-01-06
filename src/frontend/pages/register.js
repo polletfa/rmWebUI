@@ -16,6 +16,14 @@ class rmWebUIRegister {
     }
 
     /**
+     * Method called when the page is shown
+     */
+    showPage() {
+        this.ui.setTitle();
+        document.getElementById('code').focus();
+    }
+    
+    /**
      * Register the application using the code provided in the form
      */
     registerApp() {
@@ -28,6 +36,7 @@ class rmWebUIRegister {
                         this.ui.showError("Unable to register the application.", response["error"]);
                     } else {
                         this.ui.getFiles();
+                        this.ui.show('content-register', false);
                     }
                 } else {
                     this.ui.showError("Invalid response from the cloud API.", response.toString());
@@ -37,6 +46,16 @@ class rmWebUIRegister {
             });
         } else {
             this.ui.showError("This isn't a valid code.", "The code must be exactly 8 alphanumerical characters.");
+        }
+    }
+
+    /**
+     * Called when ENTER is pressed while inside the "code" input field
+     */
+    enterCode(event) {
+        if(event.keyCode==13) {
+            document.getElementById('register-btn').click();
+            document.getElementById('code').value = '';
         }
     }
 }
