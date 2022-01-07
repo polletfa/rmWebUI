@@ -16,7 +16,7 @@ $INSTALL_DIR = $DEPLOY_AS_DEMO ? "demo" : "dist";
 
 $FILES = array(
 //  --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//  Package                            Component                         Source directory          Destination directory                       Files 
+//  Package                            Component                         Source directory                    Destination directory             Files 
 //  --------------------------------------------------------------------------------------------------------------------------------------------------------------------
     "Common files"            => array("Documentation" => array("src" => "",                       "dest" => "",                   "files" => ["CHANGELOG.md",
                                                                                                                                                "LICENSE.md",
@@ -103,14 +103,20 @@ function installFile($file, $src, $dest) {
     chmod($outputfile, 0644);
 }
 
-function installPackages($pkg) {
+function installPackages() {
     global $FILES;
-    
-    echo($pkg ."\n");
-    foreach($FILES[$pkg] as $component => $def) {
-        if($component != "") echo("- Deploy ".$component."\n");
-        foreach($def["files"] as $file) {
-            installFile($file, $def["src"], $def["dest"]);
+
+    foreach (func_get_args() as $arg) {
+        if ($arg !== '') { $pkgs[] = $arg; }
+    }
+
+    foreach($pkgs as $pkg) {
+        echo($pkg ."\n");
+        foreach($FILES[$pkg] as $component => $def) {
+            if($component != "") echo("- Deploy ".$component."\n");
+            foreach($def["files"] as $file) {
+                installFile($file, $def["src"], $def["dest"]);
+            }
         }
     }
 }
@@ -149,10 +155,9 @@ function clearInstall() {
 //-------------------------- Install
 
 clearInstall();
-installPackages("Documentation");
-installPackages("Configuration");
-installPackages("Frontend");
-installPackages("Backend" . ($DEPLOY_AS_DEMO ? " (demonstration)" : ""));
+installPackages("Common files",
+                "Frontend",
+                "Backend" . ($DEPLOY_AS_DEMO ? " (demonstration)" : ""));
 writeVersionFile();
 installDependencies();
 ?>
