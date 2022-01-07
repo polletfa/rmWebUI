@@ -15,53 +15,53 @@ $DEPLOY_AS_DEMO = isset($argv[1]) && $argv[1] == "demo";
 $INSTALL_DIR = $DEPLOY_AS_DEMO ? "demo" : "dist";
 
 $FILES = array(
-//  ----------------------------------------------------------------------------------------------------------------------------
-//   Package                        Component          Source                    Destination            Files 
-//  ----------------------------------------------------------------------------------------------------------------------------
-    "Common files"            => [ "Documentation", [ "",                       "",                   ["CHANGELOG.md",
-                                                                                                       "LICENSE.md",
-                                                                                                       "README.md"]],
+// -----------------------------------------------------------------------------------------------------------------------------
+//   Package                          Component          Source                    Destination            Files 
+// -----------------------------------------------------------------------------------------------------------------------------
+    "Common files"            => [ [ "Documentation", [ "",                       "",                   ["CHANGELOG.md",
+                                                                                                         "LICENSE.md",
+                                                                                                         "README.md"]]],
 //                                 ---------------------------------------------------------------------------------------------
-                                   "Configuration", [ "src/data",               "data",               ["config.json"]]],
-//  ----------------------------------------------------------------------------------------------------------------------------
-    "Backend"                 => [ "API files",     [ "src/backend/api",        "backend/api",        ["download.php",
-                                                                                                       "files.php",
-                                                                                                       "register.php"]],
+                                   [ "Configuration", [ "src/data",               "data",               ["config.json"]]]],
+// -----------------------------------------------------------------------------------------------------------------------------
+    "Backend"                 => [ [ "API files",     [ "src/backend/api",        "backend/api",        ["download.php",
+                                                                                                         "files.php",
+                                                                                                         "register.php"]]],
 //                                 ---------------------------------------------------------------------------------------------
-                                   "Classes",       [ "src/backend",            "backend",            ["Cache.php",
-                                                                                                       "CloudAPI.php",
-                                                                                                       "Download.php",
-                                                                                                       "Token.php"]]],
-//  ----------------------------------------------------------------------------------------------------------------------------
-    "Backend (demonstration)" => [ "API files",     [ "src/demo_backend/api",   "backend/api",        ["download.php",
-                                                                                                       "files.php",
-                                                                                                       "register.php"]],
+                                   [ "Classes",       [ "src/backend",            "backend",            ["Cache.php",
+                                                                                                         "CloudAPI.php",
+                                                                                                         "Download.php",
+                                                                                                         "Token.php"]]]],
+// -----------------------------------------------------------------------------------------------------------------------------
+    "Backend (demonstration)" => [ [ "API files",     [ "src/demo_backend/api",   "backend/api",        ["download.php",
+                                                                                                         "files.php",
+                                                                                                         "register.php"]]],
 //                                 ---------------------------------------------------------------------------------------------
-                                   "Sample files"   [ "src/demo_backend/data",  "data",               ["files.json",
-                                                                                                       "sample_notebook.pdf",
-                                                                                                       "sample_notebook.zip",
-                                                                                                       "sample_pdf.pdf",
-                                                                                                       "sample_pdf.zip"]]],
-//  ----------------------------------------------------------------------------------------------------------------------------
-    "Frontend"                => [ "Redirection",   [ "src",                    "",                   ["index.html"]],
+                                   [ "Sample files",  [ "src/demo_backend/data",  "data",               ["files.json",
+                                                                                                         "sample_notebook.pdf",
+                                                                                                         "sample_notebook.zip",
+                                                                                                         "sample_pdf.pdf",
+                                                                                                         "sample_pdf.zip"]]]],
+// -----------------------------------------------------------------------------------------------------------------------------
+    "Frontend"                => [ [ "Redirection",   [ "src",                    "",                   ["index.html"]]],
 //                                 ---------------------------------------------------------------------------------------------
-                                   "Main files",    [ "src/frontend",           "frontend",           ["index.html",
-                                                                                                       "rmWebUI.js"]],
+                                   [ "Main files",    [ "src/frontend",           "frontend",           ["index.html",
+                                                                                                         "rmWebUI.js"]]],
 //                                 ---------------------------------------------------------------------------------------------
-                                   "Pages",         [ "src/frontend/pages",     "frontend/pages",     ["list.html",
-                                                                                                       "list.js",
-                                                                                                       "register.html",
-                                                                                                       "register.js"]],
+                                   [ "Pages",         [ "src/frontend/pages",     "frontend/pages",     ["list.html",
+                                                                                                         "list.js",
+                                                                                                         "register.html",
+                                                                                                         "register.js"]]],
 //                                 ---------------------------------------------------------------------------------------------
-                                   "Resources",     [ "src/frontend/resources", "frontend/resources", ["bootstrap.min.css",
-                                                                                                       "bootstrap.min.js",
-                                                                                                       "cloud.svg",
-                                                                                                       "download.svg",
-                                                                                                       "empty.svg",
-                                                                                                       "file.svg",
-                                                                                                       "folder.svg",
-                                                                                                       "refresh.svg"]]]);
-//  ----------------------------------------------------------------------------------------------------------------------------
+                                   [ "Resources",     [ "src/frontend/resources", "frontend/resources", ["bootstrap.min.css",
+                                                                                                         "bootstrap.min.js",
+                                                                                                         "cloud.svg",
+                                                                                                         "download.svg",
+                                                                                                         "empty.svg",
+                                                                                                         "file.svg",
+                                                                                                         "folder.svg",
+                                                                                                         "refresh.svg"]]]]);
+// -----------------------------------------------------------------------------------------------------------------------------
 
 //-------------------------- Functions
 
@@ -111,10 +111,10 @@ function installPackages() {
 
     foreach($pkgs as $pkg) {
         echo($pkg ."\n");
-        foreach($FILES[$pkg] as $component => $def) {
-            if($component != "") echo("- Deploy ".$component."\n");
-            foreach($def["files"] as $file) {
-                installFile($file, $def["src"], $def["dest"]);
+        foreach($FILES[$pkg] as $component) {
+            if($component[0] != "") echo("- ".$component[0]."\n");
+            foreach($component[1][2] as $file) {
+                installFile($file, $component[1][0], $component[1][1]);
             }
         }
     }
