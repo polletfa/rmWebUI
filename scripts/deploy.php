@@ -15,96 +15,54 @@ $DEPLOY_AS_DEMO = isset($argv[1]) && $argv[1] == "demo";
 $INSTALL_DIR = $DEPLOY_AS_DEMO ? "demo" : "dist";
 
 $FILES = array(
-    "Documentation" => array(
-        "" => array(
-            "src" => "",
-            "dest" => "",
-            "files" => [
-                "CHANGELOG.md",
-                "LICENSE.md",
-                "README.md"
-            ])),
-    "Configuration" => array(
-        "" => array(
-            "src" => "src/data",
-            "dest" => "data",
-            "files" => [
-                "config.json"
-            ])),
-    "Backend" => array(
-        "API files" => array(
-            "src" => "src/backend/api",
-            "dest" => "src/backend/api",
-            "files" => [
-                "download.php",
-                "files.php",
-                "register.php"
-            ]),
-        "classes" => array(
-            "src" => "src/backend",
-            "dest" => "backend",
-            "files" => [
-                "Cache.php",
-                "CloudAPI.php",
-                "Download.php",
-                "Token.php"
-            ])),
-    "Backend for live demonstration" => array(
-        "API files" => array(
-            "src" => "src/demo_backend/api",
-            "dest" => "backend/api",
-            "files" => [
-                "download.php",
-                "files.php",
-                "register.php"
-            ]),
-        "Sample files" => array(
-            "src" => "src/demo_backend/data",
-            "dest" => "data",
-            "files" => [
-                "files.json",
-                "sample_notebook.pdf",
-                "sample_notebook.zip",
-                "sample_pdf.pdf",
-                "sample_pdf.zip"
-            ])),            
-    "Frontend" => array(
-        "Redirection" => array(
-            "src" => "src",
-            "dest" => "",
-            "files" => [
-                "index.html"
-            ]),
-        "Main files" => array(
-            "src" => "src/frontend",
-            "dest" => "frontend",
-            "files" => [
-                "index.html",
-                "rmWebUI.js"
-            ]),
-        "Pages" => array(
-            "src" => "src/frontend/pages",
-            "dest" => "frontend/pages",
-            "files" => [
-                "list.html",
-                "list.js",
-                "register.html",
-                "register.js"
-            ]),
-        "Resources" => array(
-            "src" => "src/frontend/resources",
-            "dest" => "frontend/resources",
-            "files" => [
-                "bootstrap.min.css",
-                "bootstrap.min.js",
-                "cloud.svg",
-                "download.svg",
-                "empty.svg",
-                "file.svg",
-                "folder.svg",
-                "refresh.svg"
-            ]))
-);
+//  --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//  Package                            Component                         Source directory          Destination directory                       Files 
+//  --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    "Common files"            => array("Documentation" => array("src" => "",                       "dest" => "",                   "files" => ["CHANGELOG.md",
+                                                                                                                                               "LICENSE.md",
+                                                                                                                                               "README.md"]),
+//                                     ---------------------------------------------------------------------------------------------------------------------------------
+                                       "Configuration" => array("src" => "src/data",               "dest" => "data",               "files" => ["config.json"])),
+//  --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    "Backend"                 => array("API files"     => array("src" => "src/backend/api",        "dest" => "src/backend/api",    "files" => ["download.php",
+                                                                                                                                               "files.php",
+                                                                                                                                               "register.php"]),
+//                                     ---------------------------------------------------------------------------------------------------------------------------------
+                                       "classes"       => array("src" => "src/backend",            "dest" => "backend",            "files" => ["Cache.php",
+                                                                                                                                               "CloudAPI.php",
+                                                                                                                                               "Download.php",
+                                                                                                                                               "Token.php"])),
+//  --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    "Backend (demonstration)" => array("API files"     => array("src" => "src/demo_backend/api",   "dest" => "backend/api",        "files" => ["download.php",
+                                                                                                                                               "files.php",
+                                                                                                                                               "register.php"
+                                                                                                                                              ]),
+//                                     ---------------------------------------------------------------------------------------------------------------------------------
+                                       "Sample files"  => array("src" => "src/demo_backend/data",  "dest" => "data",               "files" => ["files.json",
+                                                                                                                                               "sample_notebook.pdf",
+                                                                                                                                               "sample_notebook.zip",
+                                                                                                                                               "sample_pdf.pdf",
+                                                                                                                                               "sample_pdf.zip"])),
+//  --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    "Frontend"                => array("Redirection"   => array("src" => "src",                    "dest" => "",                   "files" => ["index.html"]),
+//                                     ---------------------------------------------------------------------------------------------------------------------------------
+                                       "Main files"    => array("src" => "src/frontend",           "dest" => "frontend",           "files" => ["index.html",
+                                                                                                                                               "rmWebUI.js"]),
+//                                     ---------------------------------------------------------------------------------------------------------------------------------
+                                       "Pages"         => array("src" => "src/frontend/pages",     "dest" => "frontend/pages",     "files" => ["list.html",
+                                                                                                                                               "list.js",
+                                                                                                                                               "register.html",
+                                                                                                                                               "register.js"]),
+//                                     ---------------------------------------------------------------------------------------------------------------------------------
+                                       "Resources"     => array("src" => "src/frontend/resources", "dest" => "frontend/resources", "files" => ["bootstrap.min.css",
+                                                                                                                                               "bootstrap.min.js",
+                                                                                                                                               "cloud.svg",
+                                                                                                                                               "download.svg",
+                                                                                                                                               "empty.svg",
+                                                                                                                                               "file.svg",
+                                                                                                                                               "folder.svg",
+                                                                                                                                               "refresh.svg"])));
+//  --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 //-------------------------- Functions
 
@@ -194,7 +152,7 @@ clearInstall();
 installPackages("Documentation");
 installPackages("Configuration");
 installPackages("Frontend");
-installPackages("Backend" . ($DEPLOY_AS_DEMO ? " for live demonstration" : ""));
+installPackages("Backend" . ($DEPLOY_AS_DEMO ? " (demonstration)" : ""));
 writeVersionFile();
 installDependencies();
 ?>
