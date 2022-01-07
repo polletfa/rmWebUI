@@ -28,7 +28,7 @@ $FILES = array(
                                                                                                                                                "files.php",
                                                                                                                                                "register.php"]),
 //                                     ---------------------------------------------------------------------------------------------------------------------------------
-                                       "classes"       => array("src" => "src/backend",            "dest" => "backend",            "files" => ["Cache.php",
+                                       "Classes"       => array("src" => "src/backend",            "dest" => "backend",            "files" => ["Cache.php",
                                                                                                                                                "CloudAPI.php",
                                                                                                                                                "Download.php",
                                                                                                                                                "Token.php"])),
