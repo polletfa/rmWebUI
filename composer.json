@@ -13,8 +13,8 @@
         }
     ],
     "scripts": {
-        "deploy": "./scripts/deploy.sh",
-        "demo": "./scripts/deploy.sh demo",
+        "deploy": "php ./scripts/deploy.php",
+        "demo": "php ./scripts/deploy.php demo",
         "phpversion": "php -v"
     },
     "require": {

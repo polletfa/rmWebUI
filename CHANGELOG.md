@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Small fix in title
 - Fix behaviour for register form
 - Better footer
+- Fix behaviour of refresh button when starting several requests at once
+- Replaced Bash script with PHP script
 
 ## [0.5.0] - 2022-01-04
 ### Added
