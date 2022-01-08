@@ -1,7 +1,7 @@
 {
     "name": "digitalis/rm-web-ui",
     "displayName": "rmWebUI",
-    "version": "0.5.0",
+    "version": "0.5.1",
     "description": "reMarkable Cloud WebUI",
     "type": "project",
     "license": "MIT",
@@ -13,8 +13,9 @@
         }
     ],
     "scripts": {
-        "deploy": "./scripts/deploy.sh",
-        "demo": "./scripts/deploy.sh demo"
+        "deploy": "php ./scripts/deploy.php",
+        "demo": "php ./scripts/deploy.php demo",
+        "phpversion": "php -v"
     },
     "require": {
         "splitbrain/remarkable-api": "dev-master"

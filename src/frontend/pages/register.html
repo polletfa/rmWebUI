@@ -16,7 +16,7 @@
     <label for="code" class="col-form-label">One-time code</label>
   </div>
   <div class="col-auto">
-    <input type="text" id="code" class="form-control"></input>
+    <input type="text" id="code" class="form-control" onkeypress="app.pages.register.enterCode(event);"></input>
   </div>
   <div class="col-auto">
     <button type="submit" class="btn btn-dark" onclick="app.pages.register.registerApp();" id="register-btn">Register</button>

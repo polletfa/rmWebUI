@@ -15,29 +15,81 @@ class rmWebUI {
         this.filesApiResponse = undefined;  /**< Response from ../backend/api/files.php */
         this.version = undefined;           /**< Name and version */
         this.config = undefined;            /**< Configuration */
-        this.pages = {                      /**< List of pages */
-            register: new rmWebUIRegister(this),
-            list: new rmWebUIList(this)
-        };
-    
-        // Load config, version and pages
-        const loading = [
+        this.pages = {};                    /**< List of pages */
+
+        this.nRequests = 0;
+        this.refreshButtonVisible = false;
+
+        // set events for collapsibles to resize the margin for the header during show/hide animation
+        Array.prototype.forEach.call(document.getElementsByClassName('collapse'), (coll) => {
+            const clearResizeInterval = () => {
+                if(this.resizeInterval) {
+                    clearInterval(this.resizeInterval);
+                    this.resizeInterval = undefined;
+                }
+            };
+            const setResizeInterval = () => {
+                this.resizeInterval = setInterval(() => this.resizeHeader(), 25);
+                // we clear the interval after a time just in case the hidden/shown events
+                // are not received (we don't want to run this interval forever)
+                setTimeout(() => clearResizeInterval(), 2000);
+                
+            };
+            coll.addEventListener('hide.bs.collapse', setResizeInterval);
+            coll.addEventListener('hidden.bs.collapse', clearResizeInterval);
+
+            coll.addEventListener('show.bs.collapse', setResizeInterval);
+            coll.addEventListener('shown.bs.collapse', clearResizeInterval);
+        });
+        
+        // Load config and version
+        Promise.all([
             this.apiRequest("../version.json", true, response => {
                 this.version = response;
                 this.setTitle();
                 this.setFooter();
+                this.show('demo-banner', this.version.demo);
             }, () => {}),
             this.apiRequest("../data/config.json", true, response => {
                 this.config = response;
                 this.show("debug-banner", this.config.mode === "debug");
             }, () => {})
-        ];
-        for(const page in this.pages) {
-            loading.push(this.loadPage(page));
-        }
-        Promise.all(loading).then(() => {
-            // Load data from the cloud
-            this.getFiles();       
+        ]).then(() => {       
+            // Intialize and load pages
+            const loading = [];
+            Array.prototype.forEach.call(document.getElementsByClassName('rmWebUI-page'), (page)=>{
+                const pagename = page.getAttribute("data-rmWebUI-page");
+                const classname = page.getAttribute("data-rmWebUI-class");
+                
+                if(pagename && classname) {
+                    page.setAttribute("id", "content-" + pagename);
+                    if(!page.classList.contains("d-none")) page.classList.add("d-none");
+
+                    // load html
+                    loading.push(this.apiRequest("pages/"+pagename+".html", false, (response) => {
+                        document.getElementById("content-"+pagename).innerHTML = (new TextDecoder).decode(response);
+                    }, () => {}));
+
+                    // load script
+                    loading.push(new Promise((resolve) => {
+                        const script = document.createElement("script");
+                        script.src = "pages/"+pagename+".js";
+                        script.addEventListener("load", () => {
+                            this.pages[pagename] = (Function('ui', 'return new '+classname+'(ui)'))(this);
+                            resolve();
+                        });
+                        script.addEventListener("error", () => {
+                            resolve();
+                        });
+                        document.body.appendChild(script);
+                    }));
+                }
+            });
+            
+            Promise.all(loading).then(() => {
+                // Load data from the cloud
+                this.getFiles();       
+            });
         });
     }
 
@@ -46,32 +98,35 @@ class rmWebUI {
      */
     refresh() {
         this.show('loading-spinner', false);
-        
         if(this.filesApiResponse["status"] === "error") {
             switch(this.filesApiResponse["errorType"]) {
             case "load-token":
                 this.showPage("register");
-                this.setTitle();
                 break;
             case "init-api":
                 this.showError("Unable to connect to the cloud! You may try to register again.", this.filesApiResponse["error"]);
                 this.showPage("register");
-                this.setTitle();
                 break;
             case "retrieve-files":
                 this.showError("Unable to retrieve file list from the cloud!", this.filesApiResponse["error"]);
                 this.showPage(""); // hide all pages
-                this.setTitle();
                 break;
             default:
                 this.showError("Unknown error (" + this.filesApiResponse["errorType"] + ")", this.filesApiResponse["error"]);
                 this.showPage(""); // hide all pages
-                this.setTitle();
             }
         } else {
-            this.pages.list.buildFileTable();
             this.showPage("list");
         }
+        this.resizeHeader();
+    }
+
+    /** 
+     * Resize the margin for the header 
+     */
+    resizeHeader() {
+        const body = document.getElementsByTagName("body")[0];
+        body.style = 'padding-top: '+document.getElementById('header').getBoundingClientRect().height+'px;';
     }
 
     /**
@@ -81,10 +136,19 @@ class rmWebUI {
      * @return full name
      */
     getAppName(nbsp) {
-        const name = this.version.name + " " + this.version.version
-            +(this.version.demo == true ? (" " + " [demo]") : "");
+        const name = this.version.name + " " + this.version.version;
         if(nbsp) return name.replaceAll(" ", "&nbsp;");
         else return name;
+    }
+
+    /**
+     * Show refresh button
+     */
+    showRefresh(show) {
+        this.refreshButtonVisible = show;
+        if(this.nRequests == 0) {
+            this.show("refresh-button", show);
+        }
     }
     
     /**
@@ -93,41 +157,28 @@ class rmWebUI {
      * @param path Path to display or false for standard title
      */
     setTitle(path = false) {
+        const titletext = document.getElementById('title-text');
         if(path == false) {
-            document.getElementById('title-text').innerHTML = this.getAppName(true);
+            titletext.innerHTML = this.getAppName(true);
             document.title = this.getAppName(false);
         } else {
-            document.getElementById('title-text').innerHTML = path;
-            document.title = path + ' ' + this.getAppName(false);
+            titletext.innerHTML = path;
+            document.title = path + ' - ' + this.getAppName(false);
         }
+
+        if(this.version.demo) {
+            titletext.innerHTML += '&nbsp;<span class="badge rounded-pill bg-dark text-white">DEMO</span>';
+            document.title += ' [DEMO]';
+        }
+        this.resizeHeader();
     }
 
     /**
      * Set footer
      */
     setFooter() {
-        document.getElementById('footer-text').innerHTML = this.getAppName(true);
-    }
-
-    /**
-     * Load a page
-     *
-     * @param name Page name
-     * @return Promise
-     */
-    loadPage(name) {
-        // add div for page
-        const page = document.createElement("div");
-        page.classList.add("d-none");
-        const pageid = document.createAttribute("id");
-        pageid.value = "content-"+name;
-        page.setAttributeNode(pageid);
-        document.getElementById("content").appendChild(page);
-        
-        // load file
-        return this.apiRequest("pages/"+name+".html", false, (response) => {
-            page.innerHTML = (new TextDecoder).decode(response);
-        }, () => {});
+        document.getElementById('footer-text').innerHTML = this.getAppName(true)
+            + (this.version.demo ? ' <span class="badge rounded-pill bg-light text-black">DEMO</span>' : "");
     }
 
     /**
@@ -142,6 +193,7 @@ class rmWebUI {
         const prev = !cl.contains('d-none');
         if(cl.contains('d-none') && visible == true) cl.remove('d-none');
         else if(!cl.contains('d-none') && visible == false) cl.add('d-none');
+        this.resizeHeader();
         return prev;
     }
 
@@ -163,9 +215,11 @@ class rmWebUI {
      * @param page list or register
      */
     showPage(page) {
-        for(const item of ["register", "list"]) {
+        for(const item in this.pages) {
             this.show("content-"+item, item == page);
         };
+        if(this.pages[page].showPage) this.pages[page].showPage();
+        this.resizeHeader();
     }
 
     /**
@@ -180,20 +234,24 @@ class rmWebUI {
     apiRequest(request, jsonOnly, handler, finallyHandler) {
         return new Promise((resolve, reject) => {
             const httpRequest = new XMLHttpRequest();
+            this.nRequests ++;
             httpRequest.open("GET", request, true);
             httpRequest.responseType = "arraybuffer";
             httpRequest.send();
             this.show('loading-spinner', true);
-            const refreshBtnPrev = this.show('refresh-button', false);
+            this.show('refresh-button', false);
             httpRequest.addEventListener("error", () => {
+                this.nRequests = this.nRequests > 0 ? this.nRequests -1 : 0;
                 this.showError("Unable to load "+request, "XMLHttpRequest error.");
-                this.show('loading-spinner', false);
-                this.show('refresh-button', refreshBtnPrev);
+
+                this.show('loading-spinner', this.nRequests > 0);
+                this.show('refresh-button', this.nRequests == 0 && this.refreshButtonVisible);
                 finallyHandler();
                 reject();
             });
             httpRequest.addEventListener("readystatechange", () => {
                 if (httpRequest.readyState === httpRequest.DONE) {
+                    this.nRequests = this.nRequests > 0 ? this.nRequests-1 : 0;
                     this.show('error-banner', false);
                     let json = undefined;
                     let success = false;
@@ -209,8 +267,8 @@ class rmWebUI {
                             this.showError("Unable to load "+request, e.message);
                         }                            
                     }
-                    this.show('loading-spinner', false);
-                    this.show('refresh-button', refreshBtnPrev);
+                    this.show('loading-spinner', this.nRequests > 0);
+                    this.show('refresh-button', this.nRequests == 0 && this.refreshButtonVisible);
                     finallyHandler();
                     if(success) resolve();
                     else reject();

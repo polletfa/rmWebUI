@@ -7,15 +7,16 @@
   
     --------------------------------------------------- 
 --><!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" class="h-100">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" style="position: relative; min-height:100%;">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link id="favicon" rel="icon" type="image/svg+xml" href="resources/cloud.svg">
     <link rel="stylesheet" href="resources/bootstrap.min.css">
-  </head><body class="d-flex flex-column h-100" style="margin-bottom: 100px;">
-    <main class="flex-shrink-0">
-      <div class="container-fluid">
+  </head>
+  <body onresize="app.resizeHeader();">
+    <header class="header fixed-top bg-white text-black" id="header">
+      <div class="container-fluid"  onresize="onResize();">
         <!-- debug banner -->
         <div class="row bg-warning d-none" id="debug-banner"><div class="col text-center">Debug mode</div></div>
         
@@ -34,21 +35,43 @@
           <div class="collapse" id="extended-error"><br/><span id="extended-error-text"></span></div>
         </div>
 
+      </div>
+    </header>
+    <main>
+      <div class="container-fluid">
         <!-- content -->
-        <div id="content"></div>
+        <div id="content">
+          <div class="rmWebUI-page" data-rmWebUI-page="register" data-rmWebUI-class="rmWebUIRegister"></div>
+          <div class="rmWebUI-page" data-rmWebUI-page="list" data-rmWebUI-class="rmWebUIList"></div>
+        </div>
+
+        <!-- demo banner -->
+        <div id="demo-banner" class="d-none">
+          <p>&nbsp;</p>
+          <div class="alert alert-dark alert-dismissible" id="demo-alert" role="alert">
+            <button type="button" class="btn-close" data-bs-dismiss="alert" data-bs-target="demo-alert" aria-label="Close"></button>
+            This is a live demonstration:
+            <ul>
+              <li>Sample data are used. No connection is made to the reMarkable&reg; cloud.</li>
+              <li>All data are saved in a temporary session. Restart you browser or clear cookies to reset.</li>
+              <li>The registration code is: <b>abcdefgh</b></li>
+              <li>When downloading a notebook: you will get either a handwritten notebook, an annotated PDF or an error.</li>
+            </ul>
+          </div>
+          <p>&nbsp;</p>
+        </div>
       </div>
     </main>
+    
     <!-- footer -->
-    <footer class="footer mt-auto bg-dark text-white">
+    <footer class="footer mt-auto bg-dark text-white" style="position: absolute; bottom: 0; width:100%">
       <div class="container">
-        <div class="row bg-dark text-white"><div class="col text-center" id="footer-text"></div></div>
+        <div class="row bg-dark text-white" role="alert"><div class="col text-center" id="footer-text"></div></div>
       </div>
     </footer>
-    
+
     <!-- Load Javascript and init interface -->
     <script src="resources/bootstrap.min.js"></script>
-    <script src="pages/register.js"></script>
-    <script src="pages/list.js"></script>
     <script src="rmWebUI.js"></script>
     <script>
       const app = new rmWebUI();
