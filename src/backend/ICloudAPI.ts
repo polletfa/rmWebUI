@@ -9,10 +9,7 @@
 
 import * as http from "http";
 
-export enum CloudAPIResponseStatus {
-    Success = "success",
-    Error = "error"
-}
+import { APIBase } from "./APIBase";
 
 export enum CloudAPIResponseError {
     InvalidParameters = "invalid-parameters",
@@ -38,14 +35,11 @@ export interface CloudAPIResponseFileItem {
     parent: string
 }
 
-export interface CloudAPIResponse {
-    status: CloudAPIResponseStatus,
-    errorType?: CloudAPIResponseError,
-    error?: string,
+export interface CloudAPIResponseData {
     files?: CloudAPIResponseFileItem[]
 }
 
-export abstract class ICloud {
+export abstract class ICloudAPI extends APIBase {
     abstract register(sessionId: string|null, code: string|null, response: http.ServerResponse): void;
     abstract files(sessionId: string|null, response: http.ServerResponse): void;
     abstract download(sessionId: string|null, id: string|null, version: string|null, format: string|null, response: http.ServerResponse): void;

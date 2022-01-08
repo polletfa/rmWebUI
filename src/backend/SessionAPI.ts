@@ -10,23 +10,22 @@
 import * as http from "http";
 
 import { Backend } from "./Backend";
+import { APIBase } from "./APIBase";
 
-export class Info {
-    protected backend: Backend;
-
+export class SessionAPI extends APIBase {
     constructor(backend: Backend) {
-        this.backend = backend;
+        super(backend);
     }
 
     public open(response: http.ServerResponse): void {
         const sessionId = this.backend.sessionManager.newSession();
-        response.end(JSON.stringify({sessionId: sessionId}));
+        this.sendAPIResponseSuccess({sessionId: sessionId}, response);
     }
 
     public close(sessionId: string|null, response: http.ServerResponse): void {
         if(sessionId) {
             this.backend.sessionManager.deleteSession(sessionId);
         }
-        response.end(JSON.stringify({}));
+        this.sendAPIResponseSuccess(undefined, response);
     }
 }

@@ -11,21 +11,23 @@ import * as http from "http";
 import * as https from "https";
 import * as fs from "fs";
 
-import { ICloud } from "./ICloud";
-import { FakeCloud } from "./FakeCloud";
 import { SessionManager } from "./SessionManager";
-import { Info } from "./Info";
+import { Constants } from "./Constants";
+
+import { ICloudAPI } from "./ICloudAPI";
+import { FakeCloudAPI } from "./FakeCloudAPI";
+import { SessionAPI } from "./SessionAPI";
 
 export class Backend {
-    readonly cloud: ICloud;
-    readonly info: Info;
+    readonly cloudAPI: ICloudAPI;
+    readonly sessionAPI: SessionAPI;
     readonly sessionManager: SessionManager;
     
     protected protocol: string = "";
 
     constructor() {
-        this.cloud = new FakeCloud(this);
-        this.info = new Info(this);
+        this.cloudAPI = new FakeCloudAPI(this);
+        this.sessionAPI = new SessionAPI(this);
         this.sessionManager = new SessionManager(this);
     }
 
@@ -37,40 +39,54 @@ export class Backend {
         try {
             if(request.url) {
                 const url = new URL(request.url, this.protocol+"://"+request.headers.host);
-
+                console.log("------------------------------------ " + (new Date()).toISOString());
+                console.log(url.href);
+                
                 switch(url.pathname) {
+                // Cloud API
                 case "/cloud/register":
                     console.log("Cloud API: register");
-                    this.cloud.register(url.searchParams.get("sessionId"),
-                                        url.searchParams.get("code"),
-                                        response);
+                    this.cloudAPI.register(url.searchParams.get("sessionId"),
+                                           url.searchParams.get("code"),
+                                           response);
                     return;
 
                 case "/cloud/files":
                     console.log("Cloud API: files");
-                    this.cloud.files(url.searchParams.get("sessionId"),
-                                     response);
+                    this.cloudAPI.files(url.searchParams.get("sessionId"),
+                                        response);
                     return;
 
                 case "/cloud/download":
                     console.log("Cloud API: download");
-                    this.cloud.download(url.searchParams.get("sessionId"),
-                                        url.searchParams.get("id"),
-                                        url.searchParams.get("version"),
-                                        url.searchParams.get("format"),
-                                        response);
+                    this.cloudAPI.download(url.searchParams.get("sessionId"),
+                                           url.searchParams.get("id"),
+                                           url.searchParams.get("version"),
+                                           url.searchParams.get("format"),
+                                           response);
                     return;
 
-                case "/info/open":
-                    console.log("Info API: open");
-                    this.info.open(response);
+                // Session API
+                case "/session/open":
+                    console.log("Session API: open");
+                    this.sessionAPI.open(response);
                     return;
                     
-                case "/info/close":
-                    console.log("Info API: close");
-                    this.info.close(url.searchParams.get("sessionId"), response);
+                case "/Session/close":
+                    console.log("Session API: close");
+                    this.sessionAPI.close(url.searchParams.get("sessionId"), response);
                     return;
-                    
+
+                // Info API - TODO
+
+                // Frontend
+                default:
+                    const file = url.pathname == "/" ? "/index.html" : url.pathname;
+                    if(fs.existsSync(Constants.FRONTEND_DIR+file)) {
+                        console.log("File found");
+                        response.end(fs.readFileSync(Constants.FRONTEND_DIR+file));
+                        return;
+                    }
                 }
             } else {
                 this.serveErrorPage(response, 500, "Invalid request - Empty URL");
@@ -83,6 +99,7 @@ export class Backend {
     }
 
     public serveErrorPage(response: http.ServerResponse, errorCode: number, error: string) {
+        console.log("ERROR: "+errorCode + " - " + error);
         response.statusCode = errorCode;
         response.end("Error "+errorCode+"\n\n"+error);
     }

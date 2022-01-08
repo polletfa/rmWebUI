@@ -6,7 +6,7 @@
         "compile": "tsc",
         "lint": "eslint src/**/*.ts",
         "deploy": "npm run compile && node ./tools/install.js && npm install --only=prod --prefix=_install",
-        "test-deploy": "cd _install && node backend/index.js"
+        "deploy-run": "cd _install && node backend/index.js"
     },
     "repository": {
         "type": "git",
