@@ -17,10 +17,12 @@ import { Constants } from "./Constants";
 import { ICloudAPI } from "./ICloudAPI";
 import { FakeCloudAPI } from "./FakeCloudAPI";
 import { SessionAPI } from "./SessionAPI";
+import { InfoAPI } from "./InfoAPI";
 
 export class Backend {
     readonly cloudAPI: ICloudAPI;
     readonly sessionAPI: SessionAPI;
+    readonly infoAPI: InfoAPI;
     readonly sessionManager: SessionManager;
     
     protected protocol: string = "";
@@ -28,6 +30,7 @@ export class Backend {
     constructor() {
         this.cloudAPI = new FakeCloudAPI(this);
         this.sessionAPI = new SessionAPI(this);
+        this.infoAPI = new InfoAPI(this);
         this.sessionManager = new SessionManager(this);
     }
 
@@ -49,13 +52,13 @@ export class Backend {
                     this.cloudAPI.register(url.searchParams.get("sessionId"),
                                            url.searchParams.get("code"),
                                            response);
-                    return;
+                    break;
 
                 case "/cloud/files":
                     console.log("Cloud API: files");
                     this.cloudAPI.files(url.searchParams.get("sessionId"),
                                         response);
-                    return;
+                    break;
 
                 case "/cloud/download":
                     console.log("Cloud API: download");
@@ -64,35 +67,50 @@ export class Backend {
                                            url.searchParams.get("version"),
                                            url.searchParams.get("format"),
                                            response);
-                    return;
+                    break;
 
                 // Session API
                 case "/session/open":
                     console.log("Session API: open");
                     this.sessionAPI.open(response);
-                    return;
+                    break;
                     
-                case "/Session/close":
+                case "/session/close":
                     console.log("Session API: close");
                     this.sessionAPI.close(url.searchParams.get("sessionId"), response);
-                    return;
+                    break;
 
-                // Info API - TODO
+                // Info API
+                case "/info/version":
+                    console.log("Info API: version");
+                    this.infoAPI.version(response);
+                    break;
 
+                // TODO: /info/config
+                    
                 // Frontend
                 default:
                     const file = url.pathname == "/" ? "/index.html" : url.pathname;
-                    if(fs.existsSync(Constants.FRONTEND_DIR+file)) {
-                        console.log("File found");
-                        response.end(fs.readFileSync(Constants.FRONTEND_DIR+file));
-                        return;
-                    }
+                    fs.access(Constants.FRONTEND_DIR+file, fs.constants.R_OK, (err: Error|null) => {
+                        if(err) {
+                            this.serveErrorPage(response, 404, "Resource not found.");
+                        } else {
+                            console.log("File found");
+                            fs.readFile(Constants.FRONTEND_DIR+file, (err: Error|null, content:Buffer|null) => {
+                                if(err) {
+                                    this.serveErrorPage(response, 500, err.message);
+                                } else {
+                                    response.end(content);
+                                }
+                            });
+                        }
+                    });
+                    break;
                 }
             } else {
                 this.serveErrorPage(response, 500, "Invalid request - Empty URL");
                 return;
             }
-            this.serveErrorPage(response, 404, "Resource not found.");
         } catch(error) {
             this.serveErrorPage(response, 500, error instanceof Error ? error.message : "Unknown error");
         }

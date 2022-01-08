@@ -58,7 +58,13 @@ export class FakeCloudAPI extends ICloudAPI {
         } else {
             setTimeout(() => {
                 try {
-                    this.sendAPIResponseSuccess({files: JSON.parse(fs.readFileSync(Constants.SAMPLE_DATA_DIR+"/files.json").toString())}, response);
+                    fs.readFile(Constants.SAMPLE_DATA_DIR+"/files.json", (err:Error|null, content:Buffer|null) => {
+                        if(err) {
+                            this.sendAPIResponseError(CloudAPIResponseError.RetrieveFiles, err instanceof Error ? err.message : "Unknown error", response);
+                        } else {
+                            this.sendAPIResponseSuccess({files: JSON.parse(content ? content.toString() : "")}, response);
+                        }
+                    });
                 } catch(error) {
                     this.sendAPIResponseError(CloudAPIResponseError.RetrieveFiles, error instanceof Error ? error.message : "Unknown error", response);
                 }

@@ -1,5 +1,6 @@
 {
     "name": "rmwebui",
+    "displayName": "rmWebUI",
     "version": "0.6.0",
     "description": "Web interface for the reMarkable(R) cloud",
     "scripts": {

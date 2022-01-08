@@ -16,6 +16,7 @@ const FILES = [
     {src: "src/backend/Constants.js",           dest: "backend/Constants.js"},
     {src: "src/backend/FakeCloudAPI.js",        dest: "backend/FakeCloudAPI.js"},
     {src: "src/backend/ICloudAPI.js",           dest: "backend/ICloudAPI.js"},
+    {src: "src/backend/InfoAPI.js",             dest: "backend/InfoAPI.js"},
     {src: "src/backend/index.js",               dest: "backend/index.js"},
     {src: "src/backend/SessionAPI.js",          dest: "backend/SessionAPI.js"},
     {src: "src/backend/SessionManager.js",      dest: "backend/SessionManager.js"},
