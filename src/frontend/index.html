@@ -7,15 +7,16 @@
   
     --------------------------------------------------- 
 --><!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" class="" style="position: relative; min-height:100%;">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" style="position: relative; min-height:100%;">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link id="favicon" rel="icon" type="image/svg+xml" href="resources/cloud.svg">
     <link rel="stylesheet" href="resources/bootstrap.min.css">
-  </head><body class="d-flex flex-column">
-    <main class="flex-shrink-0">
-      <div class="container-fluid">
+  </head>
+  <body onresize="app.resizeHeader();">
+    <header class="header fixed-top bg-white text-black" id="header">
+      <div class="container-fluid"  onresize="onResize();">
         <!-- debug banner -->
         <div class="row bg-warning d-none" id="debug-banner"><div class="col text-center">Debug mode</div></div>
         
@@ -34,6 +35,10 @@
           <div class="collapse" id="extended-error"><br/><span id="extended-error-text"></span></div>
         </div>
 
+      </div>
+    </header>
+    <main>
+      <div class="container-fluid">
         <!-- content -->
         <div id="content">
           <div class="rmWebUI-page" data-rmWebUI-page="register" data-rmWebUI-class="rmWebUIRegister"></div>

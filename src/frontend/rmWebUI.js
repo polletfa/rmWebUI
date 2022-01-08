@@ -19,6 +19,28 @@ class rmWebUI {
 
         this.nRequests = 0;
         this.refreshButtonVisible = false;
+
+        // set events for collapsibles to resize the margin for the header during show/hide animation
+        Array.prototype.forEach.call(document.getElementsByClassName('collapse'), (coll) => {
+            const clearResizeInterval = () => {
+                if(this.resizeInterval) {
+                    clearInterval(this.resizeInterval);
+                    this.resizeInterval = undefined;
+                }
+            };
+            const setResizeInterval = () => {
+                this.resizeInterval = setInterval(() => this.resizeHeader(), 25);
+                // we clear the interval after a time just in case the hidden/shown events
+                // are not received (we don't want to run this interval forever)
+                setTimeout(() => clearResizeInterval(), 2000);
+                
+            };
+            coll.addEventListener('hide.bs.collapse', setResizeInterval);
+            coll.addEventListener('hidden.bs.collapse', clearResizeInterval);
+
+            coll.addEventListener('show.bs.collapse', setResizeInterval);
+            coll.addEventListener('shown.bs.collapse', clearResizeInterval);
+        });
         
         // Load config and version
         Promise.all([
@@ -96,6 +118,15 @@ class rmWebUI {
         } else {
             this.showPage("list");
         }
+        this.resizeHeader();
+    }
+
+    /** 
+     * Resize the margin for the header 
+     */
+    resizeHeader() {
+        const body = document.getElementsByTagName("body")[0];
+        body.style = 'padding-top: '+document.getElementById('header').getBoundingClientRect().height+'px;';
     }
 
     /**
@@ -139,6 +170,7 @@ class rmWebUI {
             titletext.innerHTML += '&nbsp;<span class="badge rounded-pill bg-dark text-white">DEMO</span>';
             document.title += ' [DEMO]';
         }
+        this.resizeHeader();
     }
 
     /**
@@ -161,6 +193,7 @@ class rmWebUI {
         const prev = !cl.contains('d-none');
         if(cl.contains('d-none') && visible == true) cl.remove('d-none');
         else if(!cl.contains('d-none') && visible == false) cl.add('d-none');
+        this.resizeHeader();
         return prev;
     }
 
@@ -186,6 +219,7 @@ class rmWebUI {
             this.show("content-"+item, item == page);
         };
         if(this.pages[page].showPage) this.pages[page].showPage();
+        this.resizeHeader();
     }
 
     /**

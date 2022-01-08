@@ -5,11 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## develop
 ### Added
-- Demo mode: "demo" badge and instructions added
-- Small fix in title
-- Fix behaviour for register form
-- Better footer
-- Fix behaviour of refresh button when starting several requests at once
+
+## [0.5.1] - 2022-01-08
+### Added
+- Various minor improvements to the UI:
+  - Demo mode: "demo" badge and instructions added
+  - Small fix in title
+  - Better footer
+  - Title and error banner now always visible (sticky header)
+  - Fix behaviour for register form
+  - Fix behaviour of refresh button when starting several requests at once
 - Replaced Bash script with PHP script
 
 ## [0.5.0] - 2022-01-04
@@ -65,7 +70,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 - First version
 
-[develop]: https://github.com/polletfa/rmWebUI/compare/0.5.0...develop
+[develop]: https://github.com/polletfa/rmWebUI/compare/0.5.1...develop
+[0.5.1]: https://github.com/polletfa/rmWebUI/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/polletfa/rmWebUI/compare/0.4.3...0.5.0
 [0.4.3]: https://github.com/polletfa/rmWebUI/compare/0.4.2...0.4.3
 [0.4.2]: https://github.com/polletfa/rmWebUI/compare/0.4.1...0.4.2
