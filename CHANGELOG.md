@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## develop
 ### Added
+- rmWebUI.constructor rewritten for better readability
 
 ## [0.5.1] - 2022-01-08
 ### Added

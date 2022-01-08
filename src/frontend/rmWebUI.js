@@ -20,30 +20,29 @@ class rmWebUI {
         this.nRequests = 0;
         this.refreshButtonVisible = false;
 
+        this.resizeInterval = undefined;
+        
         // set events for collapsibles to resize the margin for the header during show/hide animation
         Array.prototype.forEach.call(document.getElementsByClassName('collapse'), (coll) => {
-            const clearResizeInterval = () => {
-                if(this.resizeInterval) {
-                    clearInterval(this.resizeInterval);
-                    this.resizeInterval = undefined;
-                }
-            };
-            const setResizeInterval = () => {
-                this.resizeInterval = setInterval(() => this.resizeHeader(), 25);
-                // we clear the interval after a time just in case the hidden/shown events
-                // are not received (we don't want to run this interval forever)
-                setTimeout(() => clearResizeInterval(), 2000);
-                
-            };
-            coll.addEventListener('hide.bs.collapse', setResizeInterval);
-            coll.addEventListener('hidden.bs.collapse', clearResizeInterval);
+            coll.addEventListener('hide.bs.collapse', this.setResizeInterval.bind(this));
+            coll.addEventListener('hidden.bs.collapse', this.clearResizeInterval.bind(this));
 
-            coll.addEventListener('show.bs.collapse', setResizeInterval);
-            coll.addEventListener('shown.bs.collapse', clearResizeInterval);
+            coll.addEventListener('show.bs.collapse', this.setResizeInterval.bind(this));
+            coll.addEventListener('shown.bs.collapse', this.clearResizeInterval.bind(this));
         });
         
-        // Load config and version
-        Promise.all([
+        // Initialize interface
+        // - Load version and config
+        // - Load pages
+        // - Load data from the cloud
+        this.loadVersionAndConfig().then(() => this.loadPages().then(() => this.getFiles()));
+    }
+
+    /**
+     * load version and config files
+     */
+    loadVersionAndConfig() {
+        return Promise.all([
             this.apiRequest("../version.json", true, response => {
                 this.version = response;
                 this.setTitle();
@@ -54,45 +53,67 @@ class rmWebUI {
                 this.config = response;
                 this.show("debug-banner", this.config.mode === "debug");
             }, () => {})
-        ]).then(() => {       
-            // Intialize and load pages
-            const loading = [];
-            Array.prototype.forEach.call(document.getElementsByClassName('rmWebUI-page'), (page)=>{
-                const pagename = page.getAttribute("data-rmWebUI-page");
-                const classname = page.getAttribute("data-rmWebUI-class");
-                
-                if(pagename && classname) {
-                    page.setAttribute("id", "content-" + pagename);
-                    if(!page.classList.contains("d-none")) page.classList.add("d-none");
-
-                    // load html
-                    loading.push(this.apiRequest("pages/"+pagename+".html", false, (response) => {
-                        document.getElementById("content-"+pagename).innerHTML = (new TextDecoder).decode(response);
-                    }, () => {}));
-
-                    // load script
-                    loading.push(new Promise((resolve) => {
-                        const script = document.createElement("script");
-                        script.src = "pages/"+pagename+".js";
-                        script.addEventListener("load", () => {
-                            this.pages[pagename] = (Function('ui', 'return new '+classname+'(ui)'))(this);
-                            resolve();
-                        });
-                        script.addEventListener("error", () => {
-                            resolve();
-                        });
-                        document.body.appendChild(script);
-                    }));
-                }
-            });
-            
-            Promise.all(loading).then(() => {
-                // Load data from the cloud
-                this.getFiles();       
-            });
-        });
+        ])
     }
 
+   /**
+    * Load/initialize pages
+    */
+    loadPages() {
+        const loading = [];
+        Array.prototype.forEach.call(document.getElementsByClassName('rmWebUI-page'), (page)=>{
+            const pagename = page.getAttribute("data-rmWebUI-page");
+            const classname = page.getAttribute("data-rmWebUI-class");
+            
+            if(pagename && classname) {
+                // set element ID and hide
+                page.setAttribute("id", "content-" + pagename);
+                if(!page.classList.contains("d-none")) page.classList.add("d-none");
+                
+                // load html
+                loading.push(this.apiRequest("pages/"+pagename+".html", false, (response) => {
+                    document.getElementById("content-"+pagename).innerHTML = (new TextDecoder).decode(response);
+                }, () => {}));
+                
+                // load script
+                loading.push(new Promise((resolve) => {
+                    const script = document.createElement("script");
+                    script.src = "pages/"+pagename+".js";
+                    script.addEventListener("load", () => {
+                        // instantiate JS class for the page
+                        this.pages[pagename] = (Function('ui', 'return new '+classname+'(ui)'))(this);
+                        resolve();
+                    });
+                    script.addEventListener("error", () => {
+                        resolve();
+                    });
+                    document.body.appendChild(script);
+                }));
+            }
+        });
+        return Promise.all(loading);
+    }
+
+    /**
+     * Clear the resizing interval used to follow collapse animation
+     */
+    clearResizeInterval() {
+        if(this.resizeInterval) {
+            clearInterval(this.resizeInterval);
+            this.resizeInterval = undefined;
+        }
+    }
+
+    /**
+     * Set the resizing interval to follow collapse animation
+     */
+    setResizeInterval() {
+        this.resizeInterval = setInterval(() => this.resizeHeader(), 25);
+        // we clear the interval after a time just in case the hidden/shown events
+        // are not received (we don't want to run this interval forever)
+        setTimeout(() => this.clearResizeInterval(), 2000);
+    };
+ 
     /**
      * Refresh the interface based on the response from ../backend/api/files.php provided in argument
      */
