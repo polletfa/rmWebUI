@@ -1,8 +1,5 @@
-dist
-demo
-*.bak
-live
-*.pdf
-auth.json
-version.json
-cache
+*.js
+*~
+package-lock.json
+node_modules
+_install

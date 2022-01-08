@@ -1,0 +1,38 @@
+{
+    "name": "rmwebui",
+    "version": "0.6.0",
+    "description": "Web interface for the reMarkable(R) cloud",
+    "scripts": {
+        "compile": "tsc",
+        "lint": "eslint src/**/*.ts",
+        "deploy": "npm run compile && node ./tools/install.js && npm install --only=prod --prefix=_install",
+        "test-deploy": "cd _install && node backend/index.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/polletfa/rmWebUI.git"
+    },
+    "keywords": [
+        "reMarkable",
+        "reHackable"
+    ],
+    "author": "Fabien Pollet <polletfa@posteo.de>",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/polletfa/rmWebUI/issues"
+    },
+    "homepage": "https://github.com/polletfa/rmWebUI#readme",
+    "devDependencies": {
+        "@types/uuid": "^8.3.4",
+        "@typescript-eslint/eslint-plugin": "^5.9.0",
+        "@typescript-eslint/parser": "^5.9.0",
+        "eslint": "^8.6.0",
+        "eslint-plugin-immutable": "^1.0.0",
+        "eslint-plugin-sonarjs": "^0.11.0",
+        "typescript": "^4.5.4"
+    },
+    "dependencies": {
+        "remarkable-typescript": "^1.1.3",
+        "uuid": "^8.3.2"
+    }
+}
