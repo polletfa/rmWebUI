@@ -166,7 +166,8 @@ export class Backend {
             name: this.NAME,
             version: this.VERSION,
             demo: this.DEMO,
-            sessionId: this.sessionManager.newSession()
+            sessionId: this.sessionManager.newSession(),
+            formats: [ "zip", "pdf" ]
         };
         
         return "<script>"

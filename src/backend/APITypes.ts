@@ -18,7 +18,9 @@ export enum APIResponseStatus {
 // Allow any for typeguard:
 // eslint-disable-next-line
 export function isAPIResponseStatus(arg: any): arg is APIResponseStatus {
-    return typeof arg === "string" && arg === APIResponseStatus.Success || arg === APIResponseStatus.Error;
+    return typeof arg === "string" && (
+        arg === APIResponseStatus.Success || arg === APIResponseStatus.Error
+    );
 }
 
 /**

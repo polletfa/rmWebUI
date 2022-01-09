@@ -7,9 +7,13 @@
  *
  *****************************************************/
 
+/**
+ * Configuration passed by the backend to the frontend.
+ */
 export interface Config {
-    name: string;
-    version: string;
-    demo: boolean;
-    sessionId: string;
+    name: string;            /**< Application name */
+    version: string;         /**< Application version */
+    demo: boolean;           /**< True if the demonstration mode is enabled */
+    sessionId: string;       /**< Session ID required to communicate with the backend */
+    formats: string[];       /**< Supported file formats */
 }

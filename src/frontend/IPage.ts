@@ -14,7 +14,10 @@ import { Application } from "./Application";
  */
 export abstract class IPage {
     readonly ui: Application;
-    
+
+    /**
+     * @param ui Main class
+     */
     constructor(ui: Application) {
         this.ui = ui; /**< main class */
     }

@@ -26,7 +26,8 @@ export class RegisterPage extends IPage {
     public showPage(): void {
         this.ui.setTitle();
         this.ui.showRefresh(false);
-        document.getElementById('code')?.focus();
+        const el = document.getElementById('code');
+        if(el instanceof HTMLElement) el.focus();
     }
     
     /**

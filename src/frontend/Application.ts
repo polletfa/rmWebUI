@@ -9,31 +9,35 @@
 
 import { Config } from './Config';
 import { RegisterPage } from './RegisterPage';
+import { ListPage } from './ListPage';
 
 import { APIResponse, isAPIResponse, APIResponseStatus } from '../backend/APITypes';
 import { CloudAPIResponseError } from '../backend/CloudAPITypes';
 
 interface PageList {
     register: RegisterPage;
-    list: RegisterPage; // todo
+    list: ListPage;
 }
 
 /**
  * Main class for the JavaScript logic of the website
  */
 export class Application {
-    readonly config: Config;
+    readonly config: Config; /**< Configuration provided by the backend */
 
-    protected filesApiResponse: APIResponse|undefined = undefined;
-    protected nRequests = 0;
-    protected refreshButtonVisible = false;
-    protected resizeInterval: ReturnType<typeof setTimeout>|undefined = undefined;
-    
-    protected pages : PageList = {
+    public filesApiResponse: APIResponse|undefined = undefined; /**< Response of /cloud/files */
+    public pages : PageList = {                                 /**< List of pages */
         register: new RegisterPage(this),
-        list: new RegisterPage(this)
+        list: new ListPage(this)
     };
     
+    protected nRequests = 0;                     /**< Number of active requests */
+    protected refreshButtonVisible = false;      /**< Specify if the refresh button is active for the current page */
+    protected resizeInterval:ReturnType<typeof setTimeout>|undefined = undefined; /**< @see setResizeInterval */
+    
+    /**
+     * @param config Configuration provided by the backend
+     */
     constructor(config: Config) {
         this.config = config;
         this.setTitle();
@@ -51,7 +55,7 @@ export class Application {
 
         this.getFiles();
     }
-    
+
     /**
      * Clear the resizing interval used to follow collapse animation
      */
@@ -64,6 +68,8 @@ export class Application {
 
     /**
      * Set the resizing interval to follow collapse animation
+     *
+     * When a collapsible element is displayed/hidden, we resize the header periodically to "follow" the collapse/expand animation
      */
     public setResizeInterval(): void {
         this.resizeInterval = setInterval(() => this.resizeHeader(), 25);
@@ -77,21 +83,21 @@ export class Application {
      */
     refresh(): void {
         this.show('loading-spinner', false);
-        if(this.filesApiResponse && this.filesApiResponse.status === APIResponseStatus.Error) {
-            switch(this.filesApiResponse.errorType as CloudAPIResponseError) {
+        if(isAPIResponse(this.filesApiResponse) && this.filesApiResponse.status === APIResponseStatus.Error) {
+            switch(this.filesApiResponse["errorType"] as CloudAPIResponseError) {
                 case CloudAPIResponseError.LoadToken:
                     this.showPage("register");
                     break;
                 case CloudAPIResponseError.InitAPI:
-                    this.showError("Unable to connect to the cloud! You may try to register again.", this.filesApiResponse.error ? this.filesApiResponse.error : "Unknown error");
+                    this.showError("Unable to connect to the cloud! You may try to register again.", this.filesApiResponse["error"] ? this.filesApiResponse["error"] : "Unknown error");
                     this.showPage("register");
                     break;
                 case CloudAPIResponseError.RetrieveFiles:
-                    this.showError("Unable to retrieve file list from the cloud!", this.filesApiResponse.error ? this.filesApiResponse.error : "Unknown error");
+                    this.showError("Unable to retrieve file list from the cloud!", this.filesApiResponse["error"] ? this.filesApiResponse["error"] : "Unknown error");
                     this.showPage(""); // hide all pages
                     break;
                 default:
-                    this.showError("Unknown error (" + this.filesApiResponse["errorType"] + ")", this.filesApiResponse.error ? this.filesApiResponse.error : "Unknown error");
+                    this.showError("Unexpected (" + this.filesApiResponse["errorType"] + ")", this.filesApiResponse["error"] ? this.filesApiResponse["error"] : "Unknown error");
                     this.showPage(""); // hide all pages
             }
         } else {
@@ -175,7 +181,7 @@ export class Application {
         const cl = document.getElementById(id)?.classList;
         if(cl) {
             if(cl.contains('d-none') && visible) cl.remove('d-none');
-            else if(!cl.contains('d-none') && visible) cl.add('d-none');
+            else if(!cl.contains('d-none') && !visible) cl.add('d-none');
             this.resizeHeader();
         }
     }
@@ -227,38 +233,49 @@ export class Application {
             httpRequest.send();
             this.show('loading-spinner', true);
             this.show('refresh-button', false);
-            httpRequest.addEventListener("error", () => {
-                this.nRequests = this.nRequests > 0 ? this.nRequests -1 : 0;
-                this.showError("Unable to load "+request, "XMLHttpRequest error.");
 
+            const finalize = () => {
                 this.show('loading-spinner', this.nRequests > 0);
                 this.show('refresh-button', this.nRequests == 0 && this.refreshButtonVisible);
                 finallyHandler();
+            };
+            const fail = (errorMessage: string) => {
+                this.nRequests = this.nRequests > 0 ? this.nRequests -1 : 0;
+                this.showError("Unable to load "+request, errorMessage);
+                finalize();
+            };
+            
+            httpRequest.addEventListener("error", () => {
+                fail("XMLHttpRequest error.");
                 reject();
             });
             httpRequest.addEventListener("readystatechange", () => {
                 if (httpRequest.readyState === httpRequest.DONE) {
-                    this.nRequests = this.nRequests > 0 ? this.nRequests-1 : 0;
-                    this.show('error-banner', false);
-                    let json = undefined;
-                    let success = false;
-                    try {
-                        json = JSON.parse(new TextDecoder().decode(httpRequest.response)) as APIResponse;
-                        success = true;
-                        handler(json);
-                    } catch(e) {
-                        if(!jsonOnly) {
+                    if(httpRequest.status === 200) {
+                        this.nRequests = this.nRequests > 0 ? this.nRequests-1 : 0;
+                        this.show('error-banner', false);
+                        let json = undefined;
+                        let success = false;
+                        try {
+                            json = JSON.parse(new TextDecoder().decode(httpRequest.response)) as APIResponse;
                             success = true;
-                            handler(httpRequest.response);
-                        } else {
-                            this.showError("Unable to load "+request, e instanceof Error  ? e.message : "Unkown error");
-                        }                            
-                    }
-                    this.show('loading-spinner', this.nRequests > 0);
-                    this.show('refresh-button', this.nRequests == 0 && this.refreshButtonVisible);
-                    finallyHandler();
-                    if(success) resolve();
-                    else reject();
+                            handler(json);
+                        } catch(e) {
+                            if(!jsonOnly) {
+                                success = true;
+                                handler(httpRequest.response);
+                            } else {
+                                this.showError("Error while contacting the backend", e instanceof Error  ? e.message : "Unkown error");
+                            }                            
+                        }
+                        finalize();
+                        if(success) resolve();
+                        else reject();
+                    } else {
+                        console.log(httpRequest.status);
+                        fail("Response code: "+httpRequest.status);
+                        reject();
+                    }            
                 }
             });
         });
