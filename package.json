@@ -4,10 +4,14 @@
     "version": "0.6.0",
     "description": "Web interface for the reMarkable(R) cloud",
     "scripts": {
+        "lint": "eslint src/**/*.ts tools/**/*.ts",
         "compile": "tsc",
-        "lint": "eslint src/**/*.ts",
-        "deploy": "npm run compile && node ./tools/install.js && npm install --only=prod --prefix=_install",
-        "deploy-run": "cd _install && node backend/index.js"
+        "layout": "node ./_build/tools/build_layout.js index",
+        "webpack": "webpack",
+        "build": "npm run compile && npm run layout && npm run webpack",
+        "deploy": "npm run build && node ./_build/tools/install.js && npm install --only=prod --prefix=_dist",
+        "deploy-dirty": "npm run build && node ./_build/tools/install.js --dirty",
+        "deploy-run": "cd _dist && node backend/index.js"
     },
     "repository": {
         "type": "git",
@@ -24,13 +28,17 @@
     },
     "homepage": "https://github.com/polletfa/rmWebUI#readme",
     "devDependencies": {
+        "@types/minify": "^8.0.0",
         "@types/uuid": "^8.3.4",
         "@typescript-eslint/eslint-plugin": "^5.9.0",
         "@typescript-eslint/parser": "^5.9.0",
         "eslint": "^8.6.0",
         "eslint-plugin-immutable": "^1.0.0",
         "eslint-plugin-sonarjs": "^0.11.0",
-        "typescript": "^4.5.4"
+        "minify": "^8.0.3",
+        "typescript": "^4.5.4",
+        "webpack": "^5.65.0",
+        "webpack-cli": "^4.9.1"
     },
     "dependencies": {
         "remarkable-typescript": "^1.1.3",

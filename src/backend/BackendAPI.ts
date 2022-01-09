@@ -12,17 +12,12 @@ import * as http from "http";
 import { Backend } from "./Backend";
 import { APIBase } from "./APIBase";
 
-export class SessionAPI extends APIBase {
+export class BackendAPI extends APIBase {
     constructor(backend: Backend) {
         super(backend);
     }
 
-    public open(response: http.ServerResponse): void {
-        const sessionId = this.backend.sessionManager.newSession();
-        this.sendAPIResponseSuccess({sessionId: sessionId}, response);
-    }
-
-    public close(sessionId: string|null, response: http.ServerResponse): void {
+    public logout(sessionId: string|null, response: http.ServerResponse): void {
         if(sessionId) {
             this.backend.sessionManager.deleteSession(sessionId);
         }

@@ -10,14 +10,12 @@
         "strictNullChecks": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "rootDirs": [
-            "src"
-        ],
         "module": "commonjs",
         "target": "es6",
         "typeRoots": [
             "node_modules/@types"
-        ]
+        ],
+        "outDir": "_build"
     },
     "exclude": [
         "node_modules"

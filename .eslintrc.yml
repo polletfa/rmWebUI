@@ -59,3 +59,5 @@ rules:
   'sonarjs/cognitive-complexity': 
   - warn
   - 30
+  'sonarjs/no-duplicate-string':
+  - off

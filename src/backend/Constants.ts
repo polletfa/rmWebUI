@@ -9,9 +9,24 @@
 
 export class Constants {
     /**
+     * Location of the SSL certificate
+     */
+    static readonly SSL_CERT = "data/ssl/cert.pem";
+    
+    /**
+     * Location of the SSL private key
+     */
+    static readonly SSL_KEY = "data/ssl/key.pem";
+    
+    /**
      * Location of the files of the frontend
      */
     static readonly FRONTEND_DIR = "frontend";
+
+    /**
+     * Filename for the Frontend Javascript
+     */
+    static readonly FRONTEND_JSFILE = "bundle.js";
     
     /**
      * Live Demonstration: location of the sample data for the FakeCloudAPI

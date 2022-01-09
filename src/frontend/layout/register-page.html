@@ -1,0 +1,26 @@
+<!-- -------------------------------------------------
+
+   rmWebUI - Web interface for the reMarkable(R) cloud.
+
+   (c) 2021-2022 Fabien Pollet <polletfa@posteo.de>
+   MIT License (see LICENSE file)
+  
+  --------------------------------------------------- -->
+ <div class="d-none" id="content-register">
+   <div class="row">
+     <div class="col">
+       <p>The application is not yet registered. Login to <a class="link-dark" href="https://my.remarkable.com" target="_blank">the reMarkable&reg; cloud</a> and retrieve a one-time code from <a href="https://my.remarkable.com/device/desktop/connect" target="_blank" class="link-dark">this address</a> (the code is valid for 5 minutes):</p>
+     </div>
+   </div>
+   <div class="row g-3 align-items-center">
+     <div class="col-auto">
+       <label for="code" class="col-form-label">One-time code</label>
+     </div>
+     <div class="col-auto">
+       <input type="text" id="code" class="form-control" onkeypress="window.application.pages.register.enterCode(event);" />
+     </div>
+     <div class="col-auto">
+       <button type="submit" class="btn btn-dark" onclick="window.application.pages.register.registerApp();" id="register-btn">Register</button>
+     </div>
+   </div>
+ </div>

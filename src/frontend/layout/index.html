@@ -1,0 +1,61 @@
+<!-- -------------------------------------------------
+
+   rmWebUI - Web interface for the reMarkable(R) cloud.
+
+   (c) 2021-2022 Fabien Pollet <polletfa@posteo.de>
+   MIT License (see LICENSE file)
+  
+    --------------------------------------------------- 
+--><!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" style="position: relative; min-height:100%;">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link id="favicon" rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+    <!--                                    -->
+    <!-- CSS                                -->
+    <!--                                    -->
+    <link rel="stylesheet" href="bootstrap.min.css">
+    
+  </head>
+  <body onresize="window.application.resizeHeader();">
+    
+    <!--                                    -->
+    <!-- Header: title bar & error banner   -->
+    <!--                                    -->
+    <header class="header fixed-top bg-white text-black" id="header">
+      <div class="container-fluid">
+        <!include title-bar>
+        <!include error-banner>
+      </div>
+    </header>
+
+    <!--                                    -->
+    <!-- Main: content & demo banner        -->
+    <!--                                    -->
+
+    <main>
+      <div class="container-fluid">
+        <div id="content">
+          <!include register-page>
+          <!include list-page>
+        </div>
+
+        <!include demo-banner>
+      </div>
+    </main>
+
+    <!--                                    -->
+    <!-- Footer                             -->
+    <!--                                    -->
+
+    <!include footer>
+
+    <!--                                    -->
+    <!-- Javascript                         -->
+    <!--                                    -->
+    
+    <script src="bootstrap.min.js"></script>
+  </body>
+</html>

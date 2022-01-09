@@ -11,36 +11,35 @@ import * as http from "http";
 
 import { APIBase } from "./APIBase";
 
-export enum CloudAPIResponseError {
-    InvalidParameters = "invalid-parameters",
-    Register = "register",
-    LoadToken = "load-token",
-    InitAPI = "init-api",
-    RetrieveFiles = "retrieve-files",
-    DownloadFile = "download-file",
-    ConvertFile = "convert-file",
-}
-
-export enum CloudAPIResponseFileType {
-    Document = "DocumentType",
-    Collection = "CollectionType"
-}
-
-export interface CloudAPIResponseFileItem {
-    id: string,
-    version: string,
-    type: CloudAPIResponseFileType,
-    name: string,
-    path: string,
-    parent: string
-}
-
-export interface CloudAPIResponseData {
-    files?: CloudAPIResponseFileItem[]
-}
-
+/**
+ * Common interface for real and fake cloud API
+ */
 export abstract class ICloudAPI extends APIBase {
+    /**
+     * API method: register the app
+     *
+     * @param sessionId Session ID
+     * @param code One-time code for registering to the cloud. The fake API accepts Constants.FAKE_REGISTER_CODE as valid answer.
+     * @param response HTTP response object
+     */
     abstract register(sessionId: string|null, code: string|null, response: http.ServerResponse): void;
+
+    /**
+     * API method: get file list
+     *
+     * @param sessionId Session ID
+     * @param response HTTP response object
+     */
     abstract files(sessionId: string|null, response: http.ServerResponse): void;
+
+    /**
+     * API method: download file
+     *
+     * @param sessionId SessionID
+     * @param id Id of the file to download
+     * @param version Version of the file
+     * @param format File format
+     * @param response HTTP response object
+     */
     abstract download(sessionId: string|null, id: string|null, version: string|null, format: string|null, response: http.ServerResponse): void;
 }
