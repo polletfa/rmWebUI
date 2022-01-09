@@ -11,7 +11,8 @@
         "build": "npm run compile && npm run layout && npm run webpack",
         "deploy": "npm run build && node ./_build/tools/install.js && npm install --only=prod --prefix=_dist",
         "deploy-dirty": "npm run build && node ./_build/tools/install.js --dirty",
-        "deploy-run": "cd _dist && node backend/index.js"
+        "deploy-run": "cd _dist && node backend/index.js",
+        "clean": "rm -fr _build _dist"
     },
     "repository": {
         "type": "git",

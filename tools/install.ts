@@ -12,6 +12,9 @@ const DIRECTORIES = [
 
 const FILES = [
     {src: "package.json",                             dest: "package.json"},
+    {src: "README.md",                                dest: "README.md"},
+    {src: "LICENSE.md",                               dest: "LICENSE.md"},
+    {src: "CHANGELOG.md",                             dest: "CHANGELOG.md"},
 
     // Backend
     {src: "_build/src/backend/APIBase.js",            dest: "backend/APIBase.js"},
