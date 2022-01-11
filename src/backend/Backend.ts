@@ -3,7 +3,7 @@
  * rmWebUI - Web interface for the reMarkable(R) cloud.
  *
  * (c) 2021-2022 Fabien Pollet <polletfa@posteo.de>
- * MIT License (see LICENSE file)
+ * MIT License (see LICENSE.md file)
  *
  *****************************************************/
 
@@ -13,12 +13,11 @@ import * as fs from "fs";
 
 import { SessionManager } from "./SessionManager";
 import { Constants } from "./Constants";
+import { Config } from './Config';
 
 import { ICloudAPI } from "./ICloudAPI";
 import { FakeCloudAPI } from "./FakeCloudAPI";
 import { BackendAPI } from "./BackendAPI";
-
-import { Config } from '../frontend/Config';
 
 export class Backend {
     readonly NAME: string;
@@ -30,6 +29,10 @@ export class Backend {
     readonly sessionManager: SessionManager;
     
     protected protocol = "";
+    protected frontendHasMarker: boolean;
+    protected frontendBeforeMarker: string;
+    protected frontendAfterMarker: string;
+    protected favicon: string;
 
     constructor() {
         this.cloudAPI = new FakeCloudAPI(this);
@@ -40,6 +43,20 @@ export class Backend {
         this.NAME = package_json.displayName;
         this.VERSION = package_json.version;
         this.DEMO = true;
+
+        // load frontend
+        const frontend = fs.readFileSync(Constants.FRONTEND_HTML, "utf8");
+        const frontendMarker = frontend.lastIndexOf(Constants.FRONTEND_MARKER);
+        if(frontendMarker >= 0) {
+            this.frontendHasMarker = true;
+            this.frontendBeforeMarker = frontend.substr(0, frontendMarker);
+            this.frontendAfterMarker = frontend.substr(frontendMarker+Constants.FRONTEND_MARKER.length);
+        } else {
+            this.frontendHasMarker = false;
+            this.frontendBeforeMarker = frontend;
+            this.frontendAfterMarker = "";
+        }
+        this.favicon = fs.readFileSync(Constants.FRONTEND_FAVICON, "utf8");
     }
 
     public onHttpError(error: Error): void {
@@ -53,7 +70,7 @@ export class Backend {
                 console.log("------------------------------------ " + (new Date()).toISOString());
                 console.log(url.href);
                 
-                switch(url.pathname) {
+                switch(url.pathname == "/" ? "/index.html" : url.pathname) {
                     // Cloud API
                     // Access to the reMarkable(R) cloud
 
@@ -88,11 +105,30 @@ export class Backend {
                                                response);
                         break;
 
-                    // Frontend: serve anything in the FRONTEND_DIR folder.
-                    // One exception: when index.html, some JavaScript is added at the end        
-                    // followed by the content of FRONTEND_JSFILE
+                    // Frontend
+                    case "/index.html":
+                        response.setHeader("Content-Type", "text/html");
+                        if(this.frontendHasMarker) {
+                            const config: Config = {
+                                demo: this.DEMO,
+                                sessionId: this.sessionManager.newSession(),
+                                formats: [ "zip", "pdf" ]
+                            };
+                            response.end(this.frontendBeforeMarker + JSON.stringify(config) + this.frontendAfterMarker);
+                        } else {
+                            response.end(this.frontendBeforeMarker);
+                        }
+                        console.log("SUCCESS");
+                        break;
+
+                    case "/favicon.svg":
+                        response.setHeader("Content-Type", "image/svg+xml");
+                        response.end(this.favicon);
+                        console.log("SUCCESS");
+                        break;
+
                     default:
-                        this.serveFrontend(url.pathname, response);
+                        this.serveErrorPage(response, 404, "Resource not found.");
                         break;
                 }
             } else {
@@ -102,78 +138,6 @@ export class Backend {
         } catch(error) {
             this.serveErrorPage(response, 500, error instanceof Error ? error.message : "Unknown error");
         }
-    }
-
-    public serveFrontend(pathname: string, response: http.ServerResponse) {
-        const index = "/index.html";
-        const file = pathname == "/" ? index : pathname;
-        
-        const required = [Constants.FRONTEND_DIR + file];
-        if(file == index) required.push(Constants.FRONTEND_DIR + "/" + Constants.FRONTEND_JSFILE);
- 
-        const checkAccess = required.map(file => new Promise<void>((res,rej) => {
-            fs.access(file, fs.constants.R_OK, (err: Error|null) => {
-                if(err) {
-                    console.log(file + " not found");
-                    rej();
-                } else {
-                    console.log(file + " found");
-                    res();
-                }
-            });
-        }));
-        Promise.all(checkAccess)
-            .then(() => {
-                // all required files readable
-                fs.readFile(Constants.FRONTEND_DIR+file, async (err: Error|null, content:Buffer|null) => {
-                    if(err) {
-                        this.serveErrorPage(response, 500, err.message);
-                        return;
-                    }
-
-                    // set Mime-Type
-                    let mimetype = undefined;
-                    switch(file.substr(file.lastIndexOf(".")+1)) {
-                        case "svg":  mimetype = "image/svg+xml"; break;
-                        case "html": mimetype = "text/html"; break;
-                        case "js":   mimetype = "text/javascript"; break;
-                        case "css":  mimetype = "text/css"; break;
-                    }
-                    if(mimetype) {
-                        response.setHeader("Content-Type", mimetype);
-                    }
-                    
-                    if(file == index) {
-                        const js = await this.getJavaScriptForFrontend();
-                        response.end(content + js);
-                    } else {
-                        response.end(content);
-                    }
-                });
-            })
-            .catch(() => {
-                this.serveErrorPage(response, 404, "Resource not found.");
-            });
-    }
-
-    public async getJavaScriptForFrontend(): Promise<string> {
-        const frontendJS = await new Promise<string>((res, rej) => fs.readFile(Constants.FRONTEND_DIR+"/"+Constants.FRONTEND_JSFILE, (err: Error|null, content: Buffer|null) => {
-            if(err) rej();
-            else res(content ? content.toString() : "");
-        }));
-
-        const config: Config = {
-            name: this.NAME,
-            version: this.VERSION,
-            demo: this.DEMO,
-            sessionId: this.sessionManager.newSession(),
-            formats: [ "zip", "pdf" ]
-        };
-        
-        return "<script>"
-            +"const config="+JSON.stringify(config)+";"
-            +frontendJS
-            + "</script>";
     }
 
     public serveErrorPage(response: http.ServerResponse, errorCode: number, error: string) {

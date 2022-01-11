@@ -1,33 +1,35 @@
-<!-- -------------------------------------------------
+<!DOCTYPE html><!--!
+----------------------------------------------------
 
-   rmWebUI - Web interface for the reMarkable(R) cloud.
+  rmWebUI - Web interface for the reMarkable(R) cloud.
 
-   (c) 2021-2022 Fabien Pollet <polletfa@posteo.de>
-   MIT License (see LICENSE file)
+  (c) 2021-2022 Fabien Pollet <polletfa@posteo.de>
+  MIT License (see LICENSE.md file)
   
-    --------------------------------------------------- 
---><!DOCTYPE html>
+------------------------------------------------- -->
+<!--                                    -->
+<!-- Import external files              -->
+<!--                                    -->
+<!import resources/bootstrap.min.css>
+<!import resources/bootstrap.min.js>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" style="position: relative; min-height:100%;">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link id="favicon" rel="icon" type="image/svg+xml" href="/favicon.svg">
-
-    <!--                                    -->
-    <!-- CSS                                -->
-    <!--                                    -->
-    <link rel="stylesheet" href="bootstrap.min.css">
-    
+    <title><!name> <!version></title>
   </head>
-  <body onresize="window.application.resizeHeader();">
+  <body onresize="window.application.layout.resizeHeader();">
     
     <!--                                    -->
     <!-- Header: title bar & error banner   -->
     <!--                                    -->
     <header class="header fixed-top bg-white text-black" id="header">
       <div class="container-fluid">
-        <!include title-bar>
-        <!include error-banner>
+        <!include
+ layout/title-bar.html
+>
+        <!include layout/error-banner.html>
       </div>
     </header>
 
@@ -38,11 +40,11 @@
     <main>
       <div class="container-fluid">
         <div id="content">
-          <!include register-page>
-          <!include list-page>
+          <!include layout/register-page.html>
+          <!include layout/list-page.html>
         </div>
 
-        <!include demo-banner>
+        <!include layout/demo-banner.html>
       </div>
     </main>
 
@@ -50,12 +52,16 @@
     <!-- Footer                             -->
     <!--                                    -->
 
-    <!include footer>
+    <!include layout/footer.html>
 
     <!--                                    -->
-    <!-- Javascript                         -->
+    <!-- Icons                              -->
     <!--                                    -->
-    
-    <script src="bootstrap.min.js"></script>
+    <div class="d-none">
+      <div id="icon-file"><!include resources/file.svg></div>
+      <div id="icon-folder"><!include resources/folder.svg></div>
+      <div id="icon-download"><!include resources/download.svg></div>
+      <div id="icon-empty"><!include resources/empty.svg></div>
+    </div>
   </body>
 </html>

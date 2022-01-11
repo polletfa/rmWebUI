@@ -3,14 +3,15 @@
  * rmWebUI - Web interface for the reMarkable(R) cloud.
  *
  * (c) 2021-2022 Fabien Pollet <polletfa@posteo.de>
- * MIT License (see LICENSE file)
+ * MIT License (see LICENSE.md file)
  *
  *****************************************************/
 
 import { Application } from "./Application";
 import { IPage } from "./IPage";
+import { APIRequest } from './APIRequest';
 
-import { APIResponseStatus, isAPIResponse } from "../backend/APITypes";
+import { isAPIResponse } from "../backend/APITypes";
 import { isCloudAPIResponseDataFiles } from "../backend/CloudAPITypes";
 
 /**
@@ -53,9 +54,9 @@ export class ListPage extends IPage {
         }
 
         // update page
-        this.ui.setTitle(thisEntry ? thisEntry.path : "/");
-        this.ui.showRefresh(true);
-        this.ui.show('error-banner', false);
+        this.ui.layout.setTitle(thisEntry ? thisEntry.path : "/");
+        this.ui.layout.showRefresh(true);
+        this.ui.layout.show('error-banner', false);
         const filestable = document.getElementById('files-table');
         if(filestable instanceof HTMLElement) filestable.innerHTML = html;
     }
@@ -81,7 +82,7 @@ export class ListPage extends IPage {
         return '<tr>'
             + '<td ' + this.setMouseBehaviour()
             + ' onclick="window.application.pages.list.openCollection(\''+id+'\')">'
-            + '<img src="folder.svg"/>'
+            + this.ui.layout.getIcon("folder")
             + '&nbsp;&nbsp;'
             + name
             + '</td></tr>';
@@ -99,7 +100,7 @@ export class ListPage extends IPage {
         let html = '<tr>'
             + '<td '+this.setMouseBehaviour()
             + ' onclick="window.application.pages.list.toggleDownloadMenu(\''+id+'\');">'
-            + '<img src="file.svg"/>'
+            + this.ui.layout.getIcon("file")
             + '&nbsp;&nbsp;'
             + name
             + '</td></tr>';
@@ -108,12 +109,12 @@ export class ListPage extends IPage {
             html += '<tr id="'+format+'-'+id+'" class="d-none download-menu-item">'
                 +'<td '+this.setMouseBehaviour()
                 +' onclick="window.application.pages.list.download(\''+id+'\',\''+version+'\',\''+format+'\');">'
-                +'<img src="empty.svg"/>'
+                +this.ui.layout.getIcon("empty")
                 +'&nbsp;&nbsp;'
-                +'<img src="download.svg"/>'
+                +this.ui.layout.getIcon("download")
                 +'&nbsp;&nbsp;'
                 +'Download as '+format.toUpperCase()
-                +'</td></tr>'
+                +'</td></tr>';
         }
 
         return html;
@@ -136,16 +137,15 @@ export class ListPage extends IPage {
      */
     public toggleDownloadMenu(id: string): void {
         this.ui.config.formats.forEach((format) => {
-            let el = document.getElementById(format + '-' + id);
+            const el = document.getElementById(format + '-' + id);
             if(el instanceof HTMLElement) {
                 if(el.classList.contains('d-none')) el.classList.remove('d-none');
                 else el.classList.add('d-none');
             }
         });
         Array.prototype.forEach.call(document.getElementsByClassName('download-menu-item'), (menuitem)=>{
-            if(!this.ui.config.formats.find(i => i+"-"+id == menuitem.id))
-                if(!menuitem.classList.contains('d-none'))
-                    menuitem.classList.add('d-none');
+            if(!this.ui.config.formats.find(i => i+"-"+id == menuitem.id) &&!menuitem.classList.contains('d-none'))
+                menuitem.classList.add('d-none');
         });
     }
 
@@ -162,12 +162,12 @@ export class ListPage extends IPage {
 
         const thisEntry = this.ui.filesApiResponse.data.files.find(item => item.id === id);
         if(!thisEntry) return;
-        const filename = thisEntry.name.replace(/[^A-Za-z0-9\-]/g, "_");
-        this.ui.apiRequest("/cloud/download?sessionId="+this.ui.config.sessionId+"&id="+id+"&version="+version+"&format="+format, false, (response) => {
-            console.log(response);
-            if(isAPIResponse(response)) {
-                this.ui.showError("Unable to download the file ("+response["errorType"]+").", response["error"] ? response["error"] : "Unkown error");
-            } else {
+        const filename = thisEntry.name.replace(/[^A-Za-z0-9-]/g, "_");
+        new APIRequest(this.ui, "/cloud/download?sessionId="+this.ui.config.sessionId+"&id="+id+"&version="+version+"&format="+format)
+            .onReceiveJSON((response) => {
+                this.ui.layout.showError("Unable to download the file ("+response["errorType"]+").", response["error"] ? response["error"] : "Unkown error");
+            })
+            .onReceiveData((response) => {
                 // create blob
                 const url = URL.createObjectURL(new Blob([response], {type:"application/octet-stream"}));
                 // create link
@@ -182,7 +182,6 @@ export class ListPage extends IPage {
                     link.remove();
                     window.URL.revokeObjectURL(url);
                 }, 100);
-            }
-        }, function() {});
+            });
     }
 }

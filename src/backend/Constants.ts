@@ -3,7 +3,7 @@
  * rmWebUI - Web interface for the reMarkable(R) cloud.
  *
  * (c) 2021-2022 Fabien Pollet <polletfa@posteo.de>
- * MIT License (see LICENSE file)
+ * MIT License (see LICENSE.md file)
  *
  *****************************************************/
 
@@ -17,21 +17,26 @@ export class Constants {
      * Location of the SSL private key
      */
     static readonly SSL_KEY = "data/ssl/key.pem";
-    
-    /**
-     * Location of the files of the frontend
-     */
-    static readonly FRONTEND_DIR = "frontend";
 
     /**
-     * Filename for the Frontend Javascript
+     * Frontend
      */
-    static readonly FRONTEND_JSFILE = "bundle.js";
+    static readonly FRONTEND_HTML = "frontend/index.html";
+
+    /**
+     * Favicon
+     */
+    static readonly FRONTEND_FAVICON = "frontend/favicon.svg";
+    
+    /**
+     * Marker for the configuration passed to the frontend
+     */
+    static readonly FRONTEND_MARKER = "<!backendconfig>";
     
     /**
      * Live Demonstration: location of the sample data for the FakeCloudAPI
      */
-    static readonly SAMPLE_DATA_DIR = "data/sample";
+    static readonly SAMPLE_DATA_DIR = "backend/samples";
 
     /**
      * Live Demonstration: register code for the FakeCloudAPI
