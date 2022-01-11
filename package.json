@@ -13,7 +13,8 @@
         "deploy": "npm run build && node ./_build/tools/install.js && npm install --only=prod --prefix=_dist",
         "deploy-dirty": "npm run build && node ./_build/tools/install.js --dirty",
         "deploy-run": "npm --prefix=_dist run launch",
-        "clean": "rm -fr _build _dist"
+        "clean": "node ./_build/tools/clean.js",
+        "dist-clean": "node ./_build/tools/clean.js --all"
     },
     "scripts-dist": {
         "launch": "node backend/index.js"
