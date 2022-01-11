@@ -5,6 +5,7 @@
     "description": "Web interface for the reMarkable(R) cloud",
     "scripts": {
         "lint": "eslint src/**/*.ts tools/**/*.ts",
+        "lint-fix": "eslint --fix src/**/*.ts tools/**/*.ts",
         "compile": "tsc",
         "webpack": "webpack",
         "build-frontend": "node ./_build/tools/build_frontend.js",

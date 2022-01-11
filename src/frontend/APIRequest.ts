@@ -48,40 +48,9 @@ export class APIRequest {
             httpRequest.addEventListener("readystatechange", () => {
                 if (httpRequest.readyState === httpRequest.DONE) {
                     if(httpRequest.status === 200) {
-                        this.ui.layout.show('error-banner', false);
-                        let json = undefined;
-                        // if we have a JSON handler, try parsing JSON
-                        if(this.onReceiveJSONHandler) {
-                            try {
-                                json = JSON.parse(new TextDecoder().decode(httpRequest.response)) as APIResponse;
-                                // send JSON
-                                if(isAPIResponse(json)) {
-                                    if(this.onReceiveJSONHandler) this.onReceiveJSONHandler(json);
-                                    this.finalize();
-                                    return;
-                                } else {
-                                    throw new Error("The response is a valid JSON but not a valid APIResponse");
-                                }
-                            } catch(e) {
-                                // if we don't have a data handler -> error
-                                if(!this.onReceiveDataHandler) {
-                                    this.fail("Invalid data received from backend", "Received "+httpRequest.response.length+" bytes. " + (e instanceof Error  ? e.message : ""));
-                                    return;
-                                }
-                            }
-                        }
-                        // if we have a data handler, send data
-                        if(this.onReceiveDataHandler) {
-                            this.onReceiveDataHandler(httpRequest.response);
-                            this.finalize();
-                            return;
-                        }
-                        // if we have no handler -> finalize without error
-                        this.finalize();
-                        return;
+                        this.handleResponse(httpRequest.response);
                     } else {
                         this.fail("The backend responded with an error code", "Response code: "+httpRequest.status);
-                        return;
                     }            
                 }
             });
@@ -114,10 +83,40 @@ export class APIRequest {
             this.resolve();
         else if(!success && this.reject)
             this.reject();
-    };
+    }
 
     protected fail(errorMessage: string, extendedMessage: string): void {
         this.ui.layout.showError(errorMessage, extendedMessage);
         this.finalize(false);
-    };
+    }
+
+    protected handleResponse(response: Buffer): void {
+        this.ui.layout.show('error-banner', false);
+        let json = undefined;
+        // if we have a JSON handler, try parsing JSON
+        if(this.onReceiveJSONHandler) {
+            try {
+                json = JSON.parse(new TextDecoder().decode(response)) as APIResponse;
+                // send JSON
+                if(isAPIResponse(json)) {
+                    if(this.onReceiveJSONHandler) this.onReceiveJSONHandler(json);
+                    this.finalize();
+                    return;
+                } else {
+                    throw new Error("The response is a valid JSON but not a valid APIResponse");
+                }
+            } catch(e) {
+                // if we don't have a data handler -> error
+                if(!this.onReceiveDataHandler) {
+                    this.fail("Invalid data received from backend", "Received "+response.length+" bytes. " + (e instanceof Error  ? e.message : ""));
+                    return;
+                }
+            }
+        }
+        // if we have a data handler, send data
+        if(this.onReceiveDataHandler) {
+            this.onReceiveDataHandler(response);
+        }
+        this.finalize();
+    }
 }
