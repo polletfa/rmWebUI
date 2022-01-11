@@ -167,6 +167,6 @@ export class Backend {
               : https.createServer({key: sslKey, cert: sslCert});
         server.on('error', this.onHttpError.bind(this));
         server.on('request', this.onHttpRequest.bind(this));
-        server.listen(8080);
+        server.listen(this.configManager.config.port);
     }
 }

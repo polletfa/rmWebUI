@@ -24,8 +24,9 @@ export class ConfigManager {
 
         // eslint-disable-next-line
         const config = yaml.load(fs.readFileSync(process.argv[2] ? process.argv[2] : Constants.CONFIG_FILE, "utf8")) as any;
+        console.log(config);
         this.config = {
-            port: config && "port" in config ? config.port : Constants.DEFAULT_CONFIG.port,
+            port: config && "port" in config && !isNaN(config.port) ? Number(config.port) : Constants.DEFAULT_CONFIG.port,
             demo: config && "demo" in config ? config.demo : Constants.DEFAULT_CONFIG.demo,
             sessionMaxIdle: config && "sessionMaxIdle" in config ?
                 this.readDuration(config.sessionMaxIdle, Constants.DEFAULT_CONFIG.sessionMaxIdle) :
@@ -43,6 +44,7 @@ export class ConfigManager {
                 key: config && "ssl" in config && "key" in config.ssl ? config.ssl.key : Constants.DEFAULT_CONFIG.ssl.key
             }
         };
+        console.log(this.config);
     }
 
     public getFrontendConfig(): FrontendConfig {
