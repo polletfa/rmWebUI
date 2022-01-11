@@ -10,7 +10,7 @@
         "webpack": "webpack",
         "build-frontend": "node ./_build/tools/build_frontend.js",
         "build": "npm run compile && npm run webpack && npm run build-frontend",
-        "deploy": "npm run build && node ./_build/tools/install.js && npm install --only=prod --prefix=_dist",
+        "deploy": "npm run build && node ./_build/tools/install.js",
         "deploy-dirty": "npm run build && node ./_build/tools/install.js --dirty",
         "deploy-run": "npm --prefix=_dist run launch",
         "clean": "node ./_build/tools/clean.js",

@@ -8,16 +8,12 @@
  *****************************************************/
 
 import * as fs from "fs";
+import * as path from "path";
+import { execSync }  from "child_process";
 
 const DIRTY = process.argv[2] == "--dirty";
 
 const TARGET = "_dist";
-const DIRECTORIES = [
-    "backend",
-    "backend/samples",
-    "data",
-    "frontend"
-];
 
 const FILES = [
     {src: "README.md",                                dest: "README.md"},
@@ -40,27 +36,37 @@ const FILES = [
     // Frontend - Favicon
     {src: "src/frontend/resources/favicon.svg",       dest: "frontend/favicon.svg"}
 ];
- 
+
+console.log("Deploy...");
+
 // delete (unless --dirty is provided) and recreate target directory
 if(!DIRTY && fs.existsSync(TARGET)) {
+    console.log("  Cleanup");
     fs.rmSync(TARGET, {recursive: true});
-}
-if(!fs.existsSync(TARGET))
-    fs.mkdirSync(TARGET, {recursive: true});
-   
-// create directory structure
-for(const dir of DIRECTORIES) {
-    fs.mkdirSync(TARGET+"/"+dir, {recursive:true});
 }
 
 // copy files
 for(const file of FILES) {
-    fs.copyFileSync(file.src, TARGET+"/"+file.dest);
+    console.log("  "+file.dest);
+    const outfile = TARGET+"/"+file.dest;
+    const outdir = path.dirname(outfile);
+    if(!fs.existsSync(outdir)) fs.mkdirSync(outdir, {recursive: true});
+    fs.copyFileSync(file.src, outfile);
 }
 
 // package.JSON
+console.log("  package.json");
 const package_json = JSON.parse(fs.readFileSync("package.json", "utf8"));
 package_json.scripts = package_json["scripts-dist"];
 package_json["scripts-dist"] = undefined;
 package_json.devDependencies = undefined;
 fs.writeFileSync(TARGET+"/package.json", JSON.stringify(package_json, null, 4));
+
+// install deps (if not DIRTY)
+if(!DIRTY) {
+    console.log("  node_modules");
+    execSync("npm install --only=prod --prefix="+TARGET);
+    fs.unlinkSync(TARGET+"/package-lock.json");
+}
+
+console.log("Deployed.");
