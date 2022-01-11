@@ -149,6 +149,10 @@ export class Backend {
      * Start the HTTP server.
      */
     public run(): void {
+        // Show config
+        console.log(this.NAME+" "+this.VERSION);
+        console.log(JSON.stringify(this.configManager.config, null, 2));
+        
         // Load SSL data
         let sslKey: Buffer|undefined = undefined;
         let sslCert: Buffer|undefined = undefined;
