@@ -20,7 +20,6 @@ export enum CloudAPIResponseError {
     ConvertFile = "convert-file",
 }
 
-// Allow any for typeguard:
 // eslint-disable-next-line
 export function isCloudAPIResponseError(arg: any): arg is CloudAPIResponseError {
     return typeof arg === "string" && (
@@ -42,8 +41,6 @@ export enum CloudAPIResponseFileType {
     Collection = "CollectionType"
 }
 
-
-// Allow any for typeguard:
 // eslint-disable-next-line
 export function isCloudAPIResponseFileType(arg: any): arg is CloudAPIResponseFileType {
     return typeof arg === "string" && (
@@ -64,7 +61,6 @@ export interface CloudAPIResponseFileItem {
     parent: string
 }
 
-// Allow any for typeguard:
 // eslint-disable-next-line
 export function isCloudAPIResponseFileItem(arg: any): arg is CloudAPIResponseFileItem {
     return ("id" in arg) && (typeof arg.id === "string")
@@ -82,7 +78,6 @@ export interface CloudAPIResponseDataFiles {
     files: CloudAPIResponseFileItem[]
 }
 
-// Allow any for typeguard:
 // eslint-disable-next-line
 export function isCloudAPIResponseDataFiles(arg: any): arg is CloudAPIResponseDataFiles {
     if(("files" in arg) && Array.isArray(arg.files)) {

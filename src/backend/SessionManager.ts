@@ -10,7 +10,6 @@
 import * as uuid from "uuid";
 
 import { Backend } from "./Backend";
-import { Constants } from "./Constants";
 
 type Value = string|number|boolean;
 type KeyValue = {key: string, value: Value};
@@ -28,7 +27,7 @@ export class SessionManager {
     constructor(backend: Backend) {
         this.backend = backend;
         
-        setInterval(this.clearOldSessions.bind(this), 60*60*1000); // delete unused sessions regularly
+        setInterval(this.clearOldSessions.bind(this), Math.min(60*1000, this.backend.configManager.config.sessionMaxIdle)); // delete unused sessions regularly
     }
     
     public newSession(): string {
@@ -88,7 +87,7 @@ export class SessionManager {
 
     public clearOldSessions() {
         const nSessions = this.sessions.length;
-        this.sessions = this.sessions.filter((session: Session) => session.lastUsed - Date.now() < Constants.SESSION_TIME_ALIVE);
+        this.sessions = this.sessions.filter((session: Session) => session.lastUsed - Date.now() < this.backend.configManager.config.sessionMaxIdle);
         if(this.sessions.length < nSessions) {
             console.log("Deleted " + (nSessions - this.sessions.length) + " session(s).");
         }

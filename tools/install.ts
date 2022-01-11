@@ -20,6 +20,9 @@ const FILES = [
     {src: "LICENSE.md",                               dest: "LICENSE.md"},
     {src: "CHANGELOG.md",                             dest: "CHANGELOG.md"},
 
+    // Configuration
+    {src: "src/config.yml",                           dest: "config.yml"},
+
     // Backend
     {src: "_build/src/backend.js",                    dest: "backend/index.js"},
 

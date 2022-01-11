@@ -15,7 +15,6 @@ export enum APIResponseStatus {
     Error = "error"
 }
 
-// Allow any for typeguard:
 // eslint-disable-next-line
 export function isAPIResponseStatus(arg: any): arg is APIResponseStatus {
     return typeof arg === "string" && (
@@ -43,7 +42,6 @@ export interface APIResponse {
     data?: unknown
 }
 
-// Allow any for typeguard:
 // eslint-disable-next-line 
 export function isAPIResponse(arg: any): arg is APIResponse {
     return ("status" in arg) && isAPIResponseStatus(arg.status)

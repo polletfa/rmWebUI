@@ -7,16 +7,13 @@
  *
  *****************************************************/
 
+import { Config } from "./Config";
+
 export class Constants {
     /**
-     * Location of the SSL certificate
+     * Location of the default configuration file when none is provided as command line parameter
      */
-    static readonly SSL_CERT = "data/ssl/cert.pem";
-    
-    /**
-     * Location of the SSL private key
-     */
-    static readonly SSL_KEY = "data/ssl/key.pem";
+    static readonly CONFIG_FILE = "config.yml";
 
     /**
      * Frontend
@@ -31,7 +28,7 @@ export class Constants {
     /**
      * Marker for the configuration passed to the frontend
      */
-    static readonly FRONTEND_MARKER = "<!backendconfig>";
+    static readonly FRONTEND_MARKER = "<!FrontendConfig>";
     
     /**
      * Live Demonstration: location of the sample data for the FakeCloudAPI
@@ -39,18 +36,24 @@ export class Constants {
     static readonly SAMPLE_DATA_DIR = "backend/samples";
 
     /**
-     * Live Demonstration: register code for the FakeCloudAPI
+     * Default configuration
      */
-    static readonly FAKE_REGISTER_CODE = "abcdefgh";
+    static readonly DEFAULT_CONFIG: Config = {
+        port: 8080,
+        demo: false,
+        sessionMaxIdle: 24*60*60*1000,
+        
+        data: "data",
+        cache: true,
+        pdfconverter: "",
 
-    /**
-     * Live Demonstration: delay to simulate cloud request for the FakeCloudAPI
-     */
-    static readonly FAKE_DELAY = 2000;
-
-    /**
-     * Duration a session stays alive if it is not used.
-     */
-    static readonly SESSION_TIME_ALIVE = 24*60*60*1000; // 24 hours
+        register: "abcdefgh",
+        delay: 2000,
+        
+        ssl: {
+            cert: "",
+            key: ""
+        }
+    };
 
 }

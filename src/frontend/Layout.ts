@@ -30,7 +30,9 @@ export class Layout {
         this.show('demo-badge-header', this.ui.config.demo);
         this.show('demo-badge-footer', this.ui.config.demo);
         this.show('demo-banner', this.ui.config.demo);
-
+        const el = document.getElementById("demo-register-code");
+        if(el instanceof HTMLElement) el.innerHTML = this.ui.config.register;
+        
         // set events for collapsibles to resize the margin for the header during show/hide animation
         Array.prototype.forEach.call(document.getElementsByClassName('collapse'), (coll) => {
             coll.addEventListener('hide.bs.collapse', this.setResizeInterval.bind(this));

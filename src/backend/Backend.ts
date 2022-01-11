@@ -13,7 +13,7 @@ import * as fs from "fs";
 
 import { SessionManager } from "./SessionManager";
 import { Constants } from "./Constants";
-import { Config } from './Config';
+import { ConfigManager } from "./ConfigManager";
 
 import { ICloudAPI } from "./ICloudAPI";
 import { FakeCloudAPI } from "./FakeCloudAPI";
@@ -22,8 +22,9 @@ import { BackendAPI } from "./BackendAPI";
 export class Backend {
     readonly NAME: string;
     readonly VERSION: string;
-    readonly DEMO: boolean;
     
+    readonly configManager: ConfigManager;
+
     readonly cloudAPI: ICloudAPI;
     readonly backendAPI: BackendAPI;
     readonly sessionManager: SessionManager;
@@ -35,6 +36,8 @@ export class Backend {
     protected favicon: string;
 
     constructor() {
+        this.configManager = new ConfigManager(this);
+
         this.cloudAPI = new FakeCloudAPI(this);
         this.backendAPI = new BackendAPI(this);
         this.sessionManager = new SessionManager(this);
@@ -42,7 +45,6 @@ export class Backend {
         const package_json = JSON.parse(fs.readFileSync("package.json").toString());
         this.NAME = package_json.displayName;
         this.VERSION = package_json.version;
-        this.DEMO = true;
 
         // load frontend
         const frontend = fs.readFileSync(Constants.FRONTEND_HTML, "utf8");
@@ -107,14 +109,10 @@ export class Backend {
 
                     // Frontend
                     case "/index.html":
+                        console.log("Frontend: application");
                         response.setHeader("Content-Type", "text/html");
                         if(this.frontendHasMarker) {
-                            const config: Config = {
-                                demo: this.DEMO,
-                                sessionId: this.sessionManager.newSession(),
-                                formats: [ "zip", "pdf" ]
-                            };
-                            response.end(this.frontendBeforeMarker + JSON.stringify(config) + this.frontendAfterMarker);
+                            response.end(this.frontendBeforeMarker + JSON.stringify(this.configManager.getFrontendConfig()) + this.frontendAfterMarker);
                         } else {
                             response.end(this.frontendBeforeMarker);
                         }
@@ -122,6 +120,7 @@ export class Backend {
                         break;
 
                     case "/favicon.svg":
+                        console.log("Frontend: favicon");
                         response.setHeader("Content-Type", "image/svg+xml");
                         response.end(this.favicon);
                         console.log("SUCCESS");
@@ -154,8 +153,8 @@ export class Backend {
         let sslKey: Buffer|undefined = undefined;
         let sslCert: Buffer|undefined = undefined;
         try {
-            sslKey = fs.readFileSync(Constants.SSL_KEY);
-            sslCert = fs.readFileSync(Constants.SSL_CERT);
+            sslKey = fs.readFileSync(this.configManager.config.ssl.key);
+            sslCert = fs.readFileSync(this.configManager.config.ssl.cert);
             this.protocol = "https";
         } catch(_) {
             this.protocol = "http";

@@ -45,13 +45,13 @@ export class FakeCloudAPI extends ICloudAPI {
         }            
 
         setTimeout(() => {
-            if(code !== Constants.FAKE_REGISTER_CODE) {
-                this.sendAPIResponseError(CloudAPIResponseError.Register,"This is a demo version. Use the code '"+Constants.FAKE_REGISTER_CODE+"'.", response);
+            if(code !== this.backend.configManager.config.register) {
+                this.sendAPIResponseError(CloudAPIResponseError.Register,"This is a demo version. Use the code '"+this.backend.configManager.config.register+"'.", response);
             } else {
                 this.backend.sessionManager.setValue(sessionId, "registered", true);
                 this.sendAPIResponseSuccess(undefined, response);
             }
-        }, Constants.FAKE_DELAY);
+        }, this.backend.configManager.config.delay);
     }
     
     /**
@@ -70,7 +70,7 @@ export class FakeCloudAPI extends ICloudAPI {
             return;
         }
         if(this.backend.sessionManager.getValue(sessionId, "registered") !== true) {
-            this.sendAPIResponseError(CloudAPIResponseError.LoadToken, "This is a demo version. Register with the code '"+Constants.FAKE_REGISTER_CODE+"'.", response);
+            this.sendAPIResponseError(CloudAPIResponseError.LoadToken, "This is a demo version. Register with the code '"+this.backend.configManager.config.register+"'.", response);
         } else {
             setTimeout(() => {
                 try {
@@ -84,7 +84,7 @@ export class FakeCloudAPI extends ICloudAPI {
                 } catch(error) {
                     this.sendAPIResponseError(CloudAPIResponseError.RetrieveFiles, error instanceof Error ? error.message : "Unknown error", response);
                 }
-            }, Constants.FAKE_DELAY);
+            }, this.backend.configManager.config.delay);
         }
     }
 

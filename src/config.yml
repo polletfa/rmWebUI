@@ -1,0 +1,95 @@
+### 
+###  rmWebUI - Web interface for the reMarkable(R) cloud.
+### 
+###  (c) 2021-2022 Fabien Pollet <polletfa@posteo.de>
+###  MIT License (see LICENSE.md file)
+### 
+
+#
+# port - TCP port number (default: 8080)
+#     You will need elevated permissions to use a low numbered port (lower than 1024).
+#
+# demo - true/false (default: false)
+#     If true, the demonstration mode is activated (no data saved, no access to the cloud, dummy data only).
+#
+# sessionMaxIdle - time with unit: s, m, h, d (default: 1d)
+#     Session are deleted if they are not used for longer than the specified time.
+#
+# ssl:
+#   cert - Path to PEM certificate file, (default: empty)
+#     Certificate required to use HTTPS. For a localhost server, this is not required.
+#     If you expose your server over internet, you should use HTTPS to protect your data.
+#
+#     Ideally you need a certificate signed by a Certificate Authority. Some server hosting services
+#     include such a certificate.
+#
+#     You can also use a self-signed certificate, but you will get a security warning from the browser
+#     when accessing the site.
+#
+#     You also need to set ssl.key.
+#
+# ssl:
+#   key - Path to PEM private key file (default: empty)
+#     Private key associated with the certificate and required to use HTTPS.
+#     See ssl.cert
+#
+#
+# OPTIONS FOR LIVE MODE ONLY
+#
+# data - Path to directory (default: data)
+#     Directory used to store user data (authentication token or cached data).
+#     The application requires read/write permissions for this directory.
+#
+# cache - true/false (default: true)
+#     Enable or disable the cache. If disabled, the application will download files
+#     from the cloud on every access. Otherwise it will keep a copy and download files
+#     from the cloud only when the version is incremented.
+#
+# pdfconverter - system command (default: empty)
+#     The files retrieved from the cloud are ZIP files containing metadata and the "lines" files
+#     in the proprietary reMarkable(R) format (as well as the original file without annotations for PDF and ePUB files).
+#
+#     You need an external program to be able to download the notebooks as PDF files.
+#     Specify the command with this option and the following placeholders:
+#     - <!input>: ZIP file (input file)
+#     - <!output>: PDF file (output file)
+#
+#     For example with rmrl (https://github.com/rschroll/rmrl):
+#     - python -m rmrl <!input> <!output>
+#
+#
+# OPTIONS FOR DEMONSTRATION MODE ONLY
+#
+# register - string (default: abcdefgh)
+#     Valid code for the registration process in demonstration mode.
+#     It MUST be exactly 8 alphanumerical characters or the code will be rejected.
+#
+# delay - time with unit: s, m, h, d (default: 2s)
+#     Delay to simulate a request to the cloud
+#
+
+
+###########################################
+#
+# Example 1: Demonstration mode over HTTP
+#
+
+#port: 8001
+#demo: true
+#sessionMaxIdle: 30m
+
+
+###########################################
+#
+# Example 2: Live mode over HTTPS
+#
+
+#port: 8002
+#data: /opt/rmWebUI/data
+#cache: true
+#pdfconverter: python -m rmrl <!input> <!output>
+#ssl:
+#  cert: /opt/rmWebUI/ssl/cert.pem
+#  key: /opt/rmWebUI/ssl/key.pem
+
+demo: true

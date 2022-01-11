@@ -21,6 +21,8 @@ class FrontendBuilder {
     
     readonly OUTPUT = "_build/src/frontend.html";
 
+    readonly FRONTEND_CONFIG_ID = "FrontendConfig";
+    
     protected result: string;
     protected imports: string[] = [];
     protected package_json: {displayName: string, version: string};
@@ -124,16 +126,7 @@ class FrontendBuilder {
         }
         return this;
     }
-
-    /**
-     * Add placeholder for configuration from backend
-     */
-    public addConfigPlaceholder(): FrontendBuilder {
-        console.log("  Add placeholder for backend configuration");
-        this.result = this.result.replace(/<\/body>/, '<script id="backendconfig" type="application/json"><!backendconfig></script></body>');
-        return this;
-    }
-    
+   
     /**
      * Add JavaScript bundle
      */
@@ -153,6 +146,5 @@ new FrontendBuilder()
     .trimLines()
     .removeSpacesBetweenElements()
     .importFiles()
-    .addConfigPlaceholder()
     .addBundle()
     .save();

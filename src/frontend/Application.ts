@@ -12,7 +12,7 @@ import { RegisterPage } from './RegisterPage';
 import { ListPage } from './ListPage';
 import { APIRequest } from './APIRequest';
 
-import { Config, isConfig } from '../backend/Config';
+import { FrontendConfig, isFrontendConfig } from '../backend/Config';
 import { APIResponse, isAPIResponse, APIResponseStatus } from '../backend/APITypes';
 import { CloudAPIResponseError } from '../backend/CloudAPITypes';
 
@@ -25,7 +25,7 @@ export interface PageList {
  * Main class for the JavaScript logic of the website
  */
 export class Application {
-    readonly config: Config;                                    /**< Configuration provided by the backend */
+    readonly config: FrontendConfig;                            /**< Configuration provided by the backend */
     readonly layout: Layout;                                    /**< Manage layout */
     
     public filesApiResponse: APIResponse|undefined = undefined; /**< Response of /cloud/files */
@@ -40,16 +40,16 @@ export class Application {
      */
     constructor() {
         // read backend config
-        const bc = document.getElementById("backendconfig");
+        const bc = document.getElementById("FrontendConfig");
         if(bc instanceof HTMLElement) {
             const loadedConf = JSON.parse(bc.innerHTML);
-            if(isConfig(loadedConf)) {
+            if(isFrontendConfig(loadedConf)) {
                 this.config = loadedConf;
             } else {
-                throw new Error("backendconfig is invalid.");
+                throw new Error("FrontendConfig is invalid.");
             }
         } else {
-            throw new Error("backendconfig not found.");
+            throw new Error("FrontendConfig not found.");
         }
 
         this.layout = new Layout(this);

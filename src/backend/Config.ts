@@ -7,18 +7,38 @@
  *
  *****************************************************/
 
+export interface SSLConfig {
+    cert: string;
+    key: string;
+}
+
+export interface Config {
+    port: number;
+    demo: boolean;
+    sessionMaxIdle: number;
+    
+    data: string;
+    cache: boolean;
+    pdfconverter: string;
+
+    register: string;
+    delay: number;
+    
+    ssl: SSLConfig;
+}
+
 /**
  * Configuration passed by the backend to the frontend.
  */
-export interface Config {
+export interface FrontendConfig {
     demo: boolean;           /**< True if the demonstration mode is enabled */
     sessionId: string;       /**< Session ID required to communicate with the backend */
     formats: string[];       /**< Supported file formats */
+    register: string;        /**< Register code for demonstration mode */
 }
 
-// Allow any for typeguard:
 // eslint-disable-next-line
-export function isConfig(arg: any): arg is Config {
+export function isFrontendConfig(arg: any): arg is FrontendConfig {
     if(!("demo" in arg) || (typeof arg.demo !== "boolean")
         || !("sessionId" in arg) || (typeof arg.sessionId !== "string")
         || !("formats" in arg) || !(Array.isArray(arg.formats))) return false;
