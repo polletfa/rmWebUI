@@ -51,7 +51,7 @@ export class ConfigLoader {
             
             allowInsecure: ConfigLoader.checkBoolean(yamltree, "allowInsecure", defaultConfig.allowInsecure),
 
-            ssl: {cert: "", key: ""},
+            ssl: {cert: defaultConfig.ssl.cert, key: defaultConfig.ssl.key},
             
             data: ConfigLoader.checkString(yamltree, "data", defaultConfig.data),
             cache: ConfigLoader.checkBoolean(yamltree, "cache", defaultConfig.cache),
