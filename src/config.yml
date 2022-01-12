@@ -41,7 +41,7 @@
 # demo - true/false (default: false)
 #     If true, the demonstration mode is activated (no data saved, no access to the cloud, dummy data only).
 #
-# sessionMaxIdle - time with unit: s, m, h, d (default: 1d)
+# sessionMaxIdle - duration with unit s, m, h or d (default: 1d)
 #     Session are deleted if they are not used for longer than the specified time.
 #
 # logHeaders - true/false (default_ false)
@@ -102,8 +102,8 @@
 #     Valid code for the registration process in demonstration mode.
 #     It MUST be exactly 8 alphanumerical characters or the code will be rejected.
 #
-# delay - time with unit: s, m, h, d (default: 2s)
-#     Delay to simulate a request to the cloud
+# delay - duration with unit s, m, h or d (default: 2s)
+#     Delay to simulate a request to the cloud.
 #
 #
 # EXAMPLES
