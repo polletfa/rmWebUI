@@ -22,33 +22,40 @@ export class ConfigManager {
     constructor(backend: Backend) {
         this.backend = backend;
 
-        // eslint-disable-next-line
-        const config = yaml.load(fs.readFileSync(process.argv[2] ? process.argv[2] : Constants.CONFIG_FILE, "utf8")) as any;
-        this.config = {
-            port: config && "port" in config && !isNaN(config.port) ? Number(config.port) : Constants.DEFAULT_CONFIG.port,
-            demo: config && "demo" in config ? config.demo : Constants.DEFAULT_CONFIG.demo,
-            sessionMaxIdle: config && "sessionMaxIdle" in config ?
-                this.readDuration(config.sessionMaxIdle, Constants.DEFAULT_CONFIG.sessionMaxIdle) :
-                Constants.DEFAULT_CONFIG.sessionMaxIdle,
-            
-            data: config && "data" in config ? config.data : Constants.DEFAULT_CONFIG.data,
-            cache: config && "cache" in config ? config.cache : Constants.DEFAULT_CONFIG.cache,
-            pdfconverter: config && "pdfconverter" in config ? config.pdfconverter : Constants.DEFAULT_CONFIG.pdfconverter,
+        try{
+            // eslint-disable-next-line
+            const config = yaml.load(fs.readFileSync(process.argv[2] ? process.argv[2] : Constants.CONFIG_FILE, "utf8")) as any;
+            this.config = {
+                port: config && "port" in config && !isNaN(config.port) ? Number(config.port) : Constants.DEFAULT_CONFIG.port,
+                demo: config && "demo" in config ? config.demo : Constants.DEFAULT_CONFIG.demo,
+                sessionMaxIdle: config && "sessionMaxIdle" in config ?
+                    this.readDuration(config.sessionMaxIdle, Constants.DEFAULT_CONFIG.sessionMaxIdle) :
+                    Constants.DEFAULT_CONFIG.sessionMaxIdle,
+                
+                data: config && "data" in config ? config.data : Constants.DEFAULT_CONFIG.data,
+                cache: config && "cache" in config ? config.cache : Constants.DEFAULT_CONFIG.cache,
+                pdfconverter: config && "pdfconverter" in config ? config.pdfconverter : Constants.DEFAULT_CONFIG.pdfconverter,
+                
+                register: config && "register" in config ? config.register : Constants.DEFAULT_CONFIG.register,
+                delay: config && "delay" in config ? this.readDuration(config.delay, Constants.DEFAULT_CONFIG.delay) : Constants.DEFAULT_CONFIG.delay,
+                
+                ssl: {
+                    cert: config && "ssl" in config && "cert" in config.ssl ? config.ssl.cert : Constants.DEFAULT_CONFIG.ssl.cert,
+                    key: config && "ssl" in config && "key" in config.ssl ? config.ssl.key : Constants.DEFAULT_CONFIG.ssl.key
+                },
 
-            register: config && "register" in config ? config.register : Constants.DEFAULT_CONFIG.register,
-            delay: config && "delay" in config ? this.readDuration(config.delay, Constants.DEFAULT_CONFIG.delay) : Constants.DEFAULT_CONFIG.delay,
-            
-            ssl: {
-                cert: config && "ssl" in config && "cert" in config.ssl ? config.ssl.cert : Constants.DEFAULT_CONFIG.ssl.cert,
-                key: config && "ssl" in config && "key" in config.ssl ? config.ssl.key : Constants.DEFAULT_CONFIG.ssl.key
-            }
-        };
+                allowinsecure: config && "allow-insecure" in config ? config["allow-insecure"] : Constants.DEFAULT_CONFIG.allowinsecure
+            };
+        } catch(e) {
+            console.log("Cannot read configuration - Using default configuration");
+            console.log(e instanceof Error ? ("  -> " + e.message) : "");
+            this.config = Constants.DEFAULT_CONFIG;
+        }
     }
 
     public getFrontendConfig(): FrontendConfig {
         return {
             demo: this.config.demo,
-            sessionId: this.backend.sessionManager.newSession(),
             formats: this.config.pdfconverter.trim().length == 0 ? [ "zip", "pdf" ] : [ "zip" ],
             register: this.config.register
         };

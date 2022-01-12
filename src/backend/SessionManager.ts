@@ -8,6 +8,7 @@
  *****************************************************/
 
 import * as uuid from "uuid";
+import * as http from "http";
 
 import { Backend } from "./Backend";
 
@@ -28,6 +29,27 @@ export class SessionManager {
         this.backend = backend;
         
         setInterval(this.clearOldSessions.bind(this), Math.min(60*1000, this.backend.configManager.config.sessionMaxIdle)); // delete unused sessions regularly
+    }
+    
+    public getOrCreateSession(request: http.IncomingMessage, response: http.ServerResponse): string {
+        const cookie = request.headers?.cookie;
+        if(cookie) {
+            const match = cookie.match(/\bsessionId\s*=\s*([^\s;]*)/);
+            if(match) {
+                // session cookie found
+                if(this.hasSession(match[1])) {
+                    // session exists
+                    console.log("Using existing session: "+match[1]);
+                    return match[1];
+                } else {
+                    console.log("Invalid session: "+match[1]);
+                }
+            }
+        }
+        // no cookie - Create new session and set cookie
+        const sessionId = this.newSession();
+        response.setHeader('Set-Cookie', 'sessionId='+sessionId);
+        return sessionId;
     }
     
     public newSession(): string {

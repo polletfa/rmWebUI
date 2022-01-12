@@ -89,7 +89,7 @@ export class Application {
      * Get file list and update UI
      */
     public getFiles(): void {
-        new APIRequest(this, "/cloud/files?sessionId="+this.config.sessionId)
+        new APIRequest(this, "/cloud/files")
             .onReceiveJSON((response) => {
                 this.filesApiResponse = response;
             })

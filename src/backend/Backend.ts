@@ -71,6 +71,21 @@ export class Backend {
                 const url = new URL(request.url, this.protocol+"://"+request.headers.host);
                 console.log("------------------------------------ " + (new Date()).toISOString());
                 console.log(url.href);
+
+                const host = request.headers.host?.split(":")[0];
+                const localhostRequest = host === "localhost" || host?.substr(0, 4) === "127.";
+
+                if(this.protocol == "http" && !localhostRequest) {
+                    if(this.configManager.config.allowinsecure) {
+                        console.log("SECURITY WARNING: Insecure request!");
+                        console.log("SECURITY WARNING: Configure HTTPS or set allow-insecure to false to disable this message and protect your data!");
+                    } else {
+                        this.serveErrorPage(response, 403, "Forbidden");
+                        return;
+                    }
+                }
+                
+                const sessionId = this.sessionManager.getOrCreateSession(request, response);
                 
                 switch(url.pathname == "/" ? "/index.html" : url.pathname) {
                     // Cloud API
@@ -78,20 +93,20 @@ export class Backend {
 
                     case "/cloud/register":
                         console.log("Cloud API: register");
-                        this.cloudAPI.register(url.searchParams.get("sessionId"),
+                        this.cloudAPI.register(sessionId,
                                                url.searchParams.get("code"),
                                                response);
                         break;
                         
                     case "/cloud/files":
                         console.log("Cloud API: files");
-                        this.cloudAPI.files(url.searchParams.get("sessionId"),
+                        this.cloudAPI.files(sessionId,
                                             response);
                         break;
                         
                     case "/cloud/download":
                         console.log("Cloud API: download");
-                        this.cloudAPI.download(url.searchParams.get("sessionId"),
+                        this.cloudAPI.download(sessionId,
                                                url.searchParams.get("id"),
                                                url.searchParams.get("version"),
                                                url.searchParams.get("format"),
@@ -103,7 +118,7 @@ export class Backend {
                         
                     case "/backend/logout":
                         console.log("Backend API: logout");
-                        this.backendAPI.logout(url.searchParams.get("sessionId"),
+                        this.backendAPI.logout(sessionId,
                                                response);
                         break;
 
@@ -152,16 +167,25 @@ export class Backend {
         // Show config
         console.log(this.NAME+" "+this.VERSION);
         console.log(JSON.stringify(this.configManager.config, null, 2));
-        
-        // Load SSL data
+
+        // select protocol and load SSL data if required
+        // HTTP is only used if both SSL options are empty. HTTP should not be started by mistake because of a misconfiguration.
         let sslKey: Buffer|undefined = undefined;
         let sslCert: Buffer|undefined = undefined;
-        try {
+        if(this.configManager.config.ssl.key.length == 0 && this.configManager.config.ssl.cert.length == 0) {
+            this.protocol = "http";
+
+            if(this.configManager.config.allowinsecure) {
+                console.log("SECURITY WARNING: SSL not configured and insecure requests allowed!");
+                console.log("SECURITY WARNING: Configure HTTPS or set allow-insecure to false to disable this message and protect your data!");
+            } else {
+                console.log("INFO: SSL not configured. Only localhost requests are accepted.");
+            }
+        } else {
+            // Load SSL data
             sslKey = fs.readFileSync(this.configManager.config.ssl.key);
             sslCert = fs.readFileSync(this.configManager.config.ssl.cert);
             this.protocol = "https";
-        } catch(_) {
-            this.protocol = "http";
         }
 
         // Initialize and launch HTTP/HTTPS server

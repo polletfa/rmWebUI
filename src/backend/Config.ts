@@ -25,6 +25,7 @@ export interface Config {
     delay: number;
     
     ssl: SSLConfig;
+    allowinsecure: boolean;
 }
 
 /**
@@ -32,7 +33,6 @@ export interface Config {
  */
 export interface FrontendConfig {
     demo: boolean;           /**< True if the demonstration mode is enabled */
-    sessionId: string;       /**< Session ID required to communicate with the backend */
     formats: string[];       /**< Supported file formats */
     register: string;        /**< Register code for demonstration mode */
 }
@@ -40,7 +40,7 @@ export interface FrontendConfig {
 // eslint-disable-next-line
 export function isFrontendConfig(arg: any): arg is FrontendConfig {
     if(!("demo" in arg) || (typeof arg.demo !== "boolean")
-        || !("sessionId" in arg) || (typeof arg.sessionId !== "string")
+        || !("register" in arg) || (typeof arg.register !== "string")
         || !("formats" in arg) || !(Array.isArray(arg.formats))) return false;
     for(const i of arg.formats) {
         if(typeof i !== "string") return false;

@@ -163,7 +163,7 @@ export class ListPage extends IPage {
         const thisEntry = this.ui.filesApiResponse.data.files.find(item => item.id === id);
         if(!thisEntry) return;
         const filename = thisEntry.name.replace(/[^A-Za-z0-9-]/g, "_");
-        new APIRequest(this.ui, "/cloud/download?sessionId="+this.ui.config.sessionId+"&id="+id+"&version="+version+"&format="+format)
+        new APIRequest(this.ui, "/cloud/download?id="+id+"&version="+version+"&format="+format)
             .onReceiveJSON((response) => {
                 this.ui.layout.showError("Unable to download the file ("+response["errorType"]+").", response["error"] ? response["error"] : "Unkown error");
             })

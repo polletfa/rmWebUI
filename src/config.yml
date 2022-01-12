@@ -33,6 +33,10 @@
 #     Private key associated with the certificate and required to use HTTPS.
 #     See ssl.cert
 #
+# allow-insecure: true/false (default: false)
+#     When SSL is disabled and the server running over HTTP, only localhost requests are accepted
+#     by default. You can allow insecure requests over the network by setting this option to true.
+#     This is not recommended and will compromise the safety of your data!
 #
 # OPTIONS FOR LIVE MODE ONLY
 #

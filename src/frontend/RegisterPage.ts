@@ -42,7 +42,7 @@ export class RegisterPage extends IPage {
             const registerBtn = document.getElementById("register-btn");
             if(registerBtn instanceof HTMLButtonElement) registerBtn.disabled = true;
             
-            new APIRequest(this.ui, "/cloud/register?sessionId="+this.ui.config.sessionId+"&code="+code)
+            new APIRequest(this.ui, "/cloud/register?code="+code)
                 .onReceiveJSON((response) => {
                     if(response.status !== APIResponseStatus.Success) {
                         this.ui.layout.showError("Unable to register the application.", response["error"] ? response["error"] : "Unknown error");

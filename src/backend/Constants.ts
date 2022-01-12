@@ -53,7 +53,8 @@ export class Constants {
         ssl: {
             cert: "",
             key: ""
-        }
+        },
+        allowinsecure: false
     };
 
 }
