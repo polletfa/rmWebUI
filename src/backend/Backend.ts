@@ -75,7 +75,7 @@ export class Backend {
                 const host = request.headers.host?.split(":")[0];
                 const localhostRequest = host === "localhost" || host?.substr(0, 4) === "127.";
 
-                if(this.protocol == "http" && !localhostRequest) {
+                if(this.protocol == "http" && !localhostRequest && !this.configManager.config.demo) {
                     if(this.configManager.config.allowinsecure) {
                         console.log("SECURITY WARNING: Insecure request!");
                         console.log("SECURITY WARNING: Configure HTTPS or set allow-insecure to false to disable this message and protect your data!");
@@ -175,11 +175,13 @@ export class Backend {
         if(this.configManager.config.ssl.key.length == 0 && this.configManager.config.ssl.cert.length == 0) {
             this.protocol = "http";
 
-            if(this.configManager.config.allowinsecure) {
-                console.log("SECURITY WARNING: SSL not configured and insecure requests allowed!");
-                console.log("SECURITY WARNING: Configure HTTPS or set allow-insecure to false to disable this message and protect your data!");
-            } else {
-                console.log("INFO: SSL not configured. Only localhost requests are accepted.");
+            if(!this.configManager.config.demo) {
+                if(this.configManager.config.allowinsecure) {
+                    console.log("SECURITY WARNING: SSL not configured and insecure requests allowed!");
+                    console.log("SECURITY WARNING: Configure HTTPS or set allow-insecure to false to disable this message and protect your data!");
+                } else {
+                    console.log("INFO: SSL not configured. Only localhost requests are accepted.");
+                }
             }
         } else {
             // Load SSL data
