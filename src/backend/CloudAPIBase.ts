@@ -14,7 +14,7 @@ import { APIBase } from "./APIBase";
 /**
  * Common interface for real and fake cloud API
  */
-export abstract class ICloudAPI extends APIBase {
+export abstract class CloudAPIBase extends APIBase {
     /**
      * API method: register the app
      *

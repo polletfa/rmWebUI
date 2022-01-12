@@ -8,16 +8,16 @@
  *****************************************************/
 
 import { Application } from "./Application";
-import { IPage } from "./IPage";
+import { PageBase } from "./PageBase";
 import { APIRequest } from './APIRequest';
 
-import { isAPIResponse } from "../backend/APITypes";
-import { isCloudAPIResponseDataFiles } from "../backend/CloudAPITypes";
+import { isAPIResponse } from "../backend/types/API";
+import { isCloudAPIResponseDataFiles } from "../backend/types/CloudAPI";
 
 /**
  * Page "list"
  */
-export class ListPage extends IPage {
+export class ListPage extends PageBase {
     protected collection = ""; /**< ID of the currently displayed collection */
 
     constructor(ui: Application) {

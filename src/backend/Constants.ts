@@ -7,7 +7,7 @@
  *
  *****************************************************/
 
-import { ServerConfig } from "./Config";
+import { ServerConfig } from "./types/Config";
 
 export class Constants {
     /**

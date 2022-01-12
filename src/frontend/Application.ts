@@ -12,9 +12,9 @@ import { RegisterPage } from './RegisterPage';
 import { ListPage } from './ListPage';
 import { APIRequest } from './APIRequest';
 
-import { FrontendConfig, isFrontendConfig } from '../backend/Config';
-import { APIResponse, isAPIResponse, APIResponseStatus } from '../backend/APITypes';
-import { CloudAPIResponseError } from '../backend/CloudAPITypes';
+import { FrontendConfig, isFrontendConfig } from '../backend/types/Config';
+import { APIResponse, isAPIResponse, APIResponseStatus } from '../backend/types/API';
+import { CloudAPIResponseError } from '../backend/types/CloudAPI';
 
 export interface PageList {
     register: RegisterPage;
@@ -53,8 +53,24 @@ export class Application {
         }
 
         this.layout = new Layout(this);
-        
-        this.getFiles();
+
+        switch(this.config.statusCode) {
+            case 200:
+                this.getFiles();
+                break;
+            case 403:
+                this.layout.showError("403 Forbidden", this.config.error == "" ? "Unknown error" : this.config.error);
+                break;
+            case 404:
+                this.layout.showError("404 Not Found", this.config.error == "" ? "Unknown error" : this.config.error);
+                break;
+            case 500:
+                this.layout.showError("500 Internal Server Error", this.config.error == "" ? "Unknown error" : this.config.error);
+                break;
+            default:
+                this.layout.showError("Unexpected HTTP status code "+this.config.statusCode, this.config.error == "" ? "Unknown error" : this.config.error);
+                break;
+        }
     }
 
     /**

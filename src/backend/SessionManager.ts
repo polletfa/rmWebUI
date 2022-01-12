@@ -10,7 +10,7 @@
 import * as uuid from "uuid";
 import * as http from "http";
 
-import { HTTPServer } from "./HTTPServer";
+import { Server } from "./Server";
 
 type Value = string|number|boolean;
 type KeyValue = {key: string, value: Value};
@@ -22,10 +22,10 @@ interface Session {
 }
 
 export class SessionManager {
-    protected server: HTTPServer;
+    protected server: Server;
     protected sessions: Session[] = [];
 
-    constructor(server: HTTPServer) {
+    constructor(server: Server) {
         this.server = server;
         
         setInterval(this.clearOldSessions.bind(this), Math.min(60*1000, this.server.config.sessionMaxIdle)); // delete unused sessions regularly

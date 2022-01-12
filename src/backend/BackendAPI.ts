@@ -9,11 +9,11 @@
 
 import * as http from "http";
 
-import { HTTPServer } from "./HTTPServer";
+import { Server } from "./Server";
 import { APIBase } from "./APIBase";
 
 export class BackendAPI extends APIBase {
-    constructor(server: HTTPServer) {
+    constructor(server: Server) {
         super(server);
     }
 

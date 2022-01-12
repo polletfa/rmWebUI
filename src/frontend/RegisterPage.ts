@@ -8,15 +8,15 @@
  *****************************************************/
 
 import { Application } from "./Application";
-import { IPage } from "./IPage";
+import { PageBase } from "./PageBase";
 import { APIRequest } from "./APIRequest";
 
-import { APIResponseStatus } from "../backend/APITypes";
+import { APIResponseStatus } from "../backend/types/API";
 
 /**
  * Page "register"
  */
-export class RegisterPage extends IPage {
+export class RegisterPage extends PageBase {
     constructor(ui: Application) {
         super(ui);
     }

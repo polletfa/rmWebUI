@@ -12,7 +12,7 @@ import { Application } from "./Application";
 /**
  * Base for all pages
  */
-export abstract class IPage {
+export abstract class PageBase {
     readonly ui: Application;
 
     /**

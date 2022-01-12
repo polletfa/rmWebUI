@@ -9,19 +9,19 @@
 
 import * as http from "http";
 
-import { HTTPServer } from "./HTTPServer";
-import { APIResponseStatus } from "./APITypes";
+import { Server } from "./Server";
+import { APIResponseStatus } from "./types/API";
 
 /**
  * Base for API definitions.
  */
 export class APIBase {
-    protected server: HTTPServer;
+    protected server: Server;
 
     /**
      * @param backend Instance of the backend
      */
-    constructor(server: HTTPServer) {
+    constructor(server: Server) {
         this.server = server;
     }
 

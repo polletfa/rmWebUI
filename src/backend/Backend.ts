@@ -10,9 +10,9 @@
 import * as fs from "fs";
 
 import { Constants } from "./Constants";
-import { ServerConfig, FrontendConfig } from "./Config";
-import { ConfigLoader } from "./ConfigLoader";
-import { HTTPServer } from "./HTTPServer";
+import { Config } from "./Config";
+import { Server } from "./Server";
+import { ServerConfig, FrontendConfig } from "./types/Config";
 
 interface FrontendData {
     hasMarker: boolean;
@@ -31,7 +31,7 @@ export class Backend {
         this.log("---");
         
         this.frontend = this.loadFrontend();
-        this.servers = ConfigLoader.load(this);
+        this.servers = Config.load(this);
         this.log("---");
     }
 
@@ -57,9 +57,9 @@ export class Backend {
         };
     }
     
-    public getFrontend(config: ServerConfig): string {
+    public getFrontend(config: ServerConfig, statusCode = 200, error = ""): string {
         if(this.frontend.hasMarker) {
-            return this.frontend.before + JSON.stringify(this.getFrontendConfig(config)) + this.frontend.after;
+            return this.frontend.before + JSON.stringify(this.getFrontendConfig(config, statusCode, error)) + this.frontend.after;
         } else {
             return this.frontend.before;
         }
@@ -67,8 +67,11 @@ export class Backend {
 
     public getFavicon(): string { return this.frontend.favicon; }
 
-    public getFrontendConfig(config: ServerConfig): FrontendConfig {
+    public getFrontendConfig(config: ServerConfig, statusCode = 200, error = ""): FrontendConfig {
         return {
+            statusCode: statusCode,
+            error: error,
+            
             demo: config.demo,
             formats: config.pdfconverter.trim().length == 0 ? [ "zip", "pdf" ] : [ "zip" ],
             register: config.register
@@ -84,7 +87,7 @@ export class Backend {
 
         for(const server of this.servers) {
             // Initialize and launch HTTP/HTTPS server
-            new HTTPServer(this, server).run();
+            new Server(this, server).run();
         }
         this.log("---");
     }

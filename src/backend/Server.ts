@@ -12,20 +12,21 @@ import * as https from "https";
 import * as fs from "fs";
 
 import { Backend } from "./Backend";
-import { ServerConfig } from "./Config";
 import { Constants } from "./Constants";
+import { Config } from "./Config";
 import { SessionManager } from "./SessionManager";
+import { ServerConfig } from "./types/Config";
 
-import { ICloudAPI } from "./ICloudAPI";
+import { CloudAPIBase } from "./CloudAPIBase";
 import { FakeCloudAPI } from "./FakeCloudAPI";
 import { BackendAPI } from "./BackendAPI";
 
-export class HTTPServer {
+export class Server {
     readonly backend: Backend;
     readonly config: ServerConfig;
     readonly sessionManager: SessionManager;
 
-    readonly cloudAPI: ICloudAPI;
+    readonly cloudAPI: CloudAPIBase;
     readonly backendAPI: BackendAPI;
     
     readonly protocol: string;
@@ -43,8 +44,8 @@ export class HTTPServer {
         this.cloudAPI = new FakeCloudAPI(this);
         this.backendAPI = new BackendAPI(this);
 
-        this.showModifiedConfig();
-
+        this.log(this.config.name + " = " + Config.serverConfigToString(config, true));
+        
         // select protocol and load SSL data if required
         // HTTP is only used if both SSL options are empty. HTTP should not be started by mistake because of a misconfiguration.
         if(this.config.ssl.key.length == 0 && this.config.ssl.cert.length == 0) {
@@ -68,21 +69,6 @@ export class HTTPServer {
         }
     }
 
-    public showModifiedConfig(): void {
-        // eslint-disable-next-line
-        const objDiff = (objOrig: any, ref: any): any => {
-            const obj = Object.assign({}, objOrig);
-            for(const key of Object.keys(obj)) {
-                if(typeof obj[key] == "object") obj[key] = objDiff(obj[key], ref[key]);
-                else if(obj[key] === ref[key]) obj[key] = undefined;
-            }
-            return JSON.stringify(obj) == "{}" ? undefined : obj;
-        };
-        const diff = objDiff(this.config, Constants.DEFAULT_CONFIG);
-        
-        this.log(this.config.name+" = "+(diff ? JSON.stringify(diff, null, 2) : "default"));
-    }
-    
     public log(msg: string) {
         this.backend.log(this.logprefix + msg.split("\n").join("\n"+this.logprefix));
     }
@@ -115,7 +101,7 @@ export class HTTPServer {
                         this.log("SECURITY WARNING: Configure HTTPS or set allow-insecure to false to disable this message and protect your data!");
                     } else {
                         this.log("ERROR: Only local requests accepted.");
-                        this.serveErrorPage(response, 403, "Forbidden");
+                        this.serveErrorPage(response, 403, "Resource: " + request.url);
                         return;
                     }
                 }
@@ -173,7 +159,7 @@ export class HTTPServer {
                         break;
 
                     default:
-                        this.serveErrorPage(response, 404, "Resource not found.");
+                        this.serveErrorPage(response, 404, "Resource: "+request.url);
                         break;
                 }
             } else {
@@ -188,7 +174,8 @@ export class HTTPServer {
     public serveErrorPage(response: http.ServerResponse, errorCode: number, error: string) {
         this.log("ERROR: "+errorCode + " - " + error);
         response.statusCode = errorCode;
-        response.end("Error "+errorCode+"\n\n"+error);
+        response.setHeader("Content-Type", "text/html");
+        response.end(this.backend.getFrontend(this.config, errorCode, error));
     }
 
     /**

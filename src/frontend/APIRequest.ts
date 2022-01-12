@@ -9,7 +9,7 @@
 
 import { Application } from './Application';
 
-import { APIResponse, isAPIResponse } from '../backend/APITypes';
+import { APIResponse, isAPIResponse } from '../backend/types/API';
 
 /**
  * API request

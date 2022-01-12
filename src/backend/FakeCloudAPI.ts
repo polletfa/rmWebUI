@@ -10,16 +10,16 @@
 import * as http from "http";
 import * as fs from "fs";
 
-import { HTTPServer } from "./HTTPServer";
+import { Server } from "./Server";
 import { Constants } from "./Constants";
-import { ICloudAPI } from "./ICloudAPI";
-import { CloudAPIResponseError } from "./CloudAPITypes";
+import { CloudAPIBase } from "./CloudAPIBase";
+import { CloudAPIResponseError } from "./types/CloudAPI";
 
 /**
  * Implement the cloud API with dummy data (no connection to the cloud) for the demonstration mode
  */
-export class FakeCloudAPI extends ICloudAPI {
-    constructor(server: HTTPServer) {
+export class FakeCloudAPI extends CloudAPIBase {
+    constructor(server: Server) {
         super(server);
     }
 
