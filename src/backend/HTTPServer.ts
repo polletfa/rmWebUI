@@ -81,7 +81,7 @@ export class HTTPServer {
                 const url = new URL(request.url, this.protocol+"://"+request.headers.host);
                 this.log("------------------------------------ " + (new Date()).toISOString());
                 this.log(url.href);
-                this.log("Headers = " + JSON.stringify(request, null, 2).split("\n").join("\n"+this.logprefix));
+                this.log("Headers = " + JSON.stringify(request.headers, null, 2).split("\n").join("\n"+this.logprefix));
 
                 const host = request.headers.host?.split(":")[0];
                 const localhostRequest = host === "localhost" || host?.substr(0, 4) === "127.";
