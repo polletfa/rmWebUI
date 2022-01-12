@@ -10,7 +10,7 @@
 import * as http from "http";
 import * as fs from "fs";
 
-import { Backend } from "./Backend";
+import { HTTPServer } from "./HTTPServer";
 import { Constants } from "./Constants";
 import { ICloudAPI } from "./ICloudAPI";
 import { CloudAPIResponseError } from "./CloudAPITypes";
@@ -19,8 +19,8 @@ import { CloudAPIResponseError } from "./CloudAPITypes";
  * Implement the cloud API with dummy data (no connection to the cloud) for the demonstration mode
  */
 export class FakeCloudAPI extends ICloudAPI {
-    constructor(backend: Backend) {
-        super(backend);
+    constructor(server: HTTPServer) {
+        super(server);
     }
 
     /**
@@ -39,19 +39,19 @@ export class FakeCloudAPI extends ICloudAPI {
             this.sendAPIResponseError(CloudAPIResponseError.InvalidParameters, "Missing parameter(s): "+missing.join(", "), response);
             return;
         }
-        if(!this.backend.sessionManager.hasSession(sessionId)) {
+        if(!this.server.sessionManager.hasSession(sessionId)) {
             this.sendAPIResponseError(CloudAPIResponseError.InvalidParameters, "Invalid session", response);
             return;
         }            
 
         setTimeout(() => {
-            if(code !== this.backend.configManager.config.register) {
-                this.sendAPIResponseError(CloudAPIResponseError.Register,"This is a demo version. Use the code '"+this.backend.configManager.config.register+"'.", response);
+            if(code !== this.server.config.register) {
+                this.sendAPIResponseError(CloudAPIResponseError.Register,"This is a demo version. Use the code '"+this.server.config.register+"'.", response);
             } else {
-                this.backend.sessionManager.setValue(sessionId, "registered", true);
+                this.server.sessionManager.setValue(sessionId, "registered", true);
                 this.sendAPIResponseSuccess(undefined, response);
             }
-        }, this.backend.configManager.config.delay);
+        }, this.server.config.delay);
     }
     
     /**
@@ -65,12 +65,12 @@ export class FakeCloudAPI extends ICloudAPI {
             this.sendAPIResponseError(CloudAPIResponseError.InvalidParameters, "Missing parameter(s): sessionId", response);
             return;
         }
-        if(!this.backend.sessionManager.hasSession(sessionId)) {
+        if(!this.server.sessionManager.hasSession(sessionId)) {
             this.sendAPIResponseError(CloudAPIResponseError.InvalidParameters, "Invalid session", response);
             return;
         }
-        if(this.backend.sessionManager.getValue(sessionId, "registered") !== true) {
-            this.sendAPIResponseError(CloudAPIResponseError.LoadToken, "This is a demo version. Register with the code '"+this.backend.configManager.config.register+"'.", response);
+        if(this.server.sessionManager.getValue(sessionId, "registered") !== true) {
+            this.sendAPIResponseError(CloudAPIResponseError.LoadToken, "This is a demo version. Register with the code '"+this.server.config.register+"'.", response);
         } else {
             setTimeout(() => {
                 try {
@@ -84,7 +84,7 @@ export class FakeCloudAPI extends ICloudAPI {
                 } catch(error) {
                     this.sendAPIResponseError(CloudAPIResponseError.RetrieveFiles, error instanceof Error ? error.message : "Unknown error", response);
                 }
-            }, this.backend.configManager.config.delay);
+            }, this.server.config.delay);
         }
     }
 

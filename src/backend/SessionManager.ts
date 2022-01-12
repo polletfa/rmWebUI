@@ -10,7 +10,7 @@
 import * as uuid from "uuid";
 import * as http from "http";
 
-import { Backend } from "./Backend";
+import { HTTPServer } from "./HTTPServer";
 
 type Value = string|number|boolean;
 type KeyValue = {key: string, value: Value};
@@ -22,13 +22,13 @@ interface Session {
 }
 
 export class SessionManager {
-    protected backend: Backend;
+    protected server: HTTPServer;
     protected sessions: Session[] = [];
 
-    constructor(backend: Backend) {
-        this.backend = backend;
+    constructor(server: HTTPServer) {
+        this.server = server;
         
-        setInterval(this.clearOldSessions.bind(this), Math.min(60*1000, this.backend.configManager.config.sessionMaxIdle)); // delete unused sessions regularly
+        setInterval(this.clearOldSessions.bind(this), Math.min(60*1000, this.server.config.sessionMaxIdle)); // delete unused sessions regularly
     }
     
     public getOrCreateSession(request: http.IncomingMessage, response: http.ServerResponse): string {
@@ -39,10 +39,10 @@ export class SessionManager {
                 // session cookie found
                 if(this.hasSession(match[1])) {
                     // session exists
-                    console.log("Using existing session: "+match[1]);
+                    this.server.log("Using existing session: "+match[1]);
                     return match[1];
                 } else {
-                    console.log("Invalid session: "+match[1]);
+                    this.server.log("Invalid session: "+match[1]);
                 }
             }
         }
@@ -59,13 +59,13 @@ export class SessionManager {
             data: []
         };
         this.sessions.push(session);
-        console.log("Created new session: "+session.id);
+        this.server.log("Created new session: "+session.id);
         return session.id;
     }
 
     public deleteSession(sessionId: string): void {
         this.sessions = this.sessions.filter((session:Session) => session.id != sessionId);
-        console.log("Deleted session "+sessionId);
+        this.server.log("Deleted session "+sessionId);
     }
 
     public hasSession(sessionId: string): boolean {
@@ -80,11 +80,11 @@ export class SessionManager {
             if(keyValue) {
                 return keyValue.value;
             } else {
-                console.log("Session "+sessionId+": key '"+key+"' not found.");
+                this.server.log("Session "+sessionId+": key '"+key+"' not found.");
                 return undefined;
             }
         } else {
-            console.log("Session "+sessionId+" not found.");
+            this.server.log("Session "+sessionId+" not found.");
             return undefined;
         }
     }
@@ -99,19 +99,19 @@ export class SessionManager {
             } else {
                 session.data.push({key: key, value: value});
             }
-            console.log("Session "+sessionId+": '"+key+"' => '"+value+"'");
+            this.server.log("Session "+sessionId+": '"+key+"' => '"+value+"'");
             return true;
         } else {
-            console.log("Session "+sessionId+" not found.");
+            this.server.log("Session "+sessionId+" not found.");
             return false;
         }
     }
 
     public clearOldSessions() {
         const nSessions = this.sessions.length;
-        this.sessions = this.sessions.filter((session: Session) => session.lastUsed - Date.now() < this.backend.configManager.config.sessionMaxIdle);
+        this.sessions = this.sessions.filter((session: Session) => session.lastUsed - Date.now() < this.server.config.sessionMaxIdle);
         if(this.sessions.length < nSessions) {
-            console.log("Deleted " + (nSessions - this.sessions.length) + " session(s).");
+            this.server.log("Deleted " + (nSessions - this.sessions.length) + " session(s).");
         }
     }
 }

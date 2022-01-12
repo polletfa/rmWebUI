@@ -9,20 +9,20 @@
 
 import * as http from "http";
 
-import { Backend } from "./Backend";
+import { HTTPServer } from "./HTTPServer";
 import { APIResponseStatus } from "./APITypes";
 
 /**
  * Base for API definitions.
  */
 export class APIBase {
-    protected backend: Backend;
+    protected server: HTTPServer;
 
     /**
      * @param backend Instance of the backend
      */
-    constructor(backend: Backend) {
-        this.backend = backend;
+    constructor(server: HTTPServer) {
+        this.server = server;
     }
 
     /**
@@ -32,7 +32,7 @@ export class APIBase {
      * @param response HTTP Response object
      */
     public sendAPIResponseSuccess(data: unknown|undefined, response: http.ServerResponse): void {
-        console.log("SUCCESS");
+        this.server.log("SUCCESS");
         response.end(JSON.stringify({
             status: APIResponseStatus.Success,
             data: data
@@ -47,7 +47,7 @@ export class APIBase {
      * @param response HTTP Response object
      */
     public sendAPIResponseError(errorType: string, error: string, response: http.ServerResponse): void {
-        console.log("ERROR: "+errorType+" - "+error);
+        this.server.log("ERROR: "+errorType+" - "+error);
         response.end(JSON.stringify({
             status: APIResponseStatus.Error,
             errorType: errorType,

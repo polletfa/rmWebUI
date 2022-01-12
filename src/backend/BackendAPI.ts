@@ -9,17 +9,17 @@
 
 import * as http from "http";
 
-import { Backend } from "./Backend";
+import { HTTPServer } from "./HTTPServer";
 import { APIBase } from "./APIBase";
 
 export class BackendAPI extends APIBase {
-    constructor(backend: Backend) {
-        super(backend);
+    constructor(server: HTTPServer) {
+        super(server);
     }
 
     public logout(sessionId: string|null, response: http.ServerResponse): void {
         if(sessionId) {
-            this.backend.sessionManager.deleteSession(sessionId);
+            this.server.sessionManager.deleteSession(sessionId);
         }
         this.sendAPIResponseSuccess(undefined, response);
     }

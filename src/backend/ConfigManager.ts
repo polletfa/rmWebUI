@@ -13,7 +13,6 @@ import * as yaml from "js-yaml";
 import { Backend } from "./Backend";
 import { Config } from "./Config";
 import { Constants } from "./Constants";
-import { FrontendConfig } from './Config';
 
 export class ConfigManager {
     readonly backend: Backend;
@@ -51,14 +50,6 @@ export class ConfigManager {
             console.log(e instanceof Error ? ("  -> " + e.message) : "");
             this.config = Constants.DEFAULT_CONFIG;
         }
-    }
-
-    public getFrontendConfig(): FrontendConfig {
-        return {
-            demo: this.config.demo,
-            formats: this.config.pdfconverter.trim().length == 0 ? [ "zip", "pdf" ] : [ "zip" ],
-            register: this.config.register
-        };
     }
 
     /**
