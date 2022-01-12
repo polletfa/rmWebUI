@@ -7,7 +7,7 @@
  *
  *****************************************************/
 
-import { Config } from "./Config";
+import { ServerConfig } from "./Config";
 
 export class Constants {
     /**
@@ -38,23 +38,26 @@ export class Constants {
     /**
      * Default configuration
      */
-    static readonly DEFAULT_CONFIG: Config = {
+    static readonly DEFAULT_CONFIG: ServerConfig = {
+        name: "default",
+        
         port: 8080,
         demo: false,
         sessionMaxIdle: 24*60*60*1000,
+        logHeaders: false,
+        
+        ssl: {
+            cert: "",
+            key: ""
+        },
+        allowInsecure: false,
         
         data: "data",
         cache: true,
         pdfconverter: "",
 
         register: "abcdefgh",
-        delay: 2000,
-        
-        ssl: {
-            cert: "",
-            key: ""
-        },
-        allowinsecure: false
+        delay: 2000
     };
 
 }

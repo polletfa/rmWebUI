@@ -34,7 +34,8 @@ export class SessionManager {
     public getOrCreateSession(request: http.IncomingMessage, response: http.ServerResponse): string {
         const cookie = request.headers?.cookie;
         if(cookie) {
-            const match = cookie.match(/\bsessionId\s*=\s*([^\s;]*)/);
+            const regexStr = '\\bsessionId'+this.server.config.port+'\\s*=\\s*([^\\s;]*)'; 
+            const match = cookie.match(regexStr);
             if(match) {
                 // session cookie found
                 if(this.hasSession(match[1])) {
@@ -48,7 +49,7 @@ export class SessionManager {
         }
         // no cookie - Create new session and set cookie
         const sessionId = this.newSession();
-        response.setHeader('Set-Cookie', 'sessionId='+sessionId);
+        response.setHeader('Set-Cookie', 'sessionId'+this.server.config.port+'='+sessionId);
         return sessionId;
     }
     

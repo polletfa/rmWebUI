@@ -6,8 +6,37 @@
 ### 
 
 #
+# The configuration file has two sections:
+# - main section: for options that will apply to all servers
+# - server sections: list of server-specific configurations.
+# All options can be used in both sections.
+# All options have default values (an empty file is a valid configuration file).
+#
+# Single server
+#   If you want to run only one server, you can omit the server section. The single server will use the options
+#   specified in the main section.
+#
+# Multiple servers
+#   If you use multiple servers, each server will use the main section only for parameters that
+#   have not been specified as part of the server-specific configuration.
+#
+# HTTP or HTTPS
+#   The servers can use HTTP or the more secure HTTPS.
+#   To enable HTTPS, you must specify a certificate and the corresponding private key.
+#
+#   When running HTTP, only localhost requests will be accepted. Request from a remote address will be rejected.
+#   You can disable this behaviour by using the allowInsecure option. This is NOT recommended as this will expose
+#   you to a man-in-the-middle attack and might compomise the privacy of your cloud account.
+#
+#
+# GENERIC OPTIONS
+#
+# name - string (default: default)
+#     Name of the server. For logging only.
+#
 # port - TCP port number (default: 8080)
 #     You will need elevated permissions to use a low numbered port (lower than 1024).
+#     Each server must use a different port.
 #
 # demo - true/false (default: false)
 #     If true, the demonstration mode is activated (no data saved, no access to the cloud, dummy data only).
@@ -15,10 +44,19 @@
 # sessionMaxIdle - time with unit: s, m, h, d (default: 1d)
 #     Session are deleted if they are not used for longer than the specified time.
 #
+# logHeaders - true/false (default_ false)
+#     If true, the HTTP headers of requests will be logged.
+#
+# SECURITY OPTIONS
+#
+# allowInsecure - true/false (default: false)
+#     When using the unsecure HTTP protocol, only requests from localhost will be accepted.
+#     You can disable this behaviour by setting this option to true.
+#     THIS IS NOT RECOMMENDED and will compromise the safety of your cloud account.
+#
 # ssl:
 #   cert - Path to PEM certificate file, (default: empty)
 #     Certificate required to use HTTPS. For a localhost server, this is not required.
-#     If you expose your server over internet, you should use HTTPS to protect your data.
 #
 #     Ideally you need a certificate signed by a Certificate Authority. Some server hosting services
 #     include such a certificate.
@@ -31,12 +69,8 @@
 # ssl:
 #   key - Path to PEM private key file (default: empty)
 #     Private key associated with the certificate and required to use HTTPS.
-#     See ssl.cert
+#     See ssl:cert
 #
-# allow-insecure: true/false (default: false)
-#     When SSL is disabled and the server running over HTTP, only localhost requests are accepted
-#     by default. You can allow insecure requests over the network by setting this option to true.
-#     This is not recommended and will compromise the safety of your data!
 #
 # OPTIONS FOR LIVE MODE ONLY
 #
@@ -71,29 +105,55 @@
 # delay - time with unit: s, m, h, d (default: 2s)
 #     Delay to simulate a request to the cloud
 #
-
-
-###########################################
 #
-# Example 1: Demonstration mode over HTTP
+# EXAMPLES
 #
-
-#port: 8001
-#demo: true
-#sessionMaxIdle: 30m
-
-
-###########################################
+# Example 1 - Single server
 #
-# Example 2: Live mode over HTTPS
+#     port: 8001
+#     data: /srv/rmWebUI.data
 #
+# Example 2 - Multiple servers: demo over http and live over https
+# 
+#     servers:
+#     - name: demo
+#       port: 8001
+#
+#     - name: live
+#       port: 8002
+#       data: /srv/rmWebUI.data
+#       ssl:
+#         cert: /srv/ssl/certificate.pem
+#         key: /srv/ssl/private-key.pem
+#
+# Example 3 - Multiple servers: demo and live, both over HTTPS
+#
+#     ssl:
+#       cert: /srv/ssl/certificate.pem
+#       key: /srv/ssl/private-key.pem
+#
+#     servers:
+#     - name: demo
+#       port: 8001
+#
+#     - name: live
+#       port: 8002
+#       data: /srv/rmWebUI.data
+#
+#
+# 
 
-#port: 8002
-#data: /opt/rmWebUI/data
-#cache: true
-#pdfconverter: python -m rmrl <!input> <!output>
-#ssl:
-#  cert: /opt/rmWebUI/ssl/cert.pem
-#  key: /opt/rmWebUI/ssl/key.pem
+pdfconverter: python3 -m rmrl <!input> <!output>
 
-demo: true
+servers:
+- name: demo
+  port: 8001
+  demo: true
+
+- name: debug
+  port: 8002
+  logHeaders: true
+  sessionMaxIdle: 1m
+    
+- name: live
+  port: 8003

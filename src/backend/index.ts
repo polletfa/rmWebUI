@@ -9,4 +9,11 @@
 
 import { Backend } from './Backend';
 
-(new Backend).run();
+try {
+    (new Backend).run();
+} catch(e) {
+    console.log();
+    console.log("FATAL: Unable to launch the backend.");
+    console.log(e instanceof Error ? ("FATAL: " + e.message) : "");
+    process.exit(1);
+}

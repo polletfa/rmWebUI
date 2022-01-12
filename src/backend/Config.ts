@@ -12,20 +12,23 @@ export interface SSLConfig {
     key: string;
 }
 
-export interface Config {
+export interface ServerConfig {
+    name: string;
+    
     port: number;
     demo: boolean;
     sessionMaxIdle: number;
+    logHeaders: boolean;
+    
+    ssl: SSLConfig;
+    allowInsecure: boolean;
     
     data: string;
     cache: boolean;
     pdfconverter: string;
 
     register: string;
-    delay: number;
-    
-    ssl: SSLConfig;
-    allowinsecure: boolean;
+    delay: number;  
 }
 
 /**

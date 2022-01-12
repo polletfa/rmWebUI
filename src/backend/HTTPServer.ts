@@ -12,10 +12,9 @@ import * as https from "https";
 import * as fs from "fs";
 
 import { Backend } from "./Backend";
-import { Config } from "./Config";
+import { ServerConfig } from "./Config";
 import { Constants } from "./Constants";
 import { SessionManager } from "./SessionManager";
-import { FrontendConfig } from './Config';
 
 import { ICloudAPI } from "./ICloudAPI";
 import { FakeCloudAPI } from "./FakeCloudAPI";
@@ -23,7 +22,7 @@ import { BackendAPI } from "./BackendAPI";
 
 export class HTTPServer {
     readonly backend: Backend;
-    readonly config: Config;
+    readonly config: ServerConfig;
     readonly sessionManager: SessionManager;
 
     readonly cloudAPI: ICloudAPI;
@@ -35,15 +34,17 @@ export class HTTPServer {
 
     readonly logprefix: string;
     
-    constructor(backend: Backend, config: Config) {
+    constructor(backend: Backend, config: ServerConfig) {
         this.backend = backend;
         this.config = config;
-        this.logprefix = "[" + config.port + "] ";
+        this.logprefix = "[" + config.name + "]   ";
         this.sessionManager = new SessionManager(this);
 
         this.cloudAPI = new FakeCloudAPI(this);
         this.backendAPI = new BackendAPI(this);
-        
+
+        this.showModifiedConfig();
+
         // select protocol and load SSL data if required
         // HTTP is only used if both SSL options are empty. HTTP should not be started by mistake because of a misconfiguration.
         if(this.config.ssl.key.length == 0 && this.config.ssl.cert.length == 0) {
@@ -52,7 +53,7 @@ export class HTTPServer {
             this.sslCert = "";
             
             if(!this.config.demo) {
-                if(this.config.allowinsecure) {
+                if(this.config.allowInsecure) {
                     this.log("SECURITY WARNING: SSL not configured and insecure requests allowed!");
                     this.log("SECURITY WARNING: Configure HTTPS or set allow-insecure to false to disable this message and protect your data!");
                 } else {
@@ -67,12 +68,27 @@ export class HTTPServer {
         }
     }
 
+    public showModifiedConfig(): void {
+        // eslint-disable-next-line
+        const objDiff = (objOrig: any, ref: any): any => {
+            const obj = Object.assign({}, objOrig);
+            for(const key of Object.keys(obj)) {
+                if(typeof obj[key] == "object") obj[key] = objDiff(obj[key], ref[key]);
+                else if(obj[key] === ref[key]) obj[key] = undefined;
+            }
+            return JSON.stringify(obj) == "{}" ? undefined : obj;
+        };
+        const diff = objDiff(this.config, Constants.DEFAULT_CONFIG);
+        
+        this.log(this.config.name+" = "+(diff ? JSON.stringify(diff, null, 2) : "default"));
+    }
+    
     public log(msg: string) {
-        console.log(this.logprefix + msg.split("\n").join("\n"+this.logprefix));
+        this.backend.log(this.logprefix + msg.split("\n").join("\n"+this.logprefix));
     }
 
     public onHttpError(error: Error): void {
-        this.log("HTTP server error: "+error.message);
+        this.log("ERROR: "+error.message);
     }
     
     public onHttpRequest(request: http.IncomingMessage, response: http.ServerResponse) : void {
@@ -80,20 +96,21 @@ export class HTTPServer {
             if(request.url) {
                 const url = new URL(request.url, this.protocol+"://"+request.headers.host);
 
-                this.log("\n----------[ " + (new Date()).toISOString() + " ]--");
+                this.log("---");
                 this.log(JSON.stringify({
-                    fullUrl: url.href,
-                    requestUrl: request.url,
+                    protocol: this.protocol,
                     host: request.headers.host,
+                    resource: request.url,
                     remoteAddress: request.socket.remoteAddress,
-                    headers: request.headers
+                    headers: this.config.logHeaders ? request.headers : undefined
                 }, null, 2));
 
-                const host = request.headers.host?.split(":")[0];
-                const localhostRequest = host === "localhost" || host?.substr(0, 4) === "127.";
+                const localhostRequest = request.socket.remoteAddress === "::ffff:127.0.0.1"
+                    || request.socket.remoteAddress === "127.0.0.1"
+                    || request.socket.remoteAddress === "::1";
 
                 if(this.protocol == "http" && !localhostRequest && !this.config.demo) {
-                    if(this.config.allowinsecure) {
+                    if(this.config.allowInsecure) {
                         this.log("SECURITY WARNING: Insecure request!");
                         this.log("SECURITY WARNING: Configure HTTPS or set allow-insecure to false to disable this message and protect your data!");
                     } else {
