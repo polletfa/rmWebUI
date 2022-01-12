@@ -32,10 +32,13 @@ export class HTTPServer {
     readonly protocol: string;
     readonly sslKey: string;
     readonly sslCert: string;
+
+    readonly logprefix: string;
     
     constructor(backend: Backend, config: Config) {
         this.backend = backend;
         this.config = config;
+        this.logprefix = "[" + config.port + "] ";
         this.sessionManager = new SessionManager(this);
 
         this.cloudAPI = new FakeCloudAPI(this);
@@ -65,7 +68,7 @@ export class HTTPServer {
     }
 
     public log(msg: string) {
-        console.log("[" + this.config.port + "] " + msg);
+        console.log(this.logprefix + msg);
     }
 
     public onHttpError(error: Error): void {
@@ -78,6 +81,7 @@ export class HTTPServer {
                 const url = new URL(request.url, this.protocol+"://"+request.headers.host);
                 this.log("------------------------------------ " + (new Date()).toISOString());
                 this.log(url.href);
+                this.log("Headers = " + JSON.stringify(request, null, 2).split("\n").join("\n"+this.logprefix));
 
                 const host = request.headers.host?.split(":")[0];
                 const localhostRequest = host === "localhost" || host?.substr(0, 4) === "127.";
@@ -87,6 +91,7 @@ export class HTTPServer {
                         this.log("SECURITY WARNING: Insecure request!");
                         this.log("SECURITY WARNING: Configure HTTPS or set allow-insecure to false to disable this message and protect your data!");
                     } else {
+                        this.log("ERROR: Only local requests accepted.");
                         this.serveErrorPage(response, 403, "Forbidden");
                         return;
                     }
