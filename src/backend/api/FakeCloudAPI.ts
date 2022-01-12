@@ -10,10 +10,10 @@
 import * as http from "http";
 import * as fs from "fs";
 
-import { Server } from "./Server";
-import { Constants } from "./Constants";
+import { Server } from "../Server";
+import { Constants } from "../Constants";
 import { CloudAPIBase } from "./CloudAPIBase";
-import { CloudAPIResponseError } from "./types/CloudAPI";
+import { CloudAPIResponseError } from "../types/CloudAPI";
 
 /**
  * Implement the cloud API with dummy data (no connection to the cloud) for the demonstration mode

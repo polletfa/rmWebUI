@@ -9,8 +9,8 @@
 
 import * as http from "http";
 
-import { Server } from "./Server";
-import { APIResponseStatus } from "./types/API";
+import { Server } from "../Server";
+import { APIResponseStatus } from "../types/API";
 
 /**
  * Base for API definitions.

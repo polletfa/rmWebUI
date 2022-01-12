@@ -9,7 +9,7 @@
 
 import * as http from "http";
 
-import { Server } from "./Server";
+import { Server } from "../Server";
 import { APIBase } from "./APIBase";
 
 export class BackendAPI extends APIBase {

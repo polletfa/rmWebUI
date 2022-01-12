@@ -12,14 +12,13 @@ import * as https from "https";
 import * as fs from "fs";
 
 import { Backend } from "./Backend";
-import { Constants } from "./Constants";
 import { Config } from "./Config";
 import { SessionManager } from "./SessionManager";
 import { ServerConfig } from "./types/Config";
 
-import { CloudAPIBase } from "./CloudAPIBase";
-import { FakeCloudAPI } from "./FakeCloudAPI";
-import { BackendAPI } from "./BackendAPI";
+import { CloudAPIBase } from "./api/CloudAPIBase";
+import { FakeCloudAPI } from "./api/FakeCloudAPI";
+import { BackendAPI } from "./api/BackendAPI";
 
 export class Server {
     readonly backend: Backend;
