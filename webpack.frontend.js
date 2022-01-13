@@ -1,4 +1,6 @@
 const path = require('path');
+const TerserPlugin = require("terser-webpack-plugin");
+const fs = require("fs");
 
 module.exports = {
     target: "web",
@@ -7,5 +9,11 @@ module.exports = {
         path: path.resolve(__dirname, '_build/src/'),
         filename: 'frontend.js',
     },
-    mode: 'production'
+    mode: 'production',
+    optimization: {
+        minimize: true,
+        minimizer: [
+            new TerserPlugin({extractComments: false}),
+        ]
+    }
 };
