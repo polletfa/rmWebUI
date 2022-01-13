@@ -10,8 +10,8 @@
 <!--                                    -->
 <!-- Import external files              -->
 <!--                                    -->
-<!import resources/bootstrap.min.css>
-<!import resources/bootstrap.min.js>
+<!import bootstrap/dist/css/bootstrap.min.css>
+<!import bootstrap/dist/js/bootstrap.min.js>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" style="position: relative; min-height:100%;">
   <head>
     <meta charset="utf-8">
@@ -22,9 +22,8 @@
   </head>
   <body onresize="window.application.layout.resizeHeader();">
     
-    <!--                                    -->
     <!-- Header: title bar & error banner   -->
-    <!--                                    -->
+
     <header class="header fixed-top bg-white text-black" id="header">
       <div class="container-fluid">
         <!include
@@ -34,9 +33,7 @@
       </div>
     </header>
 
-    <!--                                    -->
     <!-- Main: content & demo banner        -->
-    <!--                                    -->
 
     <main>
       <div class="container-fluid">
@@ -49,20 +46,20 @@
       </div>
     </main>
 
-    <!--                                    -->
     <!-- Footer                             -->
-    <!--                                    -->
 
     <!include layout/footer.html>
 
-    <!--                                    -->
     <!-- Icons                              -->
-    <!--                                    -->
+
     <div class="d-none">
-      <div id="icon-file"><!include resources/file.svg></div>
-      <div id="icon-folder"><!include resources/folder.svg></div>
-      <div id="icon-download"><!include resources/download.svg></div>
-      <div id="icon-empty"><!include resources/empty.svg></div>
+      <div id="icon-file"><!include icons/file.svg></div>
+      <div id="icon-folder"><!include icons/folder.svg></div>
+      <div id="icon-download"><!include icons/download.svg></div>
+      <div id="icon-empty"><!include icons/empty.svg></div>
     </div>
+
+    <!-- Modal                              -->
+    <!include layout/insecure-dialog.html>
   </body>
 </html>

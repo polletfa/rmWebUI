@@ -37,6 +37,7 @@ export interface ServerConfig {
 export interface FrontendConfig {
     statusCode: number;      /**< HTTP status code */
     error: string;           /**< Error message (if statusCode != 200) */
+    insecure: boolean;       /**< Insecure configuration (live, HTTP, remote requests allowed) */
     
     demo: boolean;           /**< True if the demonstration mode is enabled */
     formats: string[];       /**< Supported file formats */

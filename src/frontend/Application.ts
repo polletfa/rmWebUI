@@ -7,6 +7,8 @@
  *
  *****************************************************/
 
+import { Modal } from "bootstrap";
+
 import { Layout } from './Layout';
 import { RegisterPage } from './RegisterPage';
 import { ListPage } from './ListPage';
@@ -70,6 +72,13 @@ export class Application {
             default:
                 this.layout.showError("Unexpected HTTP status code "+this.config.statusCode, this.config.error == "" ? "Unknown error" : this.config.error);
                 break;
+        }
+
+        if(this.config.insecure) {
+            const el = document.getElementById("insecure-dialog");
+            if(el instanceof HTMLElement) {
+                Modal.getOrCreateInstance(el).toggle();
+            }
         }
     }
 

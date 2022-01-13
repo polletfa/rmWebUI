@@ -13,7 +13,7 @@ import * as path from "path";
 // Frontend builder
 class FrontendBuilder {
     readonly INCLUDE_FROM = "src/frontend";
-    readonly IMPORT_FROM = "src/frontend";
+    readonly IMPORT_FROM = "node_modules";
 
     readonly MAIN = "src/frontend/layout/index.html";
     readonly BUNDLE = "_build/src/frontend.js";
@@ -115,10 +115,10 @@ class FrontendBuilder {
             if(imported) {
                 if(imported.substr(-3).toLowerCase() === ".js") {
                     console.log("  Import JavaScript '"+imported+"'");
-                    this.result = this.result.replace(/<\/body>/, "<script>"+fs.readFileSync(this.IMPORT_FROM+"/"+imported, "utf8")+"</script>\n</body>");
+                    this.result = this.result.replace(/<\/body>/, "<script>"+FrontendBuilder.removeSourceMappingURL(fs.readFileSync(this.IMPORT_FROM+"/"+imported, "utf8"))+"</script>\n</body>");
                 } else if(imported.substr(-4).toLowerCase() === ".css") {
                     console.log("  Import CSS '"+imported+"'");
-                    this.result = this.result.replace(/<\/head>/, "<style>"+fs.readFileSync(this.IMPORT_FROM+"/"+imported, "utf8")+"</style>\n</head>");
+                    this.result = this.result.replace(/<\/head>/, "<style>"+FrontendBuilder.removeSourceMappingURL(fs.readFileSync(this.IMPORT_FROM+"/"+imported, "utf8"))+"</style>\n</head>");
                 } else {
                     console.log("  WARNING: Unknown import '"+imported+"' (wrong type)");
                 }
@@ -134,6 +134,18 @@ class FrontendBuilder {
         console.log("  Import JavaScript bundle");
         this.result = this.result.replace(/<\/body>/, "<script>"+fs.readFileSync(this.BUNDLE, "utf8")+"</script>\n</body>");
         return this;
+    }
+
+    /**
+     * Remove the sourceMappingURL comment from a string
+     *
+     * @param input Input string
+     * @return Input string without sourceMappingURL comment
+     */
+    static removeSourceMappingURL(input: string): string {
+        return input
+            .replace(/\/\*#\s*sourceMappingURL=[^\/]*\*\//g, "")
+            .replace(/\/\/#\s*sourceMappingURL=.*?(\n|$)/g, "");
     }
 }
 

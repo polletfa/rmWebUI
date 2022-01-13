@@ -71,6 +71,7 @@ export class Backend {
         return {
             statusCode: statusCode,
             error: error,
+            insecure: !config.demo && config.ssl.cert.length == 0 && config.ssl.key.length == 0 && config.allowInsecure,
             
             demo: config.demo,
             formats: config.pdfconverter.trim().length == 0 ? [ "zip", "pdf" ] : [ "zip" ],

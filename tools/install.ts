@@ -37,7 +37,7 @@ const FILES = [
     {src: "_build/src/frontend.html",                 dest: "frontend/index.html"},
 
     // Frontend - Favicon
-    {src: "src/frontend/resources/favicon.svg",       dest: "frontend/favicon.svg"}
+    {src: "src/frontend/icons/favicon.svg",           dest: "frontend/favicon.svg"}
 ];
 
 console.log("Deploy...");

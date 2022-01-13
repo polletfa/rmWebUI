@@ -1,0 +1,27 @@
+<!-- -------------------------------------------------
+
+   rmWebUI - Web interface for the reMarkable(R) cloud.
+
+   (c) 2021-2022 Fabien Pollet <polletfa@posteo.de>
+   MIT License (see LICENSE.md file)
+  
+  -------------------------------------------------- -->
+<div class="modal modal" id="insecure-dialog" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body bg-danger text-white">
+        <h1>Insecure configuration!</h1>
+        <p>
+          The current configuration allows remote requests over HTTP.
+          This is HIGHLY discouraged as it can expose you to man-in-the-middle attacks and compromise the security of your cloud account.
+          <br/>
+          To disable this warning, you can:
+          <ul>
+            <li>Configure the server to use HTTPS, or</li>
+            <li>Disable allowInsecure to allow access from localhost only.</li>
+          </ul>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

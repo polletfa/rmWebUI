@@ -157,3 +157,7 @@ servers:
     
 - name: live
   port: 8003
+
+- name: insecure
+  port: 8004
+  allowInsecure: true
