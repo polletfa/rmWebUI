@@ -18,6 +18,12 @@ import { FrontendConfig, isFrontendConfig } from '../backend/types/Config';
 import { APIResponse, isAPIResponse, APIResponseStatus } from '../backend/types/API';
 import { CloudAPIResponseError } from '../backend/types/CloudAPI';
 
+// extend Window to add a reference to the FrontendApplication instance
+interface CustomWindow extends Window {
+    application: FrontendApplication;
+}
+declare let window: CustomWindow;
+
 export interface PageList {
     register: RegisterPage;
     list: ListPage;
@@ -26,7 +32,7 @@ export interface PageList {
 /**
  * Main class for the JavaScript logic of the website
  */
-export class Application {
+export class FrontendApplication {
     readonly config: FrontendConfig;                            /**< Configuration provided by the backend */
     readonly layout: Layout;                                    /**< Manage layout */
     
@@ -41,6 +47,8 @@ export class Application {
      * @param config Configuration provided by the backend
      */
     constructor() {
+        window.application = this; // save the main class in the window object to be able to access it globally
+
         // read backend config
         const bc = document.getElementById("FrontendConfig");
         if(bc instanceof HTMLElement) {

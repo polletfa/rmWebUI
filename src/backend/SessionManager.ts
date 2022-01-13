@@ -27,7 +27,6 @@ export class SessionManager {
 
     constructor(server: Server) {
         this.server = server;
-        
         setInterval(this.clearOldSessions.bind(this), Math.min(60*1000, this.server.config.sessionMaxIdle)); // delete unused sessions regularly
     }
     

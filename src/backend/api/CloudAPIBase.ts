@@ -10,11 +10,53 @@
 import * as http from "http";
 
 import { APIBase } from "./APIBase";
+import { Server } from "../Server";
 
 /**
  * Common interface for real and fake cloud API
  */
 export abstract class CloudAPIBase extends APIBase {
+    constructor(server: Server) {
+        super(server);
+    }
+
+    /**
+     * Handle a HTTP request
+     *
+     * @param url Parsed URL
+     * @param sessionId Session ID
+     * @param response HTTP response object
+     * @return True if the request is supported by the API, false otherwise (not an API request)
+     */
+    public handleRequest(url: URL, sessionId: string, response: http.ServerResponse): boolean {
+        switch(url.pathname) {
+            case "/cloud/register":
+                this.server.log("Cloud API: register");
+                this.register(sessionId,
+                              url.searchParams.get("code"),
+                              response);
+                return true;
+                
+            case "/cloud/files":
+                this.server.log("Cloud API: files");
+                this.files(sessionId,
+                           response);
+                return true;
+                
+            case "/cloud/download":
+                this.server.log("Cloud API: download");
+                this.download(sessionId,
+                              url.searchParams.get("id"),
+                              url.searchParams.get("version"),
+                              url.searchParams.get("format"),
+                              response);
+                return true;
+
+            default:
+                return false; // not an API request
+        }
+    }
+
     /**
      * API method: register the app
      *

@@ -11,39 +11,43 @@ import * as http from "http";
 import * as https from "https";
 import * as fs from "fs";
 
-import { Backend } from "./Backend";
-import { Config } from "./Config";
+import { BackendApplication } from "./BackendApplication";
+import { ConfigHelper } from "./ConfigHelper";
+import { FrontendProvider } from "./FrontendProvider";
 import { SessionManager } from "./SessionManager";
-import { ServerConfig } from "./types/Config";
+import { ServerModule } from "./ServerModule";
 
-import { CloudAPIBase } from "./api/CloudAPIBase";
 import { FakeCloudAPI } from "./api/FakeCloudAPI";
 import { BackendAPI } from "./api/BackendAPI";
 
-export class Server {
-    readonly backend: Backend;
-    readonly config: ServerConfig;
-    readonly sessionManager: SessionManager;
+import { ServerConfig } from "./types/Config";
 
-    readonly cloudAPI: CloudAPIBase;
-    readonly backendAPI: BackendAPI;
+export class Server {
+    readonly config: ServerConfig;
+    readonly logprefix: string;
+    
+    readonly backend: BackendApplication;
+    readonly sessionManager: SessionManager;
+    readonly modules: ServerModule[];
     
     readonly protocol: string;
     readonly sslKey: string;
     readonly sslCert: string;
-
-    readonly logprefix: string;
+    readonly insecure: boolean;
     
-    constructor(backend: Backend, config: ServerConfig) {
-        this.backend = backend;
+    constructor(backend: BackendApplication, config: ServerConfig) {
         this.config = config;
         this.logprefix = "[" + config.name + "]   ";
+
+        this.backend = backend;
         this.sessionManager = new SessionManager(this);
-
-        this.cloudAPI = new FakeCloudAPI(this);
-        this.backendAPI = new BackendAPI(this);
-
-        this.log(this.config.name + " = " + Config.serverConfigToString(config, true));
+        this.modules = [
+            new FakeCloudAPI(this),
+            new BackendAPI(this),
+            new FrontendProvider(this)  // the frontend provider must be last because it handles all requests (including unknown requests).
+        ];
+        
+        this.log(this.config.name + " = " + ConfigHelper.serverConfigToString(config, true));
         
         // select protocol and load SSL data if required
         // HTTP is only used if both SSL options are empty. HTTP should not be started by mistake because of a misconfiguration.
@@ -51,27 +55,33 @@ export class Server {
             this.protocol = "http";
             this.sslKey = "";
             this.sslCert = "";
-            
-            if(!this.config.demo) {
-                if(this.config.allowInsecure) {
-                    this.log("SECURITY WARNING: SSL not configured and insecure requests allowed!");
-                    this.log("SECURITY WARNING: Configure HTTPS or set allow-insecure to false to disable this message and protect your data!");
-                } else {
-                    this.log("INFO: SSL not configured. Only localhost requests are accepted.");
-                }
-            }
         } else {
             // Load SSL data
             this.sslKey = fs.readFileSync(this.config.ssl.key, "utf8");
             this.sslCert = fs.readFileSync(this.config.ssl.cert, "utf8");
             this.protocol = "https";
         }
+        
+        this.insecure = this.securityWarning();
     }
 
     public log(msg: string) {
         this.backend.log(this.logprefix + msg.split("\n").join("\n"+this.logprefix));
     }
 
+    public securityWarning(): boolean {
+        if(!this.config.demo && this.protocol == "http") {
+            if(this.config.allowInsecure) {
+                this.log("SECURITY WARNING: SSL not configured and insecure requests allowed!");
+                this.log("SECURITY WARNING: Configure HTTPS or set allow-insecure to false to disable this message and protect your data!");
+                return true; // insecure
+            } else {
+                this.log("INFO: SSL not configured. Only localhost requests are accepted.");
+            }
+        }
+        return false; // secure
+    }
+    
     public onHttpError(error: Error): void {
         this.log("ERROR: "+error.message);
     }
@@ -79,9 +89,11 @@ export class Server {
     public onHttpRequest(request: http.IncomingMessage, response: http.ServerResponse) : void {
         try {
             if(request.url) {
+                this.log("---");
+                this.securityWarning();
+                
                 const url = new URL(request.url, this.protocol+"://"+request.headers.host);
 
-                this.log("---");
                 this.log(JSON.stringify({
                     protocol: this.protocol,
                     host: request.headers.host,
@@ -94,87 +106,42 @@ export class Server {
                     || request.socket.remoteAddress === "127.0.0.1"
                     || request.socket.remoteAddress === "::1";
 
+                // handle insecure request
                 if(this.protocol == "http" && !localhostRequest && !this.config.demo) {
                     if(this.config.allowInsecure) {
-                        this.log("SECURITY WARNING: Insecure request!");
-                        this.log("SECURITY WARNING: Configure HTTPS or set allow-insecure to false to disable this message and protect your data!");
+                        this.securityWarning();
                     } else {
-                        this.log("ERROR: Only local requests accepted.");
-                        this.serveErrorPage(response, 403, "Resource: " + request.url);
+                        this.log("ERROR: Remote request rejected!");
+                        this.error(403, "Resource: " + request.url, response);
                         return;
                     }
                 }
-                
+
+                // handle request
                 const sessionId = this.sessionManager.getOrCreateSession(request, response);
-                
-                switch(url.pathname == "/" ? "/index.html" : url.pathname) {
-                    // Cloud API
-                    // Access to the reMarkable(R) cloud
-
-                    case "/cloud/register":
-                        this.log("Cloud API: register");
-                        this.cloudAPI.register(sessionId,
-                                               url.searchParams.get("code"),
-                                               response);
-                        break;
-                        
-                    case "/cloud/files":
-                        this.log("Cloud API: files");
-                        this.cloudAPI.files(sessionId,
-                                            response);
-                        break;
-                        
-                    case "/cloud/download":
-                        this.log("Cloud API: download");
-                        this.cloudAPI.download(sessionId,
-                                               url.searchParams.get("id"),
-                                               url.searchParams.get("version"),
-                                               url.searchParams.get("format"),
-                                               response);
-                        break;
-                        
-                    // Backend API
-                    // Internal functionalities of the backend
-                        
-                    case "/backend/logout":
-                        this.log("Backend API: logout");
-                        this.backendAPI.logout(sessionId,
-                                               response);
-                        break;
-
-                    // Frontend
-                    case "/index.html":
-                        this.log("Frontend: application");
-                        response.setHeader("Content-Type", "text/html");
-                        response.end(this.backend.getFrontend(this.config));
-                        this.log("SUCCESS");
-                        break;
-
-                    case "/favicon.svg":
-                        this.log("Frontend: favicon");
-                        response.setHeader("Content-Type", "image/svg+xml");
-                        response.end(this.backend.getFavicon());
-                        this.log("SUCCESS");
-                        break;
-
-                    default:
-                        this.serveErrorPage(response, 404, "Resource: "+request.url);
-                        break;
+                if(!this.modules.some(mod => mod.handleRequest(url, sessionId, response))) {
+                    this.error(404, "Resource: "+url.pathname, response);
                 }
             } else {
-                this.serveErrorPage(response, 500, "Invalid request - Empty URL");
-                return;
+                throw new Error("Invalid request - Empty URL");
             }
         } catch(error) {
-            this.serveErrorPage(response, 500, error instanceof Error ? error.message : "Unknown error");
+            this.error(500, error instanceof Error ? error.message : "Unknown error", response);
         }
     }
 
-    public serveErrorPage(response: http.ServerResponse, errorCode: number, error: string) {
+    public error(errorCode: number, error: string, response: http.ServerResponse) {
         this.log("ERROR: "+errorCode + " - " + error);
-        response.statusCode = errorCode;
-        response.setHeader("Content-Type", "text/html");
-        response.end(this.backend.getFrontend(this.config, errorCode, error));
+        try {
+            if(!this.modules.some(mod => mod.handleError(errorCode, error, response))) {
+                throw("No module found.");
+            }
+        } catch(e) {
+            response.statusCode = errorCode;
+            response.setHeader("Content-Type", "text/plain");
+            response.end("Error " + errorCode + " - " + error + "\n"
+                + "Error while trying to serve the error page: " + error);
+        }
     }
 
     /**

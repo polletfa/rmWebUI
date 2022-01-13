@@ -144,7 +144,7 @@ class FrontendBuilder {
      */
     static removeSourceMappingURL(input: string): string {
         return input
-            .replace(/\/\*#\s*sourceMappingURL=[^\/]*\*\//g, "")
+            .replace(/\/\*#\s*sourceMappingURL=[^/]*\*\//g, "")
             .replace(/\/\/#\s*sourceMappingURL=.*?(\n|$)/g, "");
     }
 }

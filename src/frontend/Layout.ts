@@ -7,23 +7,23 @@
  *
  *****************************************************/
 
-import { Application, PageList } from './Application';
+import { FrontendApplication, PageList } from './FrontendApplication';
 import { APIRequest } from './APIRequest';
 
 /**
  * Class for managing/modifying the layout
  */
 export class Layout {
-    protected ui: Application;
+    protected ui: FrontendApplication;
  
     protected refreshButtonVisible = false;      /**< Specify if the refresh button is active for the current page */
     protected resizeInterval:ReturnType<typeof setTimeout>|undefined = undefined; /**< @see setResizeInterval */
     protected title: string;
     
     /**
-     * @param ui Main object of the Application
+     * @param ui Main object of the FrontendApplication
      */
-    constructor(ui: Application) {
+    constructor(ui: FrontendApplication) {
         this.ui = ui;
         this.title = document.title;
 

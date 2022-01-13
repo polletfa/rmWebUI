@@ -10,15 +10,15 @@
 import * as fs from "fs";
 import * as yaml from "js-yaml";
 
-import { Backend } from "./Backend";
+import { BackendApplication } from "./BackendApplication";
 import { Constants } from "./Constants";
 import { ServerConfig } from "./types/Config";
 
 // eslint-disable-next-line
 type ParsedYAML = any;
 
-export class Config {
-    public static load(backend: Backend): ServerConfig[] {
+export class ConfigHelper {
+    public static load(backend: BackendApplication): ServerConfig[] {
         const file = process.argv[2] ? process.argv[2] : Constants.CONFIG_FILE;
         backend.log("Use configuration file: " + file);
         if(process.argv[2] == undefined && !fs.existsSync(file)) { // if a file has been specified but doesn't exists, we want to fail.
@@ -26,13 +26,13 @@ export class Config {
             return [ Constants.DEFAULT_CONFIG ];
         } else {
             const yamltree = yaml.load(fs.readFileSync(file, "utf8")) as ParsedYAML;
-            const defaultConfig = Config.readServerConfig(yamltree, Constants.DEFAULT_CONFIG);
+            const defaultConfig = ConfigHelper.readServerConfig(yamltree, Constants.DEFAULT_CONFIG);
             
             if(yamltree && "servers" in yamltree) {
                 // multiple server configurations
                 // the parameters outside the "servers" list are used as default parameters
                 backend.log("Multiple server configurations found.");
-                return yamltree.servers.map((serverconfig: ParsedYAML) => { return Config.readServerConfig(serverconfig, defaultConfig); });
+                return yamltree.servers.map((serverconfig: ParsedYAML) => { return ConfigHelper.readServerConfig(serverconfig, defaultConfig); });
             } else {
                 // single server configuration
                 backend.log("Single server configuration found.");
@@ -61,28 +61,28 @@ export class Config {
 
     protected static readServerConfig(yamltree: ParsedYAML, defaultConfig: ServerConfig): ServerConfig {
         const data = {
-            name: Config.checkString(yamltree, "name", defaultConfig.name),
-            port: Config.checkNumber(yamltree, "port", defaultConfig.port),
-            demo: Config.checkBoolean(yamltree, "demo", defaultConfig.demo),
-            sessionMaxIdle: Config.checkDuration(yamltree, "sessionMaxIdle", defaultConfig.sessionMaxIdle),
-            logHeaders: Config.checkBoolean(yamltree, "logHeaders", defaultConfig.logHeaders),
+            name: ConfigHelper.checkString(yamltree, "name", defaultConfig.name),
+            port: ConfigHelper.checkNumber(yamltree, "port", defaultConfig.port),
+            demo: ConfigHelper.checkBoolean(yamltree, "demo", defaultConfig.demo),
+            sessionMaxIdle: ConfigHelper.checkDuration(yamltree, "sessionMaxIdle", defaultConfig.sessionMaxIdle),
+            logHeaders: ConfigHelper.checkBoolean(yamltree, "logHeaders", defaultConfig.logHeaders),
             
-            allowInsecure: Config.checkBoolean(yamltree, "allowInsecure", defaultConfig.allowInsecure),
+            allowInsecure: ConfigHelper.checkBoolean(yamltree, "allowInsecure", defaultConfig.allowInsecure),
 
             ssl: {cert: defaultConfig.ssl.cert, key: defaultConfig.ssl.key},
             
-            data: Config.checkString(yamltree, "data", defaultConfig.data),
-            cache: Config.checkBoolean(yamltree, "cache", defaultConfig.cache),
-            pdfconverter: Config.checkString(yamltree, "pdfconverter", defaultConfig.pdfconverter),
+            data: ConfigHelper.checkString(yamltree, "data", defaultConfig.data),
+            cache: ConfigHelper.checkBoolean(yamltree, "cache", defaultConfig.cache),
+            pdfconverter: ConfigHelper.checkString(yamltree, "pdfconverter", defaultConfig.pdfconverter),
             
-            register: Config.checkString(yamltree, "register", defaultConfig.register),
-            delay: Config.checkDuration(yamltree, "delay", defaultConfig.delay)
+            register: ConfigHelper.checkString(yamltree, "register", defaultConfig.register),
+            delay: ConfigHelper.checkDuration(yamltree, "delay", defaultConfig.delay)
         };
 
         if(yamltree && yamltree["ssl"] !== undefined) {
             data.ssl = {
-                cert: Config.checkString(yamltree.ssl, "cert", defaultConfig.ssl.cert),
-                key: Config.checkString(yamltree.ssl, "key", defaultConfig.ssl.key)
+                cert: ConfigHelper.checkString(yamltree.ssl, "cert", defaultConfig.ssl.cert),
+                key: ConfigHelper.checkString(yamltree.ssl, "key", defaultConfig.ssl.key)
             };
         }
         

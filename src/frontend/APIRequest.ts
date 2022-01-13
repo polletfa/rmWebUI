@@ -7,7 +7,7 @@
  *
  *****************************************************/
 
-import { Application } from './Application';
+import { FrontendApplication } from './FrontendApplication';
 
 import { APIResponse, isAPIResponse } from '../backend/types/API';
 
@@ -17,7 +17,7 @@ import { APIResponse, isAPIResponse } from '../backend/types/API';
 export class APIRequest {
     protected static nRequests = 0;
     
-    protected ui: Application;
+    protected ui: FrontendApplication;
     
     protected onReceiveJSONHandler: ((resp:APIResponse)=>void)|undefined = undefined;
     protected onReceiveDataHandler: ((resp:Buffer)=>void)|undefined = undefined;
@@ -26,7 +26,7 @@ export class APIRequest {
     protected resolve: (()=>void)|undefined = undefined;
     protected reject: (()=>void)|undefined = undefined;
     
-    constructor(ui: Application, request: string) {
+    constructor(ui: FrontendApplication, request: string) {
         this.ui = ui;
         
         new Promise<void>((resolve, reject) => {

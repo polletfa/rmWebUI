@@ -10,19 +10,26 @@
 import * as http from "http";
 
 import { Server } from "../Server";
+import { ServerModule } from "../ServerModule";
 import { APIResponseStatus } from "../types/API";
 
 /**
  * Base for API definitions.
  */
-export class APIBase {
-    protected server: Server;
-
+export abstract class APIBase extends ServerModule {
     /**
      * @param backend Instance of the backend
      */
     constructor(server: Server) {
-        this.server = server;
+        super(server);
+    }
+
+    /**
+     * Handle an error - not supported by API modules
+     * @return False
+     */
+    public handleError(_unused1: number, _unused2: string, _unused3: http.ServerResponse): boolean {
+        return false;
     }
 
     /**

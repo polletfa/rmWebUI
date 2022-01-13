@@ -7,7 +7,7 @@
  *
  *****************************************************/
 
-import { Application } from "./Application";
+import { FrontendApplication } from "./FrontendApplication";
 import { PageBase } from "./PageBase";
 import { APIRequest } from "./APIRequest";
 
@@ -17,7 +17,7 @@ import { APIResponseStatus } from "../backend/types/API";
  * Page "register"
  */
 export class RegisterPage extends PageBase {
-    constructor(ui: Application) {
+    constructor(ui: FrontendApplication) {
         super(ui);
     }
 

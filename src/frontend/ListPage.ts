@@ -7,7 +7,7 @@
  *
  *****************************************************/
 
-import { Application } from "./Application";
+import { FrontendApplication } from "./FrontendApplication";
 import { PageBase } from "./PageBase";
 import { APIRequest } from './APIRequest';
 
@@ -20,7 +20,7 @@ import { isCloudAPIResponseDataFiles } from "../backend/types/CloudAPI";
 export class ListPage extends PageBase {
     protected collection = ""; /**< ID of the currently displayed collection */
 
-    constructor(ui: Application) {
+    constructor(ui: FrontendApplication) {
         super(ui);
     }
 

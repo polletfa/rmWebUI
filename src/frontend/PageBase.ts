@@ -7,18 +7,18 @@
  *
  *****************************************************/
 
-import { Application } from "./Application";
+import { FrontendApplication } from "./FrontendApplication";
 
 /**
  * Base for all pages
  */
 export abstract class PageBase {
-    readonly ui: Application;
+    readonly ui: FrontendApplication;
 
     /**
      * @param ui Main class
      */
-    constructor(ui: Application) {
+    constructor(ui: FrontendApplication) {
         this.ui = ui; /**< main class */
     }
 
