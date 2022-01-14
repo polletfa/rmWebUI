@@ -32,6 +32,9 @@ export class BackendApplication {
      */
     constructor() {
         try {
+            // switch to the package root directory
+            process.chdir(__dirname + "/..");
+            
             // load metadata and print name and version
             const package_json = JSON.parse(fs.readFileSync("package.json").toString());
             this.log(package_json.displayName + " " + package_json.version);
