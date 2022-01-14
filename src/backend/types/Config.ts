@@ -47,7 +47,7 @@ export interface FrontendConfig {
 // eslint-disable-next-line
 export function isFrontendConfig(arg: any): arg is FrontendConfig {
     if(!("demo" in arg) || (typeof arg.demo !== "boolean")
-        || !("register" in arg) || (typeof arg.register !== "string")
+        || !("fakeRegisterCode" in arg) || (typeof arg.fakeRegisterCode !== "string")
         || !("formats" in arg) || !(Array.isArray(arg.formats))) return false;
     for(const i of arg.formats) {
         if(typeof i !== "string") return false;
