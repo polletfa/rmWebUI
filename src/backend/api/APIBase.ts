@@ -40,6 +40,7 @@ export abstract class APIBase extends ServerModule {
      */
     public sendAPIResponseSuccess(data: unknown|undefined, response: http.ServerResponse): void {
         this.server.log("SUCCESS");
+        response.setHeader("Content-Type", "application/json");
         response.end(JSON.stringify({
             status: APIResponseStatus.Success,
             data: data
@@ -55,6 +56,7 @@ export abstract class APIBase extends ServerModule {
      */
     public sendAPIResponseError(errorType: string, error: string, response: http.ServerResponse): void {
         this.server.log("ERROR: "+errorType+" - "+error);
+        response.setHeader("Content-Type", "application/json");
         response.end(JSON.stringify({
             status: APIResponseStatus.Error,
             errorType: errorType,

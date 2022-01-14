@@ -57,8 +57,8 @@ export class FrontendProvider extends ServerModule {
             insecure: this.server.insecure,
             
             demo: this.server.config.demo,
-            formats: this.server.config.pdfconverter.trim().length == 0 ? [ "zip", "pdf" ] : [ "zip" ],
-            register: this.server.config.register
+            formats: this.server.config.demo || this.server.config.pdfconverter.trim().length > 0 ? [ "zip", "pdf" ] : [ "zip" ],
+            fakeRegisterCode: this.server.config.fakeRegisterCode
         };
     }
 

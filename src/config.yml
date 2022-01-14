@@ -28,6 +28,8 @@
 #   You can disable this behaviour by using the allowInsecure option. This is NOT recommended as this will expose
 #   you to a man-in-the-middle attack and might compomise the privacy of your cloud account.
 #
+#   This restriction doesn't apply in demonstration mode.
+#
 #
 # GENERIC OPTIONS
 #
@@ -98,11 +100,15 @@
 #
 # OPTIONS FOR DEMONSTRATION MODE ONLY
 #
-# register - string (default: abcdefgh)
+# fakeRegisterCode - string (default: abcdefgh)
 #     Valid code for the registration process in demonstration mode.
-#     It MUST be exactly 8 alphanumerical characters or the code will be rejected.
+#     It should be exactly 8 alphanumerical characters. If not, the code will be modified as follow:
+#     - Any invalid character will be removed.
+#     - If the code is less than 8 characters, it will be padded with 0.
+#     - If the code is more than 8 cheracters, it will be truncated.
+#     Set an empty value to disable the registration step.
 #
-# delay - duration with unit s, m, h or d (default: 2s)
+# fakeDelay - duration with unit s, m, h or d (default: 2s)
 #     Delay to simulate a request to the cloud.
 #
 #
@@ -146,18 +152,35 @@
 pdfconverter: python3 -m rmrl <!input> <!output>
 
 servers:
+
+# Demo
 - name: demo
-  port: 8001
+  port: 8000
   demo: true
 
-- name: debug
-  port: 8002
+# Demo with debugging options
+- name: demo-debug
+  port: 8001
+  demo: true
+  
   logHeaders: true
   sessionMaxIdle: 1m
-    
-- name: live
-  port: 8003
+  fakeDelay: 0s
+  fakeRegisterCode: 
 
-- name: insecure
-  port: 8004
-  allowInsecure: true
+# Live
+- name: live
+  port: 8080
+
+# Live with debugging options
+- name: live-debug
+  port: 8081
+
+  logHeaders: true
+  sessionMaxIdle: 1m
+
+# Insecure server
+#- name: insecure
+#  port: 8005
+#  demo: true
+#  allowInsecure: true

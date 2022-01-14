@@ -27,21 +27,21 @@ export interface ServerConfig {
     cache: boolean;
     pdfconverter: string;
 
-    register: string;
-    delay: number;  
+    fakeRegisterCode: string;
+    fakeDelay: number;  
 }
 
 /**
  * Configuration passed by the backend to the frontend.
  */
 export interface FrontendConfig {
-    statusCode: number;      /**< HTTP status code */
-    error: string;           /**< Error message (if statusCode != 200) */
-    insecure: boolean;       /**< Insecure configuration (live, HTTP, remote requests allowed) */
+    statusCode: number;       /**< HTTP status code */
+    error: string;            /**< Error message (if statusCode != 200) */
+    insecure: boolean;        /**< Insecure configuration (live, HTTP, remote requests allowed) */
     
-    demo: boolean;           /**< True if the demonstration mode is enabled */
-    formats: string[];       /**< Supported file formats */
-    register: string;        /**< Register code for demonstration mode */
+    demo: boolean;            /**< True if the demonstration mode is enabled */
+    formats: string[];        /**< Supported file formats */
+    fakeRegisterCode: string; /**< Register code for demonstration mode */
 }
 
 // eslint-disable-next-line

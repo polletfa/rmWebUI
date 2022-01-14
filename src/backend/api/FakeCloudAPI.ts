@@ -15,6 +15,8 @@ import { Constants } from "../Constants";
 import { CloudAPIBase } from "./CloudAPIBase";
 import { CloudAPIResponseError } from "../types/CloudAPI";
 
+type Parameters = {[name:string]: string|null};
+
 /**
  * Implement the cloud API with dummy data (no connection to the cloud) for the demonstration mode
  */
@@ -30,28 +32,16 @@ export class FakeCloudAPI extends CloudAPIBase {
      * @param code One-time code for registering to the cloud. The fake API accepts Constants.FAKE_REGISTER_CODE as valid answer.
      * @param response HTTP response object
      */
-    public register(sessionId: string|null, code: string|null, response: http.ServerResponse): void {
-        if(sessionId == null || code == null) {
-            const missing: string[] = [];
-            if(sessionId == null) missing.push("sessionId");
-            if(code == null) missing.push("code");
-
-            this.sendAPIResponseError(CloudAPIResponseError.InvalidParameters, "Missing parameter(s): "+missing.join(", "), response);
-            return;
-        }
-        if(!this.server.sessionManager.hasSession(sessionId)) {
-            this.sendAPIResponseError(CloudAPIResponseError.InvalidParameters, "Invalid session", response);
-            return;
-        }            
-
-        setTimeout(() => {
-            if(code !== this.server.config.register) {
-                this.sendAPIResponseError(CloudAPIResponseError.Register,"This is a demo version. Use the code '"+this.server.config.register+"'.", response);
+    public register(sessionId: string, code: string|null, response: http.ServerResponse): void {
+        this.generic(sessionId, {code: code}, CloudAPIResponseError.Register, false, response, (params: Parameters, response: http.ServerResponse) => {
+            if(!("code" in params && params.code !== null)) throw new Error("request handler called with invalid parameters.");
+            if(params.code !== this.server.config.fakeRegisterCode) {
+                this.sendAPIResponseError(CloudAPIResponseError.Register,"This is a demo version. Use the code '"+this.server.config.fakeRegisterCode+"'.", response);
             } else {
                 this.server.sessionManager.setValue(sessionId, "registered", true);
                 this.sendAPIResponseSuccess(undefined, response);
             }
-        }, this.server.config.delay);
+        });
     }
     
     /**
@@ -60,32 +50,16 @@ export class FakeCloudAPI extends CloudAPIBase {
      * @param sessionId Session ID
      * @param response HTTP response object
      */
-    public files(sessionId: string|null, response: http.ServerResponse): void {
-        if(sessionId == null) {
-            this.sendAPIResponseError(CloudAPIResponseError.InvalidParameters, "Missing parameter(s): sessionId", response);
-            return;
-        }
-        if(!this.server.sessionManager.hasSession(sessionId)) {
-            this.sendAPIResponseError(CloudAPIResponseError.InvalidParameters, "Invalid session", response);
-            return;
-        }
-        if(this.server.sessionManager.getValue(sessionId, "registered") !== true) {
-            this.sendAPIResponseError(CloudAPIResponseError.LoadToken, "This is a demo version. Register with the code '"+this.server.config.register+"'.", response);
-        } else {
-            setTimeout(() => {
-                try {
-                    fs.readFile(Constants.SAMPLE_DATA_DIR+"/files.json", (err:Error|null, content:Buffer|null) => {
-                        if(err) {
-                            this.sendAPIResponseError(CloudAPIResponseError.RetrieveFiles, err instanceof Error ? err.message : "Unknown error", response);
-                        } else {
-                            this.sendAPIResponseSuccess({files: JSON.parse(content ? content.toString() : "")}, response);
-                        }
-                    });
-                } catch(error) {
-                    this.sendAPIResponseError(CloudAPIResponseError.RetrieveFiles, error instanceof Error ? error.message : "Unknown error", response);
+    public files(sessionId: string, response: http.ServerResponse): void {
+        this.generic(sessionId, {}, CloudAPIResponseError.RetrieveFiles, true, response, (_: Parameters, response: http.ServerResponse) => {
+            fs.readFile(Constants.SAMPLE_DATA_DIR+"/files.json", (err:Error|null, content:Buffer|null) => {
+                if(err) {
+                    this.sendAPIResponseError(CloudAPIResponseError.RetrieveFiles, err instanceof Error ? err.message : "Unknown error", response);
+                } else {
+                    this.sendAPIResponseSuccess({files: JSON.parse(content ? content.toString() : "")}, response);
                 }
-            }, this.server.config.delay);
-        }
+            });
+        });
     }
 
     /**
@@ -97,11 +71,67 @@ export class FakeCloudAPI extends CloudAPIBase {
      * @param format File format
      * @param response HTTP response object
      */
-    public download(sessionId: string|null, id: string|null, version: string|null, format: string|null, response: http.ServerResponse): void {
-        sessionId;
-        id;
-        version;
-        format;
-        response;
+    public download(sessionId: string, id: string|null, version: string|null, format: string|null, response: http.ServerResponse): void {
+        this.generic(sessionId, {id: id, version: version, format: format}, CloudAPIResponseError.DownloadFile, true, response, 
+                     (params: Parameters, response: http.ServerResponse) => {
+                         let file: string|undefined;
+                         
+                         if(!("id" in params && params.id !== null && "version" in params && params.version !== null && "format" in params && params.format !== null))
+                             throw new Error("request handler called with invalid parameters.");
+                         if(params.id[0] >= '0' && params.id[0] <= '4') {
+                             file = "pdf";
+                         } else if(params.id[0] >= '5' && params.id[0] <= '9') {
+                             file = "notebook";
+                         } else {
+                             console.log(params.id[0]);
+                             console.log(params.id[0] >= "0");
+                             this.sendAPIResponseError(CloudAPIResponseError.DownloadFile, "This is an example of an error while downloading a file.", response);
+                         }
+
+                         if(file) {
+                             fs.readFile(Constants.SAMPLE_DATA_DIR+"/sample_"+file+"."+params.format, (err: Error|null, content: Buffer|null) => {
+                                 if(err) {
+                                     this.sendAPIResponseError(CloudAPIResponseError.DownloadFile, err instanceof Error ? err.message : "Unknown error", response);
+                                 } else {
+                                     response.setHeader("Content-Type", "application/"+params.format);
+                                     response.end(content ? content : "");
+                                 }
+                             });
+                         }
+                     });
+    }
+
+    protected generic(sessionId: string, params: Parameters, requestError: CloudAPIResponseError, requireRegistration: boolean, response: http.ServerResponse,
+                      request: (params: Parameters, response: http.ServerResponse) => void): void
+    {
+        // check parameters
+        const missing: string[] = [];
+        for(const param in params) {
+            if(params[param] == null || params[param] == "") missing.push(param);
+        }
+        if(missing.length > 0) {
+            this.sendAPIResponseError(CloudAPIResponseError.InvalidParameters, "Missing parameter" + (missing.length == 1 ? "" : "s" ) + ": "+missing.join(", "), response);
+            return;
+        }
+
+        // check session
+        if(!this.server.sessionManager.hasSession(sessionId)) {
+            this.sendAPIResponseError(CloudAPIResponseError.InvalidParameters, "Invalid session", response);
+            return;
+        }            
+
+        // check the registration status
+        if(requireRegistration && this.server.config.fakeRegisterCode != "" && this.server.sessionManager.getValue(sessionId, "registered") !== true) {
+            this.sendAPIResponseError(CloudAPIResponseError.LoadToken, "This is a demo version. Register with the code '"+this.server.config.fakeRegisterCode+"'.", response);
+        } else {
+            // execute request
+            setTimeout(() => {
+                try {
+                    request(params, response);
+                } catch(error) {
+                    this.sendAPIResponseError(requestError, error instanceof Error ? error.message : "Unknown error", response);
+                }
+            }, this.server.config.fakeDelay);
+        }
     }
 }

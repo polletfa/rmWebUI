@@ -26,13 +26,13 @@ export class ConfigHelper {
             return [ Constants.DEFAULT_CONFIG ];
         } else {
             const yamltree = yaml.load(fs.readFileSync(file, "utf8")) as ParsedYAML;
-            const defaultConfig = ConfigHelper.readServerConfig(yamltree, Constants.DEFAULT_CONFIG);
+            const defaultConfig = ConfigHelper.readServerConfig(backend, yamltree, Constants.DEFAULT_CONFIG);
             
             if(yamltree && "servers" in yamltree) {
                 // multiple server configurations
                 // the parameters outside the "servers" list are used as default parameters
                 backend.log("Multiple server configurations found.");
-                return yamltree.servers.map((serverconfig: ParsedYAML) => { return ConfigHelper.readServerConfig(serverconfig, defaultConfig); });
+                return yamltree.servers.map((serverconfig: ParsedYAML) => { return ConfigHelper.readServerConfig(backend, serverconfig, defaultConfig); });
             } else {
                 // single server configuration
                 backend.log("Single server configuration found.");
@@ -59,7 +59,7 @@ export class ConfigHelper {
         }
     }
 
-    protected static readServerConfig(yamltree: ParsedYAML, defaultConfig: ServerConfig): ServerConfig {
+    protected static readServerConfig(backend: BackendApplication, yamltree: ParsedYAML, defaultConfig: ServerConfig): ServerConfig {
         const data = {
             name: ConfigHelper.checkString(yamltree, "name", defaultConfig.name),
             port: ConfigHelper.checkNumber(yamltree, "port", defaultConfig.port),
@@ -75,10 +75,18 @@ export class ConfigHelper {
             cache: ConfigHelper.checkBoolean(yamltree, "cache", defaultConfig.cache),
             pdfconverter: ConfigHelper.checkString(yamltree, "pdfconverter", defaultConfig.pdfconverter),
             
-            register: ConfigHelper.checkString(yamltree, "register", defaultConfig.register),
-            delay: ConfigHelper.checkDuration(yamltree, "delay", defaultConfig.delay)
+            fakeRegisterCode: ConfigHelper.checkString(yamltree, "fakeRegisterCode", defaultConfig.fakeRegisterCode),
+            fakeDelay: ConfigHelper.checkDuration(yamltree, "fakeDelay", defaultConfig.fakeDelay)
         };
 
+        if(data.fakeRegisterCode != "") {
+            const fixedFakeRegisterCode = (data.fakeRegisterCode.replace(/[^0-9a-zA-Z]/g, "") + "00000000").substr(0,8);
+            if(data.fakeRegisterCode != fixedFakeRegisterCode) {
+                backend.log("WARNING: Registration code '"+data.fakeRegisterCode+"' was not valid and has been changed to '"+fixedFakeRegisterCode+"'");
+                data.fakeRegisterCode = fixedFakeRegisterCode;
+            }
+        }
+        
         if(yamltree && yamltree["ssl"] !== undefined) {
             data.ssl = {
                 cert: ConfigHelper.checkString(yamltree.ssl, "cert", defaultConfig.ssl.cert),

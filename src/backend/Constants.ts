@@ -56,8 +56,8 @@ export class Constants {
         cache: true,
         pdfconverter: "",
 
-        register: "abcdefgh",
-        delay: 2000
+        fakeRegisterCode: "abcdefgh",
+        fakeDelay: 2000
     };
 
 }

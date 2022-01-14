@@ -64,7 +64,7 @@ export abstract class CloudAPIBase extends APIBase {
      * @param code One-time code for registering to the cloud. The fake API accepts Constants.FAKE_REGISTER_CODE as valid answer.
      * @param response HTTP response object
      */
-    abstract register(sessionId: string|null, code: string|null, response: http.ServerResponse): void;
+    abstract register(sessionId: string, code: string|null, response: http.ServerResponse): void;
 
     /**
      * API method: get file list
@@ -72,7 +72,7 @@ export abstract class CloudAPIBase extends APIBase {
      * @param sessionId Session ID
      * @param response HTTP response object
      */
-    abstract files(sessionId: string|null, response: http.ServerResponse): void;
+    abstract files(sessionId: string, response: http.ServerResponse): void;
 
     /**
      * API method: download file
@@ -83,5 +83,5 @@ export abstract class CloudAPIBase extends APIBase {
      * @param format File format
      * @param response HTTP response object
      */
-    abstract download(sessionId: string|null, id: string|null, version: string|null, format: string|null, response: http.ServerResponse): void;
+    abstract download(sessionId: string, id: string|null, version: string|null, format: string|null, response: http.ServerResponse): void;
 }
