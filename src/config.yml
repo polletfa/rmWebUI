@@ -79,6 +79,9 @@
 # data - Path to directory (default: data)
 #     Directory used to store user data (authentication token or cached data).
 #     The application requires read/write permissions for this directory.
+#     If you want to connect different servers to different cloud accounts, you should specify
+#     different data directories. If you use the same directory for several servers, they will
+#     share the same account.
 #
 # cache - true/false (default: true)
 #     Enable or disable the cache. If disabled, the application will download files
@@ -171,7 +174,7 @@ servers:
 # Live
 - name: live
   port: 8080
-
+  
 # Live with debugging options
 - name: live-debug
   port: 8081

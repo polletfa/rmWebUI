@@ -8,7 +8,7 @@
         "lint-fix": "eslint --fix src/**/*.ts tools/**/*.ts",
         "compile": "tsc",
         "webpack-backend": "webpack -c webpack.backend.js",
-        "webpack-frontend": "webpack -c webpack.frontend.js", 
+        "webpack-frontend": "webpack -c webpack.frontend.js",
         "webpack": "npm run webpack-backend && npm run webpack-frontend",
         "build-frontend": "node ./_build/tools/build_frontend.js",
         "build": "npm run compile && npm run webpack && npm run build-frontend",
@@ -38,6 +38,7 @@
     "devDependencies": {
         "@types/bootstrap": "^5.1.8",
         "@types/js-yaml": "^4.0.5",
+        "@types/node": "^17.0.8",
         "@types/uuid": "^8.3.4",
         "@typescript-eslint/eslint-plugin": "^5.9.0",
         "@typescript-eslint/parser": "^5.9.0",

@@ -43,7 +43,7 @@ const FILES = [
 console.log("Deploy...");
 
 // delete (unless --dirty is provided) and recreate target directory
-if(!DIRTY && fs.existsSync(TARGET)) {
+if(!DIRTY && fs.statSync(TARGET, {throwIfNoEntry: false})) {
     console.log("  Cleanup");
     fs.rmSync(TARGET, {recursive: true});
 }

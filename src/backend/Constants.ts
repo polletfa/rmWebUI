@@ -36,6 +36,11 @@ export class Constants {
     static readonly SAMPLE_DATA_DIR = "backend/samples";
 
     /**
+     * Token file
+     */
+    static readonly TOKEN_FILE = "token.json";
+
+    /**
      * Default configuration
      */
     static readonly DEFAULT_CONFIG: ServerConfig = {

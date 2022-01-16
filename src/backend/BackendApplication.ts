@@ -13,6 +13,8 @@ import { ConfigHelper } from "./ConfigHelper";
 import { FrontendProvider } from "./FrontendProvider";
 import { Server } from "./Server";
 
+import { ServerConfig } from "./types/Config";
+
 /**
  * Main class of the backend application
  */
@@ -51,16 +53,25 @@ export class BackendApplication {
             this.log("---");
 
             // Start servers
-            for(const server of config) {
-                // Initialize and launch HTTP/HTTPS server
-                new Server(this, server).run();
-            }
-            this.log("---");
+            this.startServers(config);
         } catch(e) {
-            this.log("");
-            this.log("FATAL: Unable to launch the backend.");
-            this.log(e instanceof Error ? ("FATAL: " + e.message) : "");
-            process.exit(1);
+            this.die(e instanceof Error ? e : new Error(String(e)));
         }
+    }
+
+    protected async startServers(config: ServerConfig[]): Promise<void> {
+        for(const server of config) {
+            // Initialize and launch HTTP/HTTPS server
+            await (new Server(this, server)).run()
+                .catch((e:Error) => this.die(e));
+            this.log("---");
+        }
+    }
+
+    public die(error: Error) {
+        this.log("");
+        this.log("FATAL: Unable to launch the backend.");
+        this.log(error instanceof Error ? ("FATAL: " + error.message) : "");
+        process.exit(1);
     }
 }

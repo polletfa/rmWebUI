@@ -10,6 +10,8 @@
 import * as http from "http";
 import * as fs from "fs";
 
+import { Remarkable } from 'remarkable-typescript';
+
 import { Server } from "../Server";
 import { Constants } from "../Constants";
 import { CloudAPIBase } from "./CloudAPIBase";
@@ -19,8 +21,14 @@ import { CloudAPIResponseError } from "../types/CloudAPI";
  * Implement the reMarkable(R) cloud API
  */
 export class RemarkableCloudAPI extends CloudAPIBase {
+    protected client: Remarkable;
+
+    protected isConnected = false;
+    
     constructor(server: Server) {
         super(server);
+
+        this.client = new Remarkable();
     }
 
     /**
@@ -31,8 +39,21 @@ export class RemarkableCloudAPI extends CloudAPIBase {
      * @param response HTTP response object
      */
     public register(sessionId: string, code: string|null, response: http.ServerResponse): void {
-        /* unused: */ sessionId; code;
-        this.sendAPIResponseError(CloudAPIResponseError.Register, "Not yet implemented", response);
+        if(!this.checkRequest(sessionId, {code:code}, response)) return;
+
+        this.client.register({code:String(code)})
+            .then((deviceToken:string) => {
+                this.isConnected = true;
+                this.sendAPIResponseSuccess(undefined, response);
+                
+                this.server.data.writeToken(deviceToken)
+                    .catch((error:Error) => {
+                        this.server.log("ERROR: Unable to save the token: "+error.message);
+                    });
+            })
+            .catch((error:Error) => {
+                this.sendAPIResponseError(CloudAPIResponseError.Register, error.message, response);
+            });
     }
     
     /**
@@ -42,8 +63,8 @@ export class RemarkableCloudAPI extends CloudAPIBase {
      * @param response HTTP response object
      */
     public files(sessionId: string, response: http.ServerResponse): void {
-        /* unused: */ sessionId;
-        this.sendAPIResponseError(CloudAPIResponseError.RetrieveFiles, "Not yet implemented", response);
+        if(!this.checkRequest(sessionId, {}, response)) return;
+        this.sendAPIResponseError(CloudAPIResponseError.LoadToken, "Not yet implemented", response);
     }
 
     /**

@@ -16,6 +16,7 @@ import { ConfigHelper } from "./ConfigHelper";
 import { FrontendProvider } from "./FrontendProvider";
 import { SessionManager } from "./SessionManager";
 import { ServerModule } from "./ServerModule";
+import { DataProvider } from "./DataProvider";
 
 import { FakeCloudAPI } from "./api/FakeCloudAPI";
 import { RemarkableCloudAPI } from "./api/RemarkableCloudAPI";
@@ -30,6 +31,7 @@ export class Server {
     readonly backend: BackendApplication;
     readonly sessionManager: SessionManager;
     readonly modules: ServerModule[];
+    readonly data: DataProvider;
     
     readonly protocol: string;
     readonly sslKey: string;
@@ -41,6 +43,7 @@ export class Server {
         this.logprefix = "[" + config.name + "]   ";
 
         this.backend = backend;
+        this.data = new DataProvider(this);
         this.sessionManager = new SessionManager(this);
         this.modules = [
             this.config.demo ? new FakeCloudAPI(this) : new RemarkableCloudAPI(this),
@@ -148,14 +151,29 @@ export class Server {
     /**
      * Start the HTTP server.
      */
-    public run(): void {
-        // Initialize and launch HTTP/HTTPS server
-        this.log("Use protocol: "+this.protocol);
-        const server = this.protocol == "http"
-            ? http.createServer()
-            : https.createServer({key: this.sslKey, cert: this.sslCert});
-        server.on('error', this.onHttpError.bind(this));
-        server.on('request', this.onHttpRequest.bind(this));
-        server.listen(this.config.port);
+    public async run(): Promise<void> {
+        if(!this.config.demo) {
+            try {
+                await this.data.createDataDir();
+            } catch(error) {
+                return Promise.reject(error);
+            }
+        }
+        return new Promise((resolve, reject) => {
+            // Initialize and launch HTTP/HTTPS server
+            this.log("Use protocol: "+this.protocol);
+            const server = this.protocol == "http"
+                ? http.createServer()
+                : https.createServer({key: this.sslKey, cert: this.sslCert});
+            server.on('error', (error: Error) => {
+                this.log("ERROR: "+error.message);
+                reject(error);
+            });
+            server.on('listening', () => {
+                resolve();
+            });
+            server.on('request', this.onHttpRequest.bind(this));
+            server.listen(this.config.port);
+        });
     }
 }

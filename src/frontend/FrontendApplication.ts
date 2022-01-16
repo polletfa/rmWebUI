@@ -97,6 +97,9 @@ export class FrontendApplication {
         this.layout.show('loading-spinner', false);
         if(isAPIResponse(this.filesApiResponse) && this.filesApiResponse.status === APIResponseStatus.Error) {
             switch(this.filesApiResponse["errorType"] as CloudAPIResponseError) {
+                case CloudAPIResponseError.InternalError:
+                    this.layout.showError("Internal error while processing the request.", this.filesApiResponse["error"] ? this.filesApiResponse["error"] : "Unknown error");
+                    break;
                 case CloudAPIResponseError.LoadToken:
                     this.layout.showPage("register");
                     break;
@@ -112,12 +115,15 @@ export class FrontendApplication {
                     this.layout.showError("Unexpected (" + this.filesApiResponse["errorType"] + ")", this.filesApiResponse["error"] ? this.filesApiResponse["error"] : "Unknown error");
                     this.layout.showPage(""); // hide all pages
             }
-        } else {
+        } else if(isAPIResponse(this.filesApiResponse)) {
             this.layout.showPage("list");
+        } else {
+            this.layout.showError("Unexpected response from backend", JSON.stringify(this.filesApiResponse));
+            this.layout.showPage("");
         }
         this.layout.resizeHeader();
     }
-    
+   
     /**
      * Get file list and update UI
      */

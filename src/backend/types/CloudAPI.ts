@@ -12,7 +12,9 @@
  */
 export enum CloudAPIResponseError {
     InvalidParameters = "invalid-parameters",
+    InternalError = "internal-error",
     Register = "register",
+    StoreToken = "store-token",
     LoadToken = "load-token",
     InitAPI = "init-api",
     RetrieveFiles = "retrieve-files",
