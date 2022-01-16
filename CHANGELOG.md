@@ -3,10 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-Versioning policy: <release>.<major>.<minor>
-- <release>: Major release, fully featured, documented and tested.
-- <major>: Intermediate release with major changes: new feature(s), wide refactoring
-- <minor>: Minor changes, bugfix. No new features.
+Versioning policy: release.major.minor
+- release: Major release, fully featured, documented and tested.
+- major: Intermediate release with major changes: new feature(s), wide refactoring
+- minor: Minor changes, bugfix. No new features.
 
 ## develop (planned: [0.6.0])
 ### Added
