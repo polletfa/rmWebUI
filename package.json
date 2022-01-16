@@ -1,0 +1,58 @@
+{
+    "name": "rmwebui",
+    "displayName": "rmWebUI",
+    "version": "0.6.0",
+    "description": "Web interface for the reMarkable(R) cloud",
+    "scripts": {
+        "lint": "eslint src/**/*.ts tools/**/*.ts",
+        "lint-fix": "eslint --fix src/**/*.ts tools/**/*.ts",
+        "compile": "tsc",
+        "webpack-backend": "webpack -c webpack.backend.js",
+        "webpack-frontend": "webpack -c webpack.frontend.js", 
+        "webpack": "npm run webpack-backend && npm run webpack-frontend",
+        "build-frontend": "node ./_build/tools/build_frontend.js",
+        "build": "npm run compile && npm run webpack && npm run build-frontend",
+        "deploy": "npm run build && node ./_build/tools/install.js",
+        "deploy-dirty": "npm run build && node ./_build/tools/install.js --dirty",
+        "deploy-run": "npm --prefix=_dist run launch",
+        "clean": "node ./_build/tools/clean.js",
+        "dist-clean": "node ./_build/tools/clean.js --all"
+    },
+    "scripts-dist": {
+        "launch": "node backend/index.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/polletfa/rmWebUI.git"
+    },
+    "keywords": [
+        "reMarkable",
+        "reHackable"
+    ],
+    "author": "Fabien Pollet <polletfa@posteo.de>",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/polletfa/rmWebUI/issues"
+    },
+    "homepage": "https://github.com/polletfa/rmWebUI#readme",
+    "devDependencies": {
+        "@types/bootstrap": "^5.1.8",
+        "@types/js-yaml": "^4.0.5",
+        "@types/uuid": "^8.3.4",
+        "@typescript-eslint/eslint-plugin": "^5.9.0",
+        "@typescript-eslint/parser": "^5.9.0",
+        "bootstrap": "^5.1.3",
+        "eslint": "^8.6.0",
+        "eslint-plugin-immutable": "^1.0.0",
+        "eslint-plugin-sonarjs": "^0.11.0",
+        "typescript": "^4.5.4",
+        "webpack": "^5.65.0",
+        "webpack-cli": "^4.9.1",
+        "webpack-node-externals": "^3.0.0"
+    },
+    "dependencies": {
+        "js-yaml": "^4.1.0",
+        "remarkable-typescript": "^1.1.3",
+        "uuid": "^8.3.2"
+    }
+}

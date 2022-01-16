@@ -1,0 +1,63 @@
+---
+env:
+  browser: false
+  es6: true
+extends:
+- eslint:recommended
+- plugin:@typescript-eslint/eslint-recommended
+- plugin:@typescript-eslint/recommended
+- plugin:sonarjs/recommended
+globals:
+  Atomics: readonly
+  SharedArrayBuffer: readonly
+parser: "@typescript-eslint/parser"
+parserOptions:
+  ecmaVersion: 2018
+  sourceType: module
+plugins:
+- "@typescript-eslint"
+- "immutable"
+- "sonarjs"
+rules:
+  '@typescript-eslint/no-namespace':
+  - off
+  '@typescript-eslint/ban-ts-comment': 
+  - error
+  '@typescript-eslint/no-explicit-any': 
+  - error
+  no-unused-vars:
+  - off
+  "@typescript-eslint/no-unused-vars":
+  - warn
+  prefer-const:
+  - warn
+  no-implicit-globals:
+  - warn
+  no-warning-comments:
+  - warn
+  - terms: ["todo", "fixme", "tbd"]
+  camelcase:
+  - off
+  max-depth:
+  - error
+  - max: 4
+  max-nested-callbacks:
+  - error
+  - max: 4
+  max-statements:
+  - warn # some constructors or create payload functions are lengthy
+  - max: 40 
+  semi:
+  - warn
+  - always
+  "immutable/no-mutation":
+  - off
+  "immutable/no-let":
+  - off
+  "immutable/no-this":
+  - off
+  'sonarjs/cognitive-complexity': 
+  - warn
+  - 30
+  'sonarjs/no-duplicate-string':
+  - off

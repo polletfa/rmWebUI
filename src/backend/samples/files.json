@@ -1,0 +1,351 @@
+[{
+    "id": "35d41ae9-c51c-4d20-86ea-2f6b734f4300",
+    "version": 19,
+    "type": "DocumentType",
+    "name": "Notes",
+    "path": "/Notes",
+    "parent": ""
+},{
+    "id": "ddd3b74c-c94d-4781-b5f0-13649efd90ad",
+    "version": 1,
+    "type": "CollectionType",
+    "name": "Books",
+    "path": "/Books",
+    "parent": ""
+},{
+    "id": "ad9adeb6-ee67-4cde-baad-925ceb5742b0",
+    "version": 1,
+    "type": "CollectionType",
+    "name": "Emile Zola",
+    "path": "/Books/Emile Zola",
+    "parent": "ddd3b74c-c94d-4781-b5f0-13649efd90ad"
+},{
+    "id": "e157aa4a-c2f2-4b5f-b0e8-1562d91ebc49",
+    "version": 1,
+    "type": "CollectionType",
+    "name": "Contes et nouvelles",
+    "path": "/Books/Emile Zola/Contes et nouvelles",
+    "parent": "ad9adeb6-ee67-4cde-baad-925ceb5742b0"
+},{
+    "id": "f826dffd-f239-4ce1-92f4-10438cfa7df7",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "Zola-Inondation",
+    "path": "/Books/Emile Zola/Contes et nouvelles/Zola-Inondation",
+    "parent": "e157aa4a-c2f2-4b5f-b0e8-1562d91ebc49"
+},{
+    "id": "37aa309c-8df5-4322-a3df-d1ac22eb62ba",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "Zola-Nais",
+    "path": "/Books/Emile Zola/Contes et nouvelles/Zola-Nais",
+    "parent": "e157aa4a-c2f2-4b5f-b0e8-1562d91ebc49"
+},{
+    "id": "54c2eb69-97e2-4711-9483-bcda2e2f9513",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-ninon1",
+    "path": "/Books/Emile Zola/Contes et nouvelles/zola-ninon1",
+    "parent": "e157aa4a-c2f2-4b5f-b0e8-1562d91ebc49"
+},{
+    "id": "c6e03507-9c24-4a61-ae58-cc3aa59104f3",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-ninon2",
+    "path": "/Books/Emile Zola/Contes et nouvelles/zola-ninon2",
+    "parent": "e157aa4a-c2f2-4b5f-b0e8-1562d91ebc49"
+},{
+    "id": "ba22b231-2849-4402-80c1-5b9009403da6",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "Gesammelte Werke",
+    "path": "/Books/Emile Zola/Gesammelte Werke",
+    "parent": "ad9adeb6-ee67-4cde-baad-925ceb5742b0"
+},{
+    "id": "2c473eda-d21f-45f9-89fa-49c6c0669533",
+    "version": 1,
+    "type": "CollectionType",
+    "name": "Les Rougon-Macquart",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart",
+    "parent": "ad9adeb6-ee67-4cde-baad-925ceb5742b0"
+},{
+    "id": "27bce9cc-520f-4288-8619-8cd9c4ae9b1b",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-01",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-01",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "031d9b24-dcb7-4958-bdef-a9ea0eb6ab01",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-02",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-02",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "a54c7d22-215a-45e2-ae8f-005db7389cec",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-03",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-03",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "7fbac5c7-5452-4ae2-afd1-b09f26c4fecf",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-04",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-04",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "df69ba44-0cab-418a-8024-70ac33ed6560",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-05",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-05",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "61608fd1-ecd6-42f7-b105-4fa1700b5286",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-06",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-06",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "5bb9241b-2e28-4bc2-acb2-5f5d168974a2",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-07",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-07",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "1ad4d66a-53d6-4a1c-9d74-7dde0607c650",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-08",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-08",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "3d6fd8a4-e75b-42db-9fce-65c6b3ce9e54",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-09",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-09",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "b6e97454-ad2e-4c38-88fb-e6d72a69369d",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-10",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-10",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "9e90ee8f-0c38-4550-88b3-9293b9777043",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-11",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-11",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "199bf61d-e03c-4048-b7b8-664781c99228",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-12",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-12",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "a7c8c24d-8188-4d70-8aa9-71739d9c6eaa",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-13",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-13",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "3d5aa9e2-ca5a-44f3-b354-5b22aee5a251",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-14",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-14",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "f5ef6fe4-4b00-4a42-9759-902f51054640",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-15",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-15",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "52e73780-4354-455c-9154-19ce3ff581f2",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-16",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-16",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "b6944c8a-4916-4e5a-a6ce-75c2591e9861",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-17",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-17",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "96dbf556-87ae-45fd-a3b8-67439f9ed490",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-18",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-18",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "3d24ef02-28e3-423e-94da-db0c668d101a",
+    "version": 3,
+    "type": "DocumentType",
+    "name": "zola-19",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-19",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "43b2cdfb-e681-491e-89a4-9e44cf1ff591",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-20",
+    "path": "/Books/Emile Zola/Les Rougon-Macquart/zola-20",
+    "parent": "2c473eda-d21f-45f9-89fa-49c6c0669533"
+},{
+    "id": "0e7fe8bc-182b-4d66-b752-4bd66d1b7913",
+    "version": 1,
+    "type": "CollectionType",
+    "name": "Les quatre évangiles (inachevé)",
+    "path": "/Books/Emile Zola/Les quatre évangiles (inachevé)",
+    "parent": "ad9adeb6-ee67-4cde-baad-925ceb5742b0"
+},{
+    "id": "01412455-2847-4b76-a8b8-560753c9fa55",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-fecondite",
+    "path": "/Books/Emile Zola/Les quatre évangiles (inachevé)/zola-fecondite",
+    "parent": "0e7fe8bc-182b-4d66-b752-4bd66d1b7913"
+},{
+    "id": "19cf9ac4-3e49-4a20-ba90-519881d4c053",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-travail",
+    "path": "/Books/Emile Zola/Les quatre évangiles (inachevé)/zola-travail",
+    "parent": "0e7fe8bc-182b-4d66-b752-4bd66d1b7913"
+},{
+    "id": "848e1ebe-0db7-4027-8610-464f125197c0",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-verite",
+    "path": "/Books/Emile Zola/Les quatre évangiles (inachevé)/zola-verite",
+    "parent": "0e7fe8bc-182b-4d66-b752-4bd66d1b7913"
+},{
+    "id": "e4aed0ed-7e25-4142-805b-d210056d3151",
+    "version": 1,
+    "type": "CollectionType",
+    "name": "Les trois villes",
+    "path": "/Books/Emile Zola/Les trois villes",
+    "parent": "ad9adeb6-ee67-4cde-baad-925ceb5742b0"
+},{
+    "id": "543868b9-8caf-4e77-b951-2afda8d5cfb6",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-lourdes",
+    "path": "/Books/Emile Zola/Les trois villes/zola-lourdes",
+    "parent": "e4aed0ed-7e25-4142-805b-d210056d3151"
+},{
+    "id": "f162c273-18ef-4cda-b881-f0d57162ce84",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-paris",
+    "path": "/Books/Emile Zola/Les trois villes/zola-paris",
+    "parent": "e4aed0ed-7e25-4142-805b-d210056d3151"
+},{
+    "id": "86f84ecf-813e-4dc3-9ed0-b118473f2818",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-rome",
+    "path": "/Books/Emile Zola/Les trois villes/zola-rome",
+    "parent": "e4aed0ed-7e25-4142-805b-d210056d3151"
+},{
+    "id": "134c3181-f8fa-4fb3-a770-7d373cda2e71",
+    "version": 1,
+    "type": "CollectionType",
+    "name": "Oeuvres de jeunesse",
+    "path": "/Books/Emile Zola/Oeuvres de jeunesse",
+    "parent": "ad9adeb6-ee67-4cde-baad-925ceb5742b0"
+},{
+    "id": "6da06f0e-bdb3-46c6-81ad-2d93963cb3f4",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-claude",
+    "path": "/Books/Emile Zola/Oeuvres de jeunesse/zola-claude",
+    "parent": "134c3181-f8fa-4fb3-a770-7d373cda2e71"
+},{
+    "id": "6d8dcc78-9634-4df4-a233-b323e60e68a1",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-madeleine",
+    "path": "/Books/Emile Zola/Oeuvres de jeunesse/zola-madeleine",
+    "parent": "134c3181-f8fa-4fb3-a770-7d373cda2e71"
+},{
+    "id": "dce945ce-07be-43ba-a6a7-9e7580dd1bb8",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-marseille",
+    "path": "/Books/Emile Zola/Oeuvres de jeunesse/zola-marseille",
+    "parent": "134c3181-f8fa-4fb3-a770-7d373cda2e71"
+},{
+    "id": "2b9a5aed-9cac-4c63-a84d-f81ae4340f47",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-morte",
+    "path": "/Books/Emile Zola/Oeuvres de jeunesse/zola-morte",
+    "parent": "134c3181-f8fa-4fb3-a770-7d373cda2e71"
+},{
+    "id": "ceab099f-83e6-4146-8e78-bfa0934e9e06",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "zola-raquin",
+    "path": "/Books/Emile Zola/Oeuvres de jeunesse/zola-raquin",
+    "parent": "134c3181-f8fa-4fb3-a770-7d373cda2e71"
+},{
+    "id": "e5b44b3b-5744-4197-b603-e1edd8824ae4",
+    "version": 1,
+    "type": "CollectionType",
+    "name": "Textes divers",
+    "path": "/Books/Emile Zola/Textes divers",
+    "parent": "ad9adeb6-ee67-4cde-baad-925ceb5742b0"
+},{
+    "id": "fa035786-12b6-42ac-af2e-a0cae097562e",
+    "version": 1,
+    "type": "DocumentType",
+    "name": "Zola-jaccuse",
+    "path": "/Books/Emile Zola/Textes divers/Zola-jaccuse",
+    "parent": "e5b44b3b-5744-4197-b603-e1edd8824ae4"
+},{
+    "id": "ca1f158b-aa88-4e82-ad8f-6611633dc664",
+    "version": 2,
+    "type": "CollectionType",
+    "name": "Calendar",
+    "path": "/Calendar",
+    "parent": ""
+},{
+    "id": "b0d19ef9-fab1-478d-b6aa-ca27fb15f90b",
+    "version": 31,
+    "type": "DocumentType",
+    "name": "2021",
+    "path": "/Calendar/2021",
+    "parent": "ca1f158b-aa88-4e82-ad8f-6611633dc664"
+},{
+    "id": "1e2d320c-8b5b-4bdc-805f-4cb0015dce31",
+    "version": 7,
+    "type": "DocumentType",
+    "name": "2022",
+    "path": "/Calendar/2022",
+    "parent": "ca1f158b-aa88-4e82-ad8f-6611633dc664"
+},{
+    "id": "547ed3cb-82f9-4f4e-a1d3-fc107d7090e8",
+    "version": 420,
+    "type": "DocumentType",
+    "name": "Quick sheets",
+    "path": "/Quick sheets",
+    "parent": ""
+}]

@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "newLine": "LF",
+        "noFallthroughCasesInSwitch": true,
+        "noUnusedLocals": false,
+        "noUnusedParameters": true,
+        "strict": true,
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "strictNullChecks": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "module": "commonjs",
+        "target": "es6",
+        "typeRoots": [
+            "node_modules/@types"
+        ],
+        "outDir": "_build"
+    },
+    "exclude": [
+        "node_modules"
+    ],
+    "include": [
+        "src/**/*.ts",
+        "tools/**/*.ts"
+    ]
+}

@@ -1,0 +1,186 @@
+### 
+###  rmWebUI - Web interface for the reMarkable(R) cloud.
+### 
+###  (c) 2021-2022 Fabien Pollet <polletfa@posteo.de>
+###  MIT License (see LICENSE.md file)
+### 
+
+#
+# The configuration file has two sections:
+# - main section: for options that will apply to all servers
+# - server sections: list of server-specific configurations.
+# All options can be used in both sections.
+# All options have default values (an empty file is a valid configuration file).
+#
+# Single server
+#   If you want to run only one server, you can omit the server section. The single server will use the options
+#   specified in the main section.
+#
+# Multiple servers
+#   If you use multiple servers, each server will use the main section only for parameters that
+#   have not been specified as part of the server-specific configuration.
+#
+# HTTP or HTTPS
+#   The servers can use HTTP or the more secure HTTPS.
+#   To enable HTTPS, you must specify a certificate and the corresponding private key.
+#
+#   When running HTTP, only localhost requests will be accepted. Request from a remote address will be rejected.
+#   You can disable this behaviour by using the allowInsecure option. This is NOT recommended as this will expose
+#   you to a man-in-the-middle attack and might compomise the privacy of your cloud account.
+#
+#   This restriction doesn't apply in demonstration mode.
+#
+#
+# GENERIC OPTIONS
+#
+# name - string (default: default)
+#     Name of the server. For logging only.
+#
+# port - TCP port number (default: 8080)
+#     You will need elevated permissions to use a low numbered port (lower than 1024).
+#     Each server must use a different port.
+#
+# demo - true/false (default: false)
+#     If true, the demonstration mode is activated (no data saved, no access to the cloud, dummy data only).
+#
+# sessionMaxIdle - duration with unit s, m, h or d (default: 1d)
+#     Session are deleted if they are not used for longer than the specified time.
+#
+# logHeaders - true/false (default_ false)
+#     If true, the HTTP headers of requests will be logged.
+#
+# SECURITY OPTIONS
+#
+# allowInsecure - true/false (default: false)
+#     When using the unsecure HTTP protocol, only requests from localhost will be accepted.
+#     You can disable this behaviour by setting this option to true.
+#     THIS IS NOT RECOMMENDED and will compromise the safety of your cloud account.
+#
+# ssl:
+#   cert - Path to PEM certificate file, (default: empty)
+#     Certificate required to use HTTPS. For a localhost server, this is not required.
+#
+#     Ideally you need a certificate signed by a Certificate Authority. Some server hosting services
+#     include such a certificate.
+#
+#     You can also use a self-signed certificate, but you will get a security warning from the browser
+#     when accessing the site.
+#
+#     You also need to set ssl.key.
+#
+# ssl:
+#   key - Path to PEM private key file (default: empty)
+#     Private key associated with the certificate and required to use HTTPS.
+#     See ssl:cert
+#
+#
+# OPTIONS FOR LIVE MODE ONLY
+#
+# data - Path to directory (default: data)
+#     Directory used to store user data (authentication token or cached data).
+#     The application requires read/write permissions for this directory.
+#
+# cache - true/false (default: true)
+#     Enable or disable the cache. If disabled, the application will download files
+#     from the cloud on every access. Otherwise it will keep a copy and download files
+#     from the cloud only when the version is incremented.
+#
+# pdfconverter - system command (default: empty)
+#     The files retrieved from the cloud are ZIP files containing metadata and the "lines" files
+#     in the proprietary reMarkable(R) format (as well as the original file without annotations for PDF and ePUB files).
+#
+#     You need an external program to be able to download the notebooks as PDF files.
+#     Specify the command with this option and the following placeholders:
+#     - <!input>: ZIP file (input file)
+#     - <!output>: PDF file (output file)
+#
+#     For example with rmrl (https://github.com/rschroll/rmrl):
+#     - python -m rmrl <!input> <!output>
+#
+#
+# OPTIONS FOR DEMONSTRATION MODE ONLY
+#
+# fakeRegisterCode - string (default: abcdefgh)
+#     Valid code for the registration process in demonstration mode.
+#     It should be exactly 8 alphanumerical characters. If not, the code will be modified as follow:
+#     - Any invalid character will be removed.
+#     - If the code is less than 8 characters, it will be padded with 0.
+#     - If the code is more than 8 cheracters, it will be truncated.
+#     Set an empty value to disable the registration step.
+#
+# fakeDelay - duration with unit s, m, h or d (default: 2s)
+#     Delay to simulate a request to the cloud.
+#
+#
+# EXAMPLES
+#
+# Example 1 - Single server
+#
+#     port: 8001
+#     data: /srv/rmWebUI.data
+#
+# Example 2 - Multiple servers: demo over http and live over https
+# 
+#     servers:
+#     - name: demo
+#       port: 8001
+#
+#     - name: live
+#       port: 8002
+#       data: /srv/rmWebUI.data
+#       ssl:
+#         cert: /srv/ssl/certificate.pem
+#         key: /srv/ssl/private-key.pem
+#
+# Example 3 - Multiple servers: demo and live, both over HTTPS
+#
+#     ssl:
+#       cert: /srv/ssl/certificate.pem
+#       key: /srv/ssl/private-key.pem
+#
+#     servers:
+#     - name: demo
+#       port: 8001
+#
+#     - name: live
+#       port: 8002
+#       data: /srv/rmWebUI.data
+#
+#
+# 
+
+pdfconverter: python3 -m rmrl <!input> <!output>
+
+servers:
+
+# Demo
+- name: demo
+  port: 8000
+  demo: true
+
+# Demo with debugging options
+- name: demo-debug
+  port: 8001
+  demo: true
+  
+  logHeaders: true
+  sessionMaxIdle: 1m
+  fakeDelay: 0s
+  fakeRegisterCode: 
+
+# Live
+- name: live
+  port: 8080
+
+# Live with debugging options
+- name: live-debug
+  port: 8081
+
+  logHeaders: true
+  sessionMaxIdle: 1m
+
+# Insecure server
+#- name: insecure
+#  port: 8005
+#  demo: true
+#  allowInsecure: true
