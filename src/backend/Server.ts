@@ -18,6 +18,7 @@ import { SessionManager } from "./SessionManager";
 import { ServerModule } from "./ServerModule";
 
 import { FakeCloudAPI } from "./api/FakeCloudAPI";
+import { RemarkableCloudAPI } from "./api/RemarkableCloudAPI";
 import { BackendAPI } from "./api/BackendAPI";
 
 import { ServerConfig } from "./types/Config";
@@ -42,7 +43,7 @@ export class Server {
         this.backend = backend;
         this.sessionManager = new SessionManager(this);
         this.modules = [
-            new FakeCloudAPI(this),
+            this.config.demo ? new FakeCloudAPI(this) : new RemarkableCloudAPI(this),
             new BackendAPI(this),
             new FrontendProvider(this)  // the frontend provider must be last because it handles all requests (including unknown requests).
         ];

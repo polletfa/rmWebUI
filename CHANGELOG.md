@@ -3,9 +3,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## develop
+Versioning policy: <release>.<major>.<minor>
+- <release>: Major release, fully featured, documented and tested.
+- <major>: Intermediate release with major changes: new feature(s), wide refactoring
+- <minor>: Minor changes, bugfix. No new features.
+
+## develop (planned: [0.6.0])
 ### Added
-- rmWebUI.constructor rewritten for better readability
+- Rewrite with NodeJS and Typescript
+- Stand-alone application (not relying on a separate WebServer)
+- NodeJS web server serving:
+  - the frontend as a single file webapplication + favicon
+  - APIs:
+    - /cloud/* -> Access the cloud
+    - /backend/* -> Internal functionalities of the backend
+- HTTP session management
+- Multiple servers in parallel possible
+- YAML config file
+- Backend includes some configuration information as a JSON file inside the frontend file (using a marker)
+- Tools/Build/Deployment in Typescript/NodeJS as well
+- build script to generate the frontend (using special include statements)
+- Deployement using webpack
 
 ## [0.5.1] - 2022-01-08
 ### Added
@@ -71,6 +89,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 - First version
 
+[0.6.0]: https://github.com/polletfa/rmWebUI/projects/3
+
 [develop]: https://github.com/polletfa/rmWebUI/compare/0.5.1...develop
 [0.5.1]: https://github.com/polletfa/rmWebUI/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/polletfa/rmWebUI/compare/0.4.3...0.5.0
@@ -81,3 +101,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 [0.3.0]: https://github.com/polletfa/rmWebUI/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/polletfa/rmWebUI/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/polletfa/rmWebUI/releases/tag/0.1.0
+

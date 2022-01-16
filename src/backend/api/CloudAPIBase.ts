@@ -12,6 +12,10 @@ import * as http from "http";
 import { APIBase } from "./APIBase";
 import { Server } from "../Server";
 
+import { CloudAPIResponseError } from "../types/CloudAPI";
+
+export type Parameters = {[name:string]: string|null};
+
 /**
  * Common interface for real and fake cloud API
  */
@@ -55,6 +59,38 @@ export abstract class CloudAPIBase extends APIBase {
             default:
                 return false; // not an API request
         }
+    }
+
+    /**
+     * Check request:
+     * - Session exists
+     * - Parameters are not null or empty
+     * Send an error response if the request is not valid.
+     *
+     * @param sessionId Session ID
+     * @param params: Parameters as key-value pairs
+     * @param response HTTP response object
+     * @return Request validity trus/false
+     */
+    protected checkRequest(sessionId: string, params: Parameters, response: http.ServerResponse): boolean
+    {
+        // check parameters
+        const missing: string[] = [];
+        for(const param in params) {
+            if(params[param] == null || params[param] == "") missing.push(param);
+        }
+        if(missing.length > 0) {
+            this.sendAPIResponseError(CloudAPIResponseError.InvalidParameters, "Missing parameter" + (missing.length == 1 ? "" : "s" ) + ": "+missing.join(", "), response);
+            return false;
+        }
+
+        // check session
+        if(!this.server.sessionManager.hasSession(sessionId)) {
+            this.sendAPIResponseError(CloudAPIResponseError.InvalidParameters, "Invalid session", response);
+            return false;
+        }
+        
+        return true;
     }
 
     /**

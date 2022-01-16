@@ -12,10 +12,8 @@ import * as fs from "fs";
 
 import { Server } from "../Server";
 import { Constants } from "../Constants";
-import { CloudAPIBase } from "./CloudAPIBase";
+import { CloudAPIBase, Parameters } from "./CloudAPIBase";
 import { CloudAPIResponseError } from "../types/CloudAPI";
-
-type Parameters = {[name:string]: string|null};
 
 /**
  * Implement the cloud API with dummy data (no connection to the cloud) for the demonstration mode
@@ -33,7 +31,7 @@ export class FakeCloudAPI extends CloudAPIBase {
      * @param response HTTP response object
      */
     public register(sessionId: string, code: string|null, response: http.ServerResponse): void {
-        this.generic(sessionId, {code: code}, CloudAPIResponseError.Register, false, response, (params: Parameters, response: http.ServerResponse) => {
+        this.doRequest(sessionId, {code: code}, CloudAPIResponseError.Register, false, response, (params: Parameters, response: http.ServerResponse) => {
             if(!("code" in params && params.code !== null)) throw new Error("request handler called with invalid parameters.");
             if(params.code !== this.server.config.fakeRegisterCode) {
                 this.sendAPIResponseError(CloudAPIResponseError.Register,"This is a demo version. Use the code '"+this.server.config.fakeRegisterCode+"'.", response);
@@ -51,7 +49,7 @@ export class FakeCloudAPI extends CloudAPIBase {
      * @param response HTTP response object
      */
     public files(sessionId: string, response: http.ServerResponse): void {
-        this.generic(sessionId, {}, CloudAPIResponseError.RetrieveFiles, true, response, (_: Parameters, response: http.ServerResponse) => {
+        this.doRequest(sessionId, {}, CloudAPIResponseError.RetrieveFiles, true, response, (_: Parameters, response: http.ServerResponse) => {
             fs.readFile(Constants.SAMPLE_DATA_DIR+"/files.json", (err:Error|null, content:Buffer|null) => {
                 if(err) {
                     this.sendAPIResponseError(CloudAPIResponseError.RetrieveFiles, err instanceof Error ? err.message : "Unknown error", response);
@@ -72,7 +70,7 @@ export class FakeCloudAPI extends CloudAPIBase {
      * @param response HTTP response object
      */
     public download(sessionId: string, id: string|null, version: string|null, format: string|null, response: http.ServerResponse): void {
-        this.generic(sessionId, {id: id, version: version, format: format}, CloudAPIResponseError.DownloadFile, true, response, 
+        this.doRequest(sessionId, {id: id, version: version, format: format}, CloudAPIResponseError.DownloadFile, true, response, 
                      (params: Parameters, response: http.ServerResponse) => {
                          let file: string|undefined;
                          
@@ -101,24 +99,10 @@ export class FakeCloudAPI extends CloudAPIBase {
                      });
     }
 
-    protected generic(sessionId: string, params: Parameters, requestError: CloudAPIResponseError, requireRegistration: boolean, response: http.ServerResponse,
+    protected doRequest(sessionId: string, params: Parameters, requestError: CloudAPIResponseError, requireRegistration: boolean, response: http.ServerResponse,
                       request: (params: Parameters, response: http.ServerResponse) => void): void
     {
-        // check parameters
-        const missing: string[] = [];
-        for(const param in params) {
-            if(params[param] == null || params[param] == "") missing.push(param);
-        }
-        if(missing.length > 0) {
-            this.sendAPIResponseError(CloudAPIResponseError.InvalidParameters, "Missing parameter" + (missing.length == 1 ? "" : "s" ) + ": "+missing.join(", "), response);
-            return;
-        }
-
-        // check session
-        if(!this.server.sessionManager.hasSession(sessionId)) {
-            this.sendAPIResponseError(CloudAPIResponseError.InvalidParameters, "Invalid session", response);
-            return;
-        }            
+        if(!this.checkRequest(sessionId, params, response)) return;
 
         // check the registration status
         if(requireRegistration && this.server.config.fakeRegisterCode != "" && this.server.sessionManager.getValue(sessionId, "registered") !== true) {
